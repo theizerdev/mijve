@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class ActiveSessions extends Component
 {
     use WithPagination;
-    private $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'bootstrap';
 
     public $search = '';
     public $status = '';
@@ -27,6 +27,14 @@ class ActiveSessions extends Component
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
     ];
+
+    public function mount()
+    {
+        // Verificar permiso para ver sesiones activas
+        if (!Auth::user()->can('view active sessions')) {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+    }
 
     public function loadSessions()
     {
@@ -52,46 +60,60 @@ class ActiveSessions extends Component
         }
 
         $this->sortBy = $field;
-        $this->resetPage();
     }
 
-    public function destroy($id)
+    public function render()
     {
-        $session = ActiveSession::where('user_id', Auth::id())
-            ->where('id', $id)
-            ->first();
+        $sessions = ActiveSession::with('user')
+            ->when($this->search, function ($query) {
+                $query->whereHas('user', function ($userQuery) {
+                    $userQuery->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->status, function ($query) {
+                $query->where('is_current', $this->status === 'current' ? true : false);
+            })
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate($this->perPage);
 
-        if ($session) {
-            // Si es la sesión actual, no la eliminamos, solo la marcamos como inactiva
-            if ($session->is_current) {
-                $session->update([
-                    'is_current' => false,
-                    'is_active' => false,
-                    'logout_at' => now(),
-                ]);
+        return view('livewire.admin.active-sessions', compact('sessions'))
+            ->layout('components.layouts.admin', [
+                'title' => 'Sesiones Activas'
+            ]);
+    }
 
-                // Cerrar la sesión actual
-                Auth::logout();
-                Session::flush();
-                session()->flash('status', 'Sesión actual cerrada.');
-                return redirect()->to('/login');
-            } else {
-                // Para otras sesiones, las marcamos como inactivas
-                $session->update([
-                    'is_active' => false,
-                    'logout_at' => now(),
-                ]);
-
-                session()->flash('status', 'Sesión terminada exitosamente.');
-                $this->resetPage();
-            }
-
+    public function terminateSession($sessionId)
+    {
+        // Verificar permiso para terminar sesiones activas
+        if (!Auth::user()->can('terminate active sessions')) {
+            session()->flash('error', 'No tienes permiso para terminar sesiones activas.');
             return;
         }
 
-        session()->flash('error', 'Sesión no encontrada.');
-    }
+        $session = ActiveSession::find($sessionId);
 
+        if (!$session) {
+            session()->flash('error', 'Sesión no encontrada.');
+            return;
+        }
+
+        // No permitir terminar la sesión actual del usuario
+        if ($session->is_current && $session->user_id === Auth::id()) {
+            session()->flash('error', 'No puedes terminar tu sesión actual.');
+            return;
+        }
+
+        // Terminar la sesión
+        $session->update([
+            'is_current' => false,
+            'logout_at' => now(),
+            'is_active' => false
+        ]);
+
+        session()->flash('status', 'Sesión terminada correctamente.');
+    }
+    
     public function clearFilters()
     {
         $this->search = '';
@@ -100,43 +122,5 @@ class ActiveSessions extends Component
         $this->sortDirection = 'desc';
         $this->perPage = 10;
         $this->resetPage();
-    }
-
-    public function render()
-    {
-        $query = ActiveSession::where('user_id', Auth::id());
-
-        // Aplicar búsqueda
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('ip_address', 'like', '%' . $this->search . '%')
-                  ->orWhere('location', 'like', '%' . $this->search . '%')
-                  ->orWhere('user_agent', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        // Aplicar filtro de estado
-        if (!empty($this->status)) {
-            if ($this->status === 'active') {
-                $query->where('is_active', true);
-            } elseif ($this->status === 'inactive') {
-                $query->where('is_active', false);
-            } elseif ($this->status === 'current') {
-                $query->where('is_current', true);
-            }
-        }
-
-        // Aplicar ordenamiento
-        $query->orderBy($this->sortBy, $this->sortDirection);
-
-        // Obtener resultados con paginación
-        $activeSessions = $query->paginate($this->perPage);
-
-        return view('livewire.admin.active-sessions', [
-            'activeSessions' => $activeSessions
-        ])
-            ->layout('components.layouts.admin', [
-                'title' => 'Sesiones Activas'
-            ]);
     }
 }

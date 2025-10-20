@@ -72,11 +72,13 @@
                             <h5 class="card-title mb-1">Lista de Sucursales</h5>
                             <p class="mb-0">Administra las sucursales registradas en el sistema</p>
                         </div>
+                        @can('create sucursales')
                         <div>
                             <a href="{{ route('admin.sucursales.create') }}" class="btn btn-primary">
                                 <i class="ri ri-add-line"></i> Nueva Sucursal
                             </a>
                         </div>
+                        @endcan
                     </div>
                 </div>
 
@@ -163,16 +165,13 @@
                             @forelse($sucursales as $sucursal)
                             <tr>
                                 <td>{{ $sucursal->nombre }}</td>
-                                <td>{{ $sucursal->empresa->razon_social }}</td>
+                                <td>{{ $sucursal->empresa->razon_social ?? 'N/A' }}</td>
                                 <td>{{ $sucursal->telefono ?? 'No especificado' }}</td>
                                 <td>
                                     @if($sucursal->direccion)
-                                        {{ Str::limit($sucursal->direccion, 50) }}
-                                        @if(strlen($sucursal->direccion) > 50)
-                                            <span class="text-muted" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $sucursal->direccion }}">
-                                                ...
-                                            </span>
-                                        @endif
+                                        <span data-bs-toggle="tooltip" data-bs-title="{{ $sucursal->direccion }}">
+                                            {{ Str::limit($sucursal->direccion, 50) }}
+                                        </span>
                                     @else
                                         No especificada
                                     @endif
@@ -183,7 +182,7 @@
                                         <input class="form-check-input" type="checkbox"
                                                id="statusSwitch{{ $sucursal->id }}"
                                                {{ $sucursal->status ? 'checked' : '' }}
-                                               wire:click="toggleStatus({{ $sucursal->id }})">
+                                               @can('edit sucursales') wire:click="toggleStatus({{ $sucursal->id }})" @endcan>
                                         <label class="form-check-label" for="statusSwitch{{ $sucursal->id }}">
                                             {{ $sucursal->status ? 'Activa' : 'Inactiva' }}
                                         </label>
@@ -198,14 +197,18 @@
                                             <a class="dropdown-item" href="{{ route('admin.sucursales.show', $sucursal->id) }}">
                                                 <i class="ri ri-eye-line me-1"></i> Ver
                                             </a>
+                                            @can('edit sucursales')
                                             <a class="dropdown-item" href="{{ route('admin.sucursales.edit', $sucursal->id) }}">
                                                 <i class="ri ri-pencil-line me-1"></i> Editar
                                             </a>
+                                            @endcan
+                                            @can('delete sucursales')
                                             <button type="button" class="dropdown-item text-danger"
                                                     wire:click="delete({{ $sucursal->id }})"
                                                     wire:confirm="¿Estás seguro de que deseas eliminar esta sucursal?">
                                                 <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                             </button>
+                                            @endcan
                                         </div>
                                     </div>
                                 </td>

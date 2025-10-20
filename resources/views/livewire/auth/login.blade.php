@@ -63,7 +63,10 @@
           <h4 class="mb-1">Welcome to {{ config('app.name', 'Laravel') }}! 👋</h4>
           <p class="mb-5">Please sign-in to your account and start the adventure</p>
 
-          <form wire:submit="authenticate">
+          <form wire:submit.prevent="authenticate" id="loginForm">
+            <input type="hidden" wire:model="latitude" id="latitude">
+            <input type="hidden" wire:model="longitude" id="longitude">
+
             <div class="form-floating form-floating-outline mb-5 form-control-validation">
               <input
                 type="text"
@@ -151,3 +154,31 @@
     </div>
   </div>
 </div>
+  @push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+        // Al hacer clic en el botón
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Si tiene éxito, emite un evento con las coordenadas
+                         @this.latitude = position.coords.latitude;
+                         @this.longitude = position.coords.longitude;
+
+                    },
+                    (error) => {
+                        // Si hay un error, emite un evento con el mensaje de error
+                        @this.dispatch('setError', {
+                            error: error.message
+                        });
+                    }
+                );
+            } else {
+                // El navegador no soporta la geolocalización
+                @this.dispatch('setError', {
+                    error: "Geolocalización no es soportada por este navegador."
+                });
+            }
+    });
+    </script>
+    @endpush

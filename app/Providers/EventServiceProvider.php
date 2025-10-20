@@ -21,7 +21,7 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         Login::class => [
-            \App\Listeners\TrackUserLogin::class,
+            // La lógica de TrackUserLogin se movió al componente Login
         ],
         Logout::class => [
             \App\Listeners\TrackUserLogout::class,

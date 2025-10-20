@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use Illuminate\Support\Facades\Auth;
 
 class Index extends Component
 {
@@ -29,6 +30,14 @@ class Index extends Component
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
     ];
+
+    public function mount()
+    {
+        // Verificar permiso para ver usuarios
+        if (!Auth::user()->can('view users')) {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+    }
 
     public function updatingSearch()
     {
@@ -59,9 +68,85 @@ class Index extends Component
         }
 
         $this->sortBy = $field;
-        $this->resetPage();
     }
 
+    public function render()
+    {
+        $users = User::with(['empresa', 'sucursal'])
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('email', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->status, function ($query) {
+                $query->where('status', $this->status);
+            })
+            ->when($this->empresa_id, function ($query) {
+                $query->where('empresa_id', $this->empresa_id);
+            })
+            ->when($this->sucursal_id, function ($query) {
+                $query->where('sucursal_id', $this->sucursal_id);
+            })
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate($this->perPage);
+
+        $empresas = Empresa::where('status', 'active')->get();
+        $sucursales = Sucursal::where('status', 'active')
+            ->when($this->empresa_id, function ($query) {
+                $query->where('empresa_id', $this->empresa_id);
+            })
+            ->get();
+
+        // Calcular estadísticas
+        $totalUsers = User::count();
+        $activeUsers = User::where('status', 'active')->count();
+        $pendingUsers = User::where('status', 'pending')->count();
+        $inactiveUsers = User::where('status', 'inactive')->count();
+
+        return view('livewire.admin.users.index', compact('users', 'empresas', 'sucursales', 'totalUsers', 'activeUsers', 'pendingUsers', 'inactiveUsers'))
+            ->layout('components.layouts.admin', [
+                'title' => 'Lista de Usuarios'
+            ]);
+    }
+
+    public function toggleStatus(User $user)
+    {
+        // Verificar permiso para editar usuarios
+        if (!Auth::user()->can('edit users')) {
+            session()->flash('error', 'No tienes permiso para editar usuarios.');
+            return;
+        }
+
+        // No permitir desactivar al usuario actual
+        if ($user->id === Auth::id()) {
+            session()->flash('error', 'No puedes desactivar tu propia cuenta.');
+            return;
+        }
+
+        $user->status = $user->status === 'active' ? 'inactive' : 'active';
+        $user->save();
+
+        session()->flash('message', 'Estado de usuario actualizado correctamente.');
+    }
+
+    public function delete(User $user)
+    {
+        // Verificar permiso para eliminar usuarios
+        if (!Auth::user()->can('delete users')) {
+            session()->flash('error', 'No tienes permiso para eliminar usuarios.');
+            return;
+        }
+
+        // No permitir eliminar al usuario actual
+        if ($user->id === Auth::id()) {
+            session()->flash('error', 'No puedes eliminar tu propia cuenta.');
+            return;
+        }
+
+        $user->delete();
+        session()->flash('message', 'Usuario eliminado correctamente.');
+        $this->resetPage();
+    }
+    
     public function clearFilters()
     {
         $this->search = '';
@@ -73,85 +158,10 @@ class Index extends Component
         $this->perPage = 10;
         $this->resetPage();
     }
-
-    public function delete(User $user)
+    
+    public function loadSucursales()
     {
-        $user->delete();
-        session()->flash('message', 'Usuario eliminado correctamente.');
-    }
-
-    public function toggleStatus($userId)
-    {
-        $user = User::find($userId);
-
-        if ($user) {
-
-            $user->status = !$user->status;
-            $user->save();
-
-            $this->dispatch('refreshComponent');
-            session()->flash('message', 'Estado del usuario actualizado correctamente.');
-        }
-    }
-
-    public function render()
-    {
-        $query = User::with(['empresa', 'sucursal']);
-
-        // Apply search
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        // Apply status filter
-        if ($this->status !== '') {
-            $query->where('status', $this->status === 'active' ? 1 : 0);
-        }
-
-        // Apply empresa filter
-        if ($this->empresa_id !== '') {
-            $query->where('empresa_id', $this->empresa_id);
-        }
-
-        // Apply sucursal filter
-        if ($this->sucursal_id !== '') {
-            $query->where('sucursal_id', $this->sucursal_id);
-        }
-
-        // Apply sorting
-        $query->orderBy($this->sortBy, $this->sortDirection);
-
-        // Get paginated results
-        $users = $query->paginate($this->perPage);
-
-        // Statistics
-        $totalUsers = User::count();
-        $activeUsers = User::where('status', true)->count();
-        $inactiveUsers = User::where('status', false)->count();
-        $unverifiedUsers = User::whereNull('email_verified_at')->count();
-
-        // Empresas for filter
-        $empresas = Empresa::where('status', true)->get();
-
-        // Sucursales for filter (filtered by selected empresa if any)
-        $sucursales = $this->empresa_id
-            ? Sucursal::where('empresa_id', $this->empresa_id)->where('status', true)->get()
-            : Sucursal::where('status', true)->get();
-
-        return view('livewire.admin.users.index', [
-            'users' => $users,
-            'totalUsers' => $totalUsers,
-            'activeUsers' => $activeUsers,
-            'inactiveUsers' => $inactiveUsers,
-            'unverifiedUsers' => $unverifiedUsers,
-            'empresas' => $empresas,
-            'sucursales' => $sucursales
-        ])
-            ->layout('components.layouts.admin', [
-                'title' => 'Lista de Usuarios'
-            ]);
+        // Este método se llama cuando se cambia la empresa en los filtros
+        $this->sucursal_id = '';
     }
 }

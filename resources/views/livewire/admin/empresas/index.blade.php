@@ -6,6 +6,13 @@
         </div>
     @endif
 
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row">
         <!-- Estadísticas -->
         <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
@@ -72,11 +79,13 @@
                             <h5 class="card-title mb-1">Lista de Empresas</h5>
                             <p class="mb-0">Administra las empresas registradas en el sistema</p>
                         </div>
+                        @can('create empresas')
                         <div>
                             <a href="{{ route('admin.empresas.create') }}" class="btn btn-primary">
                                 <i class="ri ri-add-line"></i> Nueva Empresa
                             </a>
                         </div>
+                        @endcan
                     </div>
                 </div>
 
@@ -160,9 +169,9 @@
                                         <input class="form-check-input" type="checkbox"
                                                id="statusSwitch{{ $empresa->id }}"
                                                {{ $empresa->status ? 'checked' : '' }}
-                                               wire:click="toggleStatus({{ $empresa->id }})">
+                                               @can('edit empresas') wire:click="toggleStatus({{ $empresa->id }})" @endcan>
                                         <label class="form-check-label" for="statusSwitch{{ $empresa->id }}">
-                                            {{ $empresa->status ? 'Activa' : 'Inactiva' }}
+
                                         </label>
                                     </div>
                                 </td>
@@ -175,14 +184,18 @@
                                             <a class="dropdown-item" href="{{ route('admin.empresas.show', $empresa->id) }}">
                                                 <i class="ri ri-eye-line me-1"></i> Ver
                                             </a>
+                                            @can('edit empresas')
                                             <a class="dropdown-item" href="{{ route('admin.empresas.edit', $empresa->id) }}">
                                                 <i class="ri ri-pencil-line me-1"></i> Editar
                                             </a>
+                                            @endcan
+                                            @can('delete empresas')
                                             <button type="button" class="dropdown-item text-danger"
                                                     wire:click="delete({{ $empresa->id }})"
                                                     wire:confirm="¿Estás seguro de que deseas eliminar esta empresa?">
                                                 <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                             </button>
+                                            @endcan
                                         </div>
                                     </div>
                                 </td>

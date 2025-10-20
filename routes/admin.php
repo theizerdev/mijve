@@ -30,18 +30,27 @@ Route::prefix('admin')
             Route::get('/{sucursal}/edit', \App\Livewire\Admin\Sucursales\Edit::class)->name('sucursales.edit');
         });
 
-    Route::prefix('empresas')->group(function () {
-        Route::get('/', \App\Livewire\Admin\Empresas\Index::class)->name('empresas.index');
-        Route::get('/create', \App\Livewire\Admin\Empresas\Create::class)->name('empresas.create');
-        Route::get('/{empresa}', \App\Livewire\Admin\Empresas\Show::class)->name('empresas.show');
-        Route::get('/{empresa}/edit', \App\Livewire\Admin\Empresas\Edit::class)->name('empresas.edit');
-    });
+        // Rutas para usuarios
+        Route::prefix('users')->group(function () {
+            Route::get('/', \App\Livewire\Admin\Users\Index::class)->name('users.index');
+            Route::get('/create', \App\Livewire\Admin\Users\Create::class)->name('users.create');
+            Route::get('/{user}', \App\Livewire\Admin\Users\Show::class)->name('users.show');
+            Route::get('/{user}/edit', \App\Livewire\Admin\Users\Edit::class)->name('users.edit');
+        });
 
-    // Rutas para usuarios
-    Route::prefix('users')->group(function () {
-        Route::get('/', \App\Livewire\Admin\Users\Index::class)->name('users.index');
-        Route::get('/create', \App\Livewire\Admin\Users\Create::class)->name('users.create');
-        Route::get('/{user}', \App\Livewire\Admin\Users\Show::class)->name('users.show');
-        Route::get('/{user}/edit', \App\Livewire\Admin\Users\Edit::class)->name('users.edit');
+        // Rutas para roles
+        Route::prefix('roles')->group(function () {
+            Route::get('/', \App\Livewire\Admin\Roles\Index::class)->name('roles.index');
+            Route::get('/create', \App\Livewire\Admin\Roles\Create::class)->name('roles.create');
+            Route::get('/{role}', \App\Livewire\Admin\Roles\Show::class)->name('roles.show');
+            Route::get('/{role}/edit', \App\Livewire\Admin\Roles\Edit::class)->name('roles.edit');
+        });
+
+        // Perfil de usuario
+        Route::prefix('profile')->group(function () {
+            Route::get('/', \App\Livewire\Admin\Users\Profile\Index::class)->name('users.profile');
+            Route::get('/{user_id}/password', \App\Livewire\Admin\Users\Profile\ChangePassword::class)->name('users.password');
+            Route::get('/{user_id}/history', \App\Livewire\Admin\Users\Profile\HistoryUser::class)->name('users.history');
+        });
+
     });
-});

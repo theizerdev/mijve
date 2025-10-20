@@ -1,81 +1,59 @@
 <div class="card">
-    <div class="card-header">
+    <div class="card-header border-bottom">
         <h5 class="mb-0">Editar Usuario</h5>
     </div>
-
     <div class="card-body">
+        @if (session()->has('message'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('message') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <form wire:submit.prevent="update">
             <div class="row">
-                <!-- Name -->
                 <div class="col-md-6 mb-3">
-                    <label for="name" class="form-label">Nombre</label>
-                    <input
-                        type="text"
-                        wire:model="name"
-                        class="form-control @error('name') is-invalid @enderror"
-                        id="name"
-                        placeholder="Nombre completo"
-                    >
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                           wire:model="name" placeholder="Ingrese el nombre completo">
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <!-- Email -->
                 <div class="col-md-6 mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input
-                        type="email"
-                        wire:model="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        id="email"
-                        placeholder="Correo electrónico"
-                    >
+                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                           wire:model="email" placeholder="Ingrese el correo electrónico">
                     @error('email')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <!-- Password -->
                 <div class="col-md-6 mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input
-                        type="password"
-                        wire:model="password"
-                        class="form-control @error('password') is-invalid @enderror"
-                        id="password"
-                        placeholder="Dejar en blanco para mantener la actual"
-                    >
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                           wire:model="password" placeholder="Ingrese la nueva contraseña (dejar en blanco para no cambiar)">
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <!-- Confirm Password -->
                 <div class="col-md-6 mb-3">
-                    <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
-                    <input
-                        type="password"
-                        wire:model="password_confirmation"
-                        class="form-control"
-                        id="password_confirmation"
-                        placeholder="Confirmar nueva contraseña"
-                    >
+                    <label class="form-label">Confirmar Contraseña</label>
+                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
+                           wire:model="password_confirmation" placeholder="Confirme la nueva contraseña">
+                    @error('password_confirmation')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-                <!-- Empresa -->
                 <div class="col-md-6 mb-3">
-                    <label for="empresa_id" class="form-label">Empresa</label>
-                    <select
-                        wire:model.change="empresa_id"
-                        class="form-select @error('empresa_id') is-invalid @enderror"
-                        id="empresa_id"
-                    >
-                        <option value="">Seleccionar Empresa</option>
+                    <label class="form-label">Empresa</label>
+                    <select class="form-select @error('empresa_id') is-invalid @enderror" wire:model="empresa_id" wire:change="loadSucursales">
+                        <option value="">Seleccione una empresa</option>
                         @foreach($empresas as $empresa)
-                            <option value="{{ $empresa->id }}" {{ $empresa->id == $empresa_id ? 'selected' : '' }}>
-                                {{ $empresa->razon_social }}
-                            </option>
+                            <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
                         @endforeach
                     </select>
                     @error('empresa_id')
@@ -83,22 +61,12 @@
                     @enderror
                 </div>
 
-                <!-- Sucursal -->
                 <div class="col-md-6 mb-3">
-                    <label for="sucursal_id" class="form-label">Sucursal</label>
-                    <select
-                        wire:model="sucursal_id"
-                        class="form-select @error('sucursal_id') is-invalid @enderror"
-                        id="sucursal_id"
-                    >
-                        <option value="">Seleccionar Sucursal</option>
+                    <label class="form-label">Sucursal</label>
+                    <select class="form-select @error('sucursal_id') is-invalid @enderror" wire:model="sucursal_id">
+                        <option value="">Seleccione una sucursal</option>
                         @foreach($sucursales as $sucursal)
-                            <option
-                                value="{{ $sucursal->id }}"
-                                {{ $sucursal->id == $sucursal_id ? 'selected' : '' }}
-                            >
-                                {{ $sucursal->nombre }}
-                            </option>
+                            <option value="{{ $sucursal->id }}">{{ $sucursal->nombre }}</option>
                         @endforeach
                     </select>
                     @error('sucursal_id')
@@ -106,35 +74,42 @@
                     @enderror
                 </div>
 
-                <!-- Status -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Rol <span class="text-danger">*</span></label>
+                    <select class="form-select @error('role') is-invalid @enderror" wire:model="role">
+                        <option value="">Seleccione un rol</option>
+                        @foreach($roles as $r)
+                            <option value="{{ $r->name }}">{{ $r->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('role')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Estado</label>
-                    <div class="form-check form-switch">
-                        <input
-                            wire:model="status"
-                            class="form-check-input"
-                            type="checkbox"
-                            id="status"
-                            value="1"
-                            {{ $status ? 'checked' : '' }}
-                        >
-                        <label class="form-check-label" for="status">
-                            {{ $status ? 'Activo' : 'Inactivo' }}
-                        </label>
-                    </div>
+                    <select class="form-select @error('status') is-invalid @enderror" wire:model="status">
+                        <option value="active">Activo</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                    @error('status')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
-                <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary me-2">
-                    <i class="ri ri-arrow-left-line"></i> Cancelar
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ route('admin.users.index') }}" class="btn btn-label-secondary">
+                    <i class="ri ri-arrow-left-line"></i> Volver
                 </a>
+                @can('edit users')
                 <button type="submit" class="btn btn-primary">
-                    <i class="ri ri-save-line"></i> Actualizar
+                    <i class="ri ri-save-line"></i> Actualizar Usuario
                 </button>
+                @endcan
             </div>
         </form>
     </div>
 </div>
-
-

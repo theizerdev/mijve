@@ -473,7 +473,7 @@
                       <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="pages-profile-user.html">
+                      <a class="dropdown-item" href="{{ route('admin.users.profile') }}">
                         <i class="icon-base ri ri-user-3-line icon-22px me-3"></i
                         ><span class="align-middle">My Profile</span>
                       </a>

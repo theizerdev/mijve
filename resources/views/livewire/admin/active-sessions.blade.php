@@ -70,54 +70,56 @@
           <table class="table">
             <thead>
               <tr>
-                <th wire:click="sortBy('user_agent')" style="cursor: pointer;">
-                  Dispositivo
-                  @if($sortBy === 'user_agent')
+                <th wire:click="sortBy('user.name')" style="cursor: pointer;">
+                  Usuario
+                  @if($sortBy === 'user.name')
                     <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
                   @endif
                 </th>
-                <th wire:click="sortBy('ip_address')" style="cursor: pointer;">
-                  IP
-                  @if($sortBy === 'ip_address')
-                    <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
-                  @endif
-                </th>
-                <th wire:click="sortBy('location')" style="cursor: pointer;">
-                  Ubicación
-                  @if($sortBy === 'location')
-                    <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
-                  @endif
-                </th>
-                <th wire:click="sortBy('last_activity')" style="cursor: pointer;">
-                  Última Actividad
-                  @if($sortBy === 'last_activity')
-                    <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
-                  @endif
-                </th>
-                <th wire:click="sortBy('is_active')" style="cursor: pointer;">
-                  Estado
-                  @if($sortBy === 'is_active')
-                    <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
-                  @endif
-                </th>
+                <th>Dispositivo</th>
+                <th>IP</th>
+                <th>Ubicación</th>
+                <th>Última Actividad</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              @forelse($activeSessions as $session)
+              @forelse($sessions as $session)
               <tr>
                 <td>
-                  <div class="d-flex align-items-center">
-                    <div class="me-2">
-                      <i class="ri ri-computer-line ri-24px text-primary"></i>
+                  @if($session->user)
+                    <div class="d-flex align-items-center">
+                      <div class="avatar avatar-sm me-3">
+                        <span class="avatar-initial rounded-circle bg-label-primary">{{ substr($session->user->name, 0, 1) }}</span>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">{{ $session->user->name }}</h6>
+                        <small class="text-muted">{{ $session->user->email }}</small>
+                      </div>
                     </div>
-                    <div>
-                      <span class="d-block">{{ Str::limit($session->user_agent, 50) }}</span>
-                      <small class="text-muted">
-                        {{ $session->is_current ? 'Esta sesión' : 'Otra sesión' }}
-                      </small>
-                    </div>
-                  </div>
+                  @else
+                    <span class="text-muted">Usuario no encontrado</span>
+                  @endif
+                </td>
+                <td>
+                  @if($session->user_agent)
+                    @if(Str::contains($session->user_agent, 'Windows'))
+                      <i class="ri ri-windows-line text-primary me-1"></i> Windows
+                    @elseif(Str::contains($session->user_agent, 'Mac'))
+                      <i class="ri ri-mac-line text-secondary me-1"></i> Mac
+                    @elseif(Str::contains($session->user_agent, 'Linux'))
+                      <i class="ri ri-ubuntu-line text-warning me-1"></i> Linux
+                    @elseif(Str::contains($session->user_agent, 'Android'))
+                      <i class="ri ri-android-line text-success me-1"></i> Android
+                    @elseif(Str::contains($session->user_agent, 'iPhone') || Str::contains($session->user_agent, 'iPad'))
+                      <i class="ri ri-apple-line text-info me-1"></i> iOS
+                    @else
+                      <i class="ri ri-computer-line me-1"></i> Otro
+                    @endif
+                  @else
+                    <span class="text-muted">Desconocido</span>
+                  @endif
                 </td>
                 <td>{{ $session->ip_address }}</td>
                 <td>
@@ -139,28 +141,36 @@
                   @endif
                 </td>
                 <td>
-                  @if(!$session->is_current && $session->is_active)
-                    <button type="button"
-                            class="btn btn-sm btn-danger"
-                            wire:click="destroy({{ $session->id }})"
-                            wire:confirm="¿Estás seguro de que deseas terminar esta sesión?">
-                      Terminar Sesión
-                    </button>
-                  @elseif($session->is_current)
-                    <button type="button"
-                            class="btn btn-sm btn-danger"
-                            wire:click="destroy({{ $session->id }})"
-                            wire:confirm="¿Estás seguro de que deseas cerrar esta sesión?">
-                      Cerrar Sesión
-                    </button>
+                  @can('terminate active sessions')
+                    @if(!$session->is_current && $session->is_active)
+                      <button type="button"
+                              class="btn btn-sm btn-danger"
+                              wire:click="terminateSession({{ $session->id }})"
+                              wire:confirm="¿Estás seguro de que deseas terminar esta sesión?">
+                        Terminar Sesión
+                      </button>
+                    @elseif($session->is_current)
+                      <button type="button"
+                              class="btn btn-sm btn-danger"
+                              wire:click="terminateSession({{ $session->id }})"
+                              wire:confirm="¿Estás seguro de que deseas cerrar esta sesión?">
+                        Cerrar Sesión
+                      </button>
+                    @else
+                      <span class="text-muted">Sesión inactiva</span>
+                    @endif
                   @else
-                    <span class="text-muted">Sesión inactiva</span>
-                  @endif
+                    @if($session->is_current)
+                      <span class="badge bg-label-primary">Sesión actual</span>
+                    @else
+                      <span class="text-muted">Sin permisos</span>
+                    @endif
+                  @endcan
                 </td>
               </tr>
               @empty
               <tr>
-                <td colspan="6" class="text-center">No se encontraron sesiones que coincidan con los filtros</td>
+                <td colspan="7" class="text-center">No se encontraron sesiones que coincidan con los filtros</td>
               </tr>
               @endforelse
             </tbody>
@@ -169,7 +179,7 @@
 
         <!-- Paginación -->
         <div class="card-footer">
-          {{ $activeSessions->links('vendor.pagination.materialize') }}
+          {{ $sessions->links('vendor.pagination.materialize') }}
         </div>
       </div>
     </div>

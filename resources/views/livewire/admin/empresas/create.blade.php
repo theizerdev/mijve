@@ -54,16 +54,36 @@
                                 @enderror
                             </div>
 
-                            <div class="col-12 mb-3">
+                            <div class="col-md-12 mb-3">
                                 <label class="form-label">Dirección</label>
                                 <textarea class="form-control @error('direccion') is-invalid @enderror"
-                                          wire:model="direccion" rows="3" placeholder="Ingrese la dirección"></textarea>
+                                          wire:model="direccion" rows="3" placeholder="Ingrese la dirección completa"></textarea>
                                 @error('direccion')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" class="form-control @error('telefono') is-invalid @enderror"
+                                       wire:model="telefono" placeholder="Ingrese el teléfono">
+                                @error('telefono')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                       wire:model="email" placeholder="Ingrese el correo electrónico">
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+
+
+                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Latitud</label>
                                 <input type="text" class="form-control @error('latitud') is-invalid @enderror"
                                        wire:model="latitud" placeholder="Ingrese la latitud">
@@ -86,9 +106,15 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.empresas.index') }}" class="btn btn-label-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">Guardar Empresa</button>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ route('admin.empresas.index') }}" class="btn btn-label-secondary">
+                                <i class="ri ri-arrow-left-line"></i> Volver
+                            </a>
+                            @can('create empresas')
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ri ri-save-line"></i> Guardar Empresa
+                            </button>
+                            @endcan
                         </div>
                     </form>
                 </div>
@@ -96,7 +122,7 @@
         </div>
     </div>
 
-    @push('styles')
+     @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @endpush
 

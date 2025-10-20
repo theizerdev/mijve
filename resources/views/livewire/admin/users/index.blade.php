@@ -19,9 +19,11 @@
             <button wire:click="clearFilters" class="btn btn-outline-secondary me-2">
                 <i class="ri ri-refresh-line"></i> Limpiar
             </button>
+            @can('create users')
             <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                 <i class="ri ri-add-line"></i> Nuevo Usuario
             </a>
+            @endcan
         </div>
     </div>
 
@@ -57,11 +59,8 @@
                                 <h2 class="mb-0">{{ $activeUsers }}</h2>
                             </div>
                             <div class="bg-success bg-opacity-10 p-3 rounded">
-                                <i class="ri ri-user-follow-line text-success" style="font-size: 1.5rem;"></i>
+                                <i class="ri ri-checkbox-circle-line text-success" style="font-size: 1.5rem;"></i>
                             </div>
-                        </div>
-                        <div class="mt-3">
-                            <span class="text-muted">Último mes: +{{ rand(1,10) }}</span>
                         </div>
                     </div>
                 </div>
@@ -71,15 +70,12 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-2">Usuarios Inactivos</h6>
-                                <h2 class="mb-0">{{ $inactiveUsers }}</h2>
+                                <h6 class="text-muted mb-2">Usuarios Pendientes</h6>
+                                <h2 class="mb-0">{{ $pendingUsers }}</h2>
                             </div>
                             <div class="bg-warning bg-opacity-10 p-3 rounded">
-                                <i class="ri ri-user-unfollow-line text-warning" style="font-size: 1.5rem;"></i>
+                                <i class="ri ri-time-line text-warning" style="font-size: 1.5rem;"></i>
                             </div>
-                        </div>
-                        <div class="mt-3">
-                            <span class="text-muted">Último mes: {{ rand(-5,0) }}</span>
                         </div>
                     </div>
                 </div>
@@ -89,15 +85,12 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-2">Pendientes de verificar</h6>
-                                <h2 class="mb-0">{{ $unverifiedUsers }}</h2>
+                                <h6 class="text-muted mb-2">Usuarios Inactivos</h6>
+                                <h2 class="mb-0">{{ $inactiveUsers }}</h2>
                             </div>
                             <div class="bg-danger bg-opacity-10 p-3 rounded">
-                                <i class="ri ri-mail-unread-line text-danger" style="font-size: 1.5rem;"></i>
+                                <i class="ri ri-close-circle-line text-danger" style="font-size: 1.5rem;"></i>
                             </div>
-                        </div>
-                        <div class="mt-3">
-                            <span class="text-muted">{{ round(($unverifiedUsers/$totalUsers)*100) }}% del total</span>
                         </div>
                     </div>
                 </div>
@@ -127,9 +120,10 @@
                         <label for="status" class="form-label">Estado</label>
                         <div wire:ignore>
                             <select wire:model.live="status" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="1">Activos</option>
-                                <option value="0">Inactivos</option>
+                                <option value="">Todos los estados</option>
+                                <option value="active">Activo</option>
+                                <option value="pending">Pendiente</option>
+                                <option value="inactive">Inactivo</option>
                             </select>
                         </div>
                         <div wire:loading wire:target="status" class="small text-muted mt-1">Filtrando...</div>
@@ -140,23 +134,20 @@
                             <select wire:model.live="empresa_id" class="form-select">
                                 <option value="">Todas</option>
                                 @foreach($empresas as $empresa)
-                                    <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
+                                    <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div wire:loading wire:target="empresa_id" class="small text-muted mt-1">Filtrando...</div>
                     </div>
                     <div class="col-md-2">
-                        <label for="sucursal_id" class="form-label">Sucursal</label>
-                        <div wire:ignore>
-                            <select wire:model.live="sucursal_id" class="form-select" {{ !$empresa_id ? 'disabled' : '' }}>
-                                <option value="">Todas</option>
-                                @foreach($sucursales as $sucursal)
-                                    <option value="{{ $sucursal->id }}">{{ $sucursal->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div wire:loading wire:target="sucursal_id" class="small text-muted mt-1">Filtrando...</div>
+                        <label class="form-label">Sucursal</label>
+                        <select class="form-select" wire:model.live="sucursal_id">
+                            <option value="">Todas las sucursales</option>
+                            @foreach($sucursales as $sucursal)
+                                <option value="{{ $sucursal->id }}">{{ $sucursal->nombre }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label for="perPage" class="form-label">Mostrar</label>
@@ -223,7 +214,7 @@
                                     <input
                                         type="checkbox"
                                         class="form-check-input"
-                                        wire:change="toggleStatus({{ $user->id }})"
+                                        @can('edit users') wire:change="toggleStatus({{ $user->id }})" @endcan
                                         {{ $user->status ? 'checked' : '' }}
                                     >
                                 </div>
@@ -240,26 +231,30 @@
                                                     Ver datos
 
                                                 </a>
+                                                @can('edit users')
                                                 <a href="{{ route('admin.users.edit', $user) }}" class="dropdown-item">
                                                     <i class="ri ri-edit-line"></i>
                                                     Editar registros
                                                 </a>
+                                                @endcan
 
+                                                @can('delete users')
                                                 <button
                                                     wire:click="delete({{ $user->id }})"
                                                     class="dropdown-item"
                                                     onclick="return confirm('¿Estás seguro de eliminar este usuario?')"
                                                 >
                                                     <i class="ri ri-delete-bin-line"></i>
-                                                    Eliminar registro
+                                                    Eliminar
                                                 </button>
+                                                @endcan
                                         </div>
                                     </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ count($headers) }}" class="text-center">No se encontraron usuarios</td>
+                            <td colspan="9" class="text-center">No se encontraron usuarios que coincidan con los filtros</td>
                         </tr>
                     @endforelse
                 </tbody>

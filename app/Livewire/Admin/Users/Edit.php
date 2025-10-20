@@ -6,7 +6,9 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use Spatie\Permission\Models\Role;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Hash;
 
 class Edit extends Component
 {
@@ -18,6 +20,7 @@ class Edit extends Component
     public $empresa_id;
     public $sucursal_id;
     public $status;
+    public $role;
     public $sucursales = [];
 
     public function mount(User $user)
@@ -28,6 +31,7 @@ class Edit extends Component
         $this->empresa_id = $user->empresa_id;
         $this->sucursal_id = $user->sucursal_id;
         $this->status = $user->status;
+        $this->role = $user->getRoleNames()->first(); // Obtener el primer rol del usuario
         $this->sucursales = Sucursal::where('empresa_id', $user->empresa_id)
             ->where('status', true)
             ->get();
@@ -41,15 +45,25 @@ class Edit extends Component
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'empresa_id' => ['required', 'exists:empresas,id'],
             'sucursal_id' => ['required', 'exists:sucursals,id'],
-            'status' => ['boolean']
+            'status' => ['boolean'],
+            'role' => ['required', 'exists:roles,name']
         ];
     }
 
     public function updatedEmpresaId($value)
     {
-        $this->sucursales = Sucursal::where('empresa_id', $value)
-            ->where('status', true)
-            ->get();
+        $this->loadSucursales();
+    }
+
+    public function loadSucursales()
+    {
+        if ($this->empresa_id) {
+            $this->sucursales = Sucursal::where('empresa_id', $this->empresa_id)
+                ->where('status', true)
+                ->get();
+        } else {
+            $this->sucursales = [];
+        }
         $this->sucursal_id = null;
     }
 
@@ -77,6 +91,9 @@ class Edit extends Component
         $user->sucursal_id = $this->sucursal_id;
         $user->status = $this->status;
         $user->save();
+        
+        // Sincronizar rol del usuario
+        $user->syncRoles([$this->role]);
 
         session()->flash('message', 'Usuario actualizado correctamente.');
 
@@ -86,9 +103,11 @@ class Edit extends Component
     public function render()
     {
         $empresas = Empresa::where('status', true)->get();
+        $roles = Role::all();
 
         return view('livewire.admin.users.edit', [
-            'empresas' => $empresas
+            'empresas' => $empresas,
+            'roles' => $roles
         ])->layout('components.layouts.admin', [
             'title' => 'Editar Usuario'
         ]);

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Empresas;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Empresa;
+use Illuminate\Support\Facades\Auth;
 
 class Index extends Component
 {
@@ -23,6 +24,14 @@ class Index extends Component
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
     ];
+
+    public function mount()
+    {
+        // Verificar permiso para ver empresas
+        if (!Auth::user()->can('view empresas')) {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+    }
 
     public function updatingSearch()
     {
@@ -43,71 +52,62 @@ class Index extends Component
         }
 
         $this->sortBy = $field;
-        $this->resetPage();
-    }
-
-    public function clearFilters()
-    {
-        $this->search = '';
-        $this->status = '';
-        $this->sortBy = 'created_at';
-        $this->sortDirection = 'desc';
-        $this->perPage = 10;
-        $this->resetPage();
-    }
-
-    public function delete(Empresa $empresa)
-    {
-        $empresa->delete();
-        session()->flash('message', 'Empresa eliminada correctamente.');
-    }
-
-    public function toggleStatus(Empresa $empresa)
-    {
-        $empresa->update([
-            'status' => !$empresa->status
-        ]);
-        
-        session()->flash('message', 'Estado de la empresa actualizado correctamente.');
     }
 
     public function render()
     {
-        $query = Empresa::query();
+        $empresas = Empresa::query()
+            ->when($this->search, function ($query) {
+                $query->where('razon_social', 'like', '%' . $this->search . '%')
+                    ->orWhere('documento', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->status, function ($query) {
+                $query->where('status', $this->status);
+            })
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate($this->perPage);
 
-        // Aplicar búsqueda
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('razon_social', 'like', '%' . $this->search . '%')
-                  ->orWhere('documento', 'like', '%' . $this->search . '%')
-                  ->orWhere('representante_legal', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        // Aplicar filtro de estado
-        if ($this->status !== '') {
-            $query->where('status', $this->status === 'active' ? 1 : 0);
-        }
-
-        // Aplicar ordenamiento
-        $query->orderBy($this->sortBy, $this->sortDirection);
-
-        // Obtener resultados con paginación
-        $empresas = $query->paginate($this->perPage);
-
-        // Estadísticas
+        // Calcular estadísticas
         $totalEmpresas = Empresa::count();
-        $empresasActivas = Empresa::where('status', true)->count();
-        $empresasInactivas = Empresa::where('status', false)->count();
+        $empresasActivas = Empresa::where('status', 'active')->count();
+        $empresasInactivas = Empresa::where('status', 'inactive')->count();
 
-        return view('livewire.admin.empresas.index', [
-            'empresas' => $empresas,
-            'totalEmpresas' => $totalEmpresas,
-            'empresasActivas' => $empresasActivas,
-            'empresasInactivas' => $empresasInactivas,
-        ])
+        return view('livewire.admin.empresas.index', compact('empresas', 'totalEmpresas', 'empresasActivas', 'empresasInactivas'))
             ->layout('components.layouts.admin', [
                 'title' => 'Lista de Empresas'
             ]);
+    }
+
+    public function toggleStatus(Empresa $empresa)
+    {
+        // Verificar permiso para editar empresas
+        if (!Auth::user()->can('edit empresas')) {
+            session()->flash('error', 'No tienes permiso para editar empresas.');
+            return;
+        }
+
+        $empresa->status = $empresa->status === 'active' ? 'inactive' : 'active';
+        $empresa->save();
+
+        session()->flash('message', 'Estado de empresa actualizado correctamente.');
+    }
+
+    public function delete(Empresa $empresa)
+    {
+        // Verificar permiso para eliminar empresas
+        if (!Auth::user()->can('delete empresas')) {
+            session()->flash('error', 'No tienes permiso para eliminar empresas.');
+            return;
+        }
+
+        // Verificar si la empresa tiene sucursales
+        if ($empresa->sucursales()->count() > 0) {
+            session()->flash('error', 'No se puede eliminar la empresa porque tiene sucursales asociadas.');
+            return;
+        }
+
+        $empresa->delete();
+        session()->flash('message', 'Empresa eliminada correctamente.');
+        $this->resetPage();
     }
 }

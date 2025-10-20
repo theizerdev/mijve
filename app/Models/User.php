@@ -9,11 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +28,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'verification_code_sent_at',
         'empresa_id',
         'sucursal_id',
+        'avatar',
+        'two_factor_enabled',
+        'preferred_devices',
+        'common_locations',
+        'total_session_time',
+        'security_alerts',
     ];
 
     /**
@@ -126,5 +132,35 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);
+    }
+
+    /**
+     * Get the user's common locations from active sessions
+     */
+    public function getCommonLocationsAttribute()
+    {
+        return $this->activeSessions()
+            ->select('location')
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->groupBy('location')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(5)
+            ->get()
+            ->map(function ($session) {
+                // Dividir la cadena de ubicación en partes
+                $parts = explode(', ', $session->location);
+                
+                // Asegurarse de que tenemos al menos 3 partes (ciudad, estado, país)
+                $city = count($parts) >= 1 ? $parts[0] : 'Desconocido';
+                $state = count($parts) >= 2 ? $parts[1] : 'Desconocido';
+                $country = count($parts) >= 3 ? $parts[2] : 'Desconocido';
+                
+                return [
+                    'city' => $city,
+                    'state' => $state,
+                    'country' => $country
+                ];
+            });
     }
 }

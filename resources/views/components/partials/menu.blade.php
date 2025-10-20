@@ -67,45 +67,124 @@
   <div class="menu-inner-shadow"></div>
 
   <ul class="menu-inner py-1">
+    <!-- Dashboard -->
+    <li class="menu-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
+      <a href="{{ route('admin.dashboard') }}" class="menu-link">
+        <i class="menu-icon tf-icons ri ri-home-2-line"></i>
+        <div data-i18n="Dashboard">Dashboard</div>
+      </a>
+    </li>
+
+    @can('view empresas') 
+    @can('view sucursales')
     <li class="menu-item
           {{ request()->is('admin/sucursales*') ? 'active open' : '' }}
           {{ request()->is('admin/empresas*') ? 'active open' : '' }}">
-          <a href="javascript:void(0);" class="menu-link menu-toggle">
-             <i class="menu-icon icon-base ri ri-home-smile-line"></i>
-            <div data-i18n="Administración">Administración</div>
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-building-line"></i>
+        <div data-i18n="Organización">Organización</div>
+      </a>
+      <ul class="menu-sub">
+        @can('view empresas')
+        <li class="menu-item {{ request()->is('admin/empresas*') ? 'active' : '' }}">
+          <a href="{{ route('admin.empresas.index') }}" class="menu-link">
+            <div data-i18n="Empresas">Empresas</div>
           </a>
-          <ul class="menu-sub">
-            <li class="menu-item {{ request()->is('admin/empresas*') ? 'active' : '' }}">
-                <a href="{{ route('admin.empresas.index') }}" class="menu-link">
-                  <div data-i18n="Empresas">Empresas</div>
-                </a>
-              </li>
-            <li class="menu-item {{ request()->is('admin/sucursales*') ? 'active' : '' }}">
-                <a href="{{ route('admin.sucursales.index') }}" class="menu-link">
-                  <div data-i18n="Sucursales">Sucursales</div>
-                </a>
-              </li>
-            </ul>
-          </li>
-
-    <li class="menu-item
-
-          {{ request()->is('admin/active-sessions*') ? 'active open' : '' }}">
-          <a href="javascript:void(0);" class="menu-link menu-toggle">
-             <i class="menu-icon icon-base ri ri-home-smile-line"></i>
-            <div data-i18n="Auditoría">Auditoría</div>
+        </li>
+        @endcan
+        
+        @can('view sucursales')
+        <li class="menu-item {{ request()->is('admin/sucursales*') ? 'active' : '' }}">
+          <a href="{{ route('admin.sucursales.index') }}" class="menu-link">
+            <div data-i18n="Sucursales">Sucursales</div>
           </a>
-          <ul class="menu-sub">
-            <li class="menu-item {{ request()->is('admin/active-sessions*') ? 'active' : '' }}">
-                <a href="{{ route('admin.active-sessions.index') }}" class="menu-link">
-                  <div data-i18n="Sesiones Activas">Sesiones Activas</div>
-                </a>
-              </li>
-
-            </ul>
-          </li>
+        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
+    @endcan
 
+    @can('view users')
+    <li class="menu-item {{ request()->is('admin/users*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-group-line"></i>
+        <div data-i18n="Usuarios">Usuarios</div>
+      </a>
+      <ul class="menu-sub">
+        @can('view users')
+        <li class="menu-item {{ request()->is('admin/users') || request()->is('admin/users/index') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.index') }}" class="menu-link">
+            <div data-i18n="Lista de Usuarios">Lista de Usuarios</div>
+          </a>
+        </li>
+        @endcan
+
+        @can('create users')
+        <li class="menu-item {{ request()->is('admin/users/create') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.create') }}" class="menu-link">
+            <div data-i18n="Crear Usuario">Crear Usuario</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('view roles')
+    <li class="menu-item {{ request()->is('admin/roles*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-shield-keyhole-line"></i>
+        <div data-i18n="Roles">Roles y Permisos</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->is('admin/roles') ? 'active' : '' }}">
+          <a href="{{ route('admin.roles.index') }}" class="menu-link">
+            <div data-i18n="Lista de Roles">Lista de Roles</div>
+          </a>
+        </li>
+        @can('create roles')
+        <li class="menu-item {{ request()->is('admin/roles/create') ? 'active' : '' }}">
+          <a href="{{ route('admin.roles.create') }}" class="menu-link">
+            <div data-i18n="Crear Rol">Crear Rol</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('view active sessions')
+    <li class="menu-item {{ request()->is('admin/active-sessions*') ? 'active' : '' }}">
+      <a href="{{ route('admin.active-sessions.index') }}" class="menu-link">
+        <i class="menu-icon tf-icons ri ri-shield-user-line"></i>
+        <div data-i18n="Sesiones Activas">Sesiones Activas</div>
+      </a>
+    </li>
+    @endcan
+
+    <li class="menu-item {{ request()->is('admin/profile*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-user-line"></i>
+        <div data-i18n="Perfil">Mi Perfil</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->is('admin/profile') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.profile') }}" class="menu-link">
+            <div data-i18n="Perfil">Perfil</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->is('admin/profile/*/password') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.password', ['user_id' => auth()->id()]) }}" class="menu-link">
+            <div data-i18n="Cambiar Contraseña">Cambiar Contraseña</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->is('admin/profile/*/history') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.history', ['user_id' => auth()->id()]) }}" class="menu-link">
+            <div data-i18n="Historial">Historial de Actividad</div>
+          </a>
+        </li>
+      </ul>
+    </li>
   </ul>
 </aside>
