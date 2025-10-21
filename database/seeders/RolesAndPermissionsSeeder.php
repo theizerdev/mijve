@@ -51,6 +51,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'view permissions',
             'edit permissions',
 
+            // Permisos para permisos
+            'view school periods',
+            'create school periods',
+            'edit school periods',
+            'show school periods',
+            'delete school periods',
+
             // Permisos para perfil
             'view own profile',
             'edit own profile',
@@ -97,6 +104,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'view own profile',
             'edit own profile',
             'change own password',
+            'view school periods',
+            'create school periods',
+            'edit school periods',
+            'delete school periods',
         ];
         $adminRole->syncPermissions($adminPermissions);
 
@@ -110,6 +121,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view own profile',
             'edit own profile',
             'change own password',
+            'view school periods',
         ];
         $empresaAdminRole->syncPermissions($empresaAdminPermissions);
 
@@ -118,6 +130,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view own profile',
             'edit own profile',
             'change own password',
+            'view school periods',
         ];
         $userRole->syncPermissions($userPermissions);
     }

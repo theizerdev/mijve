@@ -1,14 +1,14 @@
 <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0">Editar Año Escolar</h2>
-        <a href="{{ route('admin.school-years.index') }}" class="btn btn-secondary">
+        <h2 class="h3 mb-0">Crear Período Escolar</h2>
+        <a href="{{ route('admin.school-periods.index') }}" class="btn btn-secondary">
              <i class="ri ri-arrow-left-line me-1"></i> Volver
         </a>
     </div>
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Editar Año Escolar</h5>
+            <h5 class="mb-0">Nuevo Período Escolar</h5>
         </div>
 
         <div class="card-body">
@@ -19,7 +19,7 @@
                 </div>
             @endif
 
-            <form wire:submit.prevent="update">
+            <form wire:submit.prevent="store">
                 <div class="row">
                     <div class="col-md-12 mb-3">
                         <label for="name" class="form-label">Nombre *</label>
@@ -52,19 +52,11 @@
                             @error('is_active') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-
-                    @if($schoolYear->is_current)
-                        <div class="col-md-12 mb-3">
-                            <div class="alert alert-info">
-                                 <i class="ri ri-information-line me-1"></i> Este es el año escolar actual. No se puede desactivar.
-                            </div>
-                        </div>
-                    @endif
                 </div>
 
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">
-                         <i class="ri ri-save-line me-1"></i> Actualizar
+                         <i class="ri ri-save-line me-1"></i> Guardar
                     </button>
                 </div>
             </form>

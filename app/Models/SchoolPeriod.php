@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SchoolYear extends Model
+class SchoolPeriod extends Model
 {
     use HasFactory;
 
@@ -36,7 +36,7 @@ class SchoolYear extends Model
     ];
 
     /**
-     * Scope a query to only include active school years.
+     * Scope a query to only include active school periods.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
@@ -47,7 +47,7 @@ class SchoolYear extends Model
     }
 
     /**
-     * Scope a query to only include current school year.
+     * Scope a query to only include current school period.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder

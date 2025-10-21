@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire\Admin\SchoolYears;
+namespace App\Livewire\Admin\SchoolPeriods;
 
-use App\Models\SchoolYear;
+use App\Models\SchoolPeriod;
 use Livewire\Component;
 
 class Edit extends Component
 {
-    public $schoolYear;
+    public $schoolPeriod;
     public $name;
     public $start_date;
     public $end_date;
@@ -15,7 +15,7 @@ class Edit extends Component
     public $description;
 
     protected $rules = [
-        'name' => 'required|string|max:255|unique:school_years,name',
+        'name' => 'required|string|max:255|unique:school_periods,name',
         'start_date' => 'required|date',
         'end_date' => 'required|date|after:start_date',
         'is_active' => 'boolean',
@@ -24,39 +24,37 @@ class Edit extends Component
 
     protected $messages = [
         'name.required' => 'El nombre es obligatorio.',
-        'name.unique' => 'Ya existe un año escolar con este nombre.',
+        'name.unique' => 'Ya existe un periodo escolar con este nombre.',
         'start_date.required' => 'La fecha de inicio es obligatoria.',
         'end_date.required' => 'La fecha de fin es obligatoria.',
         'end_date.after' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
     ];
 
-    public function mount(SchoolYear $schoolYear)
+    public function mount(SchoolPeriod $schoolPeriod)
     {
-        $this->schoolYear = $schoolYear;
-        $this->name = $schoolYear->name;
-        $this->start_date = $schoolYear->start_date->format('Y-m-d');
-        $this->end_date = $schoolYear->end_date->format('Y-m-d');
-        $this->is_active = $schoolYear->is_active;
-        $this->description = $schoolYear->description;
+        $this->schoolPeriod = $schoolPeriod;
+        $this->name = $schoolPeriod->name;
+        $this->start_date = $schoolPeriod->start_date->format('Y-m-d');
+        $this->end_date = $schoolPeriod->end_date->format('Y-m-d');
+        $this->is_active = $schoolPeriod->is_active;
+        $this->description = $schoolPeriod->description;
     }
 
     public function render()
     {
-        return view('livewire.admin.school-years.edit')
-         ->layout('components.layouts.admin', [
-                'title' => 'Editar año escolar'
-        ]);
+        return view('livewire.admin.school-periods.edit')
+            ->layout('components.layouts.admin');
     }
 
     public function update()
     {
         // Actualizar las reglas para ignorar el nombre único del propio modelo
-        $this->rules['name'] = 'required|string|max:255|unique:school_years,name,' . $this->schoolYear->id;
+        $this->rules['name'] = 'required|string|max:255|unique:school_periods,name,' . $this->schoolPeriod->id;
 
         $this->validate();
 
-        // Verificar si hay solapamiento de fechas con otros años escolares
-        $overlapping = SchoolYear::where('id', '!=', $this->schoolYear->id)
+        // Verificar si hay solapamiento de fechas con otros periodos escolares
+        $overlapping = SchoolPeriod::where('id', '!=', $this->schoolPeriod->id)
             ->where(function ($query) {
                 $query->whereBetween('start_date', [$this->start_date, $this->end_date])
                     ->orWhereBetween('end_date', [$this->start_date, $this->end_date])
@@ -67,12 +65,12 @@ class Edit extends Component
             })->exists();
 
         if ($overlapping) {
-            $this->addError('start_date', 'Ya existe un año escolar que se solapa con estas fechas.');
-            $this->addError('end_date', 'Ya existe un año escolar que se solapa con estas fechas.');
+            $this->addError('start_date', 'Ya existe un periodo escolar que se solapa con estas fechas.');
+            $this->addError('end_date', 'Ya existe un periodo escolar que se solapa con estas fechas.');
             return;
         }
 
-        $this->schoolYear->update([
+        $this->schoolPeriod->update([
             'name' => $this->name,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
@@ -80,7 +78,7 @@ class Edit extends Component
             'description' => $this->description,
         ]);
 
-        session()->flash('message', 'Año escolar actualizado exitosamente.');
-        return redirect()->route('admin.school-years.index');
+        session()->flash('message', 'Periodo escolar actualizado exitosamente.');
+        return redirect()->route('admin.school-periods.index');
     }
 }

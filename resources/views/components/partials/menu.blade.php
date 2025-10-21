@@ -111,9 +111,9 @@
     @endcan
 
     <!-- Configuración -->
-    <li class="menu-item {{ request()->is('admin/empresas*') || request()->is('admin/sucursales*') || request()->is('admin/school-years*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->is('admin/empresas*') || request()->is('admin/sucursales*') || request()->is('admin/school-periods*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-cog-line"></i>
+        <i class="menu-icon tf-icons ri ri-cogs-line"></i>
         <div data-i18n="Configuración">Configuración</div>
       </a>
       <ul class="menu-sub">
@@ -133,10 +133,10 @@
         </li>
         @endcan
 
-        @can('view school years')
-        <li class="menu-item {{ request()->is('admin/school-years*') ? 'active' : '' }}">
-          <a href="{{ route('admin.school-years.index') }}" class="menu-link">
-            <div data-i18n="Años Escolares">Años Escolares</div>
+        @can('view school periods')
+        <li class="menu-item {{ request()->is('admin/school-periods*') ? 'active' : '' }}">
+          <a href="{{ route('admin.school-periods.index') }}" class="menu-link">
+            <div data-i18n="Periodo escolar">Periodo escolar</div>
           </a>
         </li>
         @endcan

@@ -46,11 +46,11 @@ Route::prefix('admin')
             Route::get('/{role}/edit', \App\Livewire\Admin\Roles\Edit::class)->name('roles.edit');
         });
         // Rutas para roles
-        Route::prefix('school-years')->group(function () {
-            Route::get('/', \App\Livewire\Admin\SchoolYears\Index::class)->name('school-years.index');
-            Route::get('/create', \App\Livewire\Admin\SchoolYears\Create::class)->name('school-years.create');
-            Route::get('/{schoolYear}/edit', \App\Livewire\Admin\SchoolYears\Edit::class)->name('school-years.edit');
-            Route::get('/{schoolYear}', \App\Livewire\Admin\SchoolYears\Show::class)->name('school-years.show');
+        Route::prefix('school-periods')->group(function () {
+            Route::get('/', \App\Livewire\Admin\SchoolPeriods\Index::class)->name('school-periods.index');
+            Route::get('/create', \App\Livewire\Admin\SchoolPeriods\Create::class)->name('school-periods.create');
+            Route::get('/{schoolPeriod}/edit', \App\Livewire\Admin\SchoolPeriods\Edit::class)->name('school-periods.edit');
+            Route::get('/{schoolPeriod}', \App\Livewire\Admin\SchoolPeriods\Show::class)->name('school-periods.show');
         });
 
         // Perfil de usuario
