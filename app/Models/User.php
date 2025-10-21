@@ -28,12 +28,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'verification_code_sent_at',
         'empresa_id',
         'sucursal_id',
-        'avatar',
+        'status',
         'two_factor_enabled',
-        'preferred_devices',
-        'common_locations',
-        'total_session_time',
-        'security_alerts',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'avatar',
     ];
 
     /**
@@ -44,6 +43,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
         'verification_code',
     ];
 
@@ -57,26 +58,25 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_enabled' => 'boolean',
+            'two_factor_recovery_codes' => 'array',
             'verification_code_sent_at' => 'datetime',
         ];
     }
 
     /**
-     * Generar un código de verificación de 6 dígitos numéricos
+     * Generar un código de verificación de 8 caracteres (alfanumérico)
      */
     public function generateVerificationCode()
     {
-        // Generar código numérico de 6 dígitos
-        $code = '';
-        for ($i = 0; $i < 6; $i++) {
-            $code .= rand(0, 9);
-        }
-        
+        // Generar código alfanumérico de 8 caracteres
+        $code = strtoupper(Str::random(6));
+
         // Almacenar el código cifrado
         $this->verification_code = Hash::make($code);
         $this->verification_code_sent_at = Carbon::now();
         $this->save();
-        
+
         // Devolver el código sin cifrar para enviar por correo
         return $code;
     }
@@ -139,28 +139,18 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getCommonLocationsAttribute()
     {
-        return $this->activeSessions()
-            ->select('location')
-            ->whereNotNull('location')
-            ->where('location', '!=', '')
-            ->groupBy('location')
-            ->orderByRaw('COUNT(*) DESC')
-            ->limit(5)
-            ->get()
-            ->map(function ($session) {
-                // Dividir la cadena de ubicación en partes
-                $parts = explode(', ', $session->location);
-                
-                // Asegurarse de que tenemos al menos 3 partes (ciudad, estado, país)
-                $city = count($parts) >= 1 ? $parts[0] : 'Desconocido';
-                $state = count($parts) >= 2 ? $parts[1] : 'Desconocido';
-                $country = count($parts) >= 3 ? $parts[2] : 'Desconocido';
-                
-                return [
-                    'city' => $city,
-                    'state' => $state,
-                    'country' => $country
-                ];
-            });
+        // Verificar si existe el método sessions
+        if (method_exists($this, 'sessions')) {
+            // Obtener ubicaciones comunes de las sesiones activas
+            return $this->sessions()
+                ->whereNotNull('location')
+                ->select('location')
+                ->distinct()
+                ->limit(5)
+                ->get()
+                ->toArray();
+        }
+
+        return [];
     }
 }

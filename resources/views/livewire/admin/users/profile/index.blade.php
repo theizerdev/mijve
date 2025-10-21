@@ -20,7 +20,12 @@
                         <div class="d-flex align-items-md-end align-items-sm-start align-items-center flex-md-row flex-column flex-sm-row flex-column justify-content-between mx-4 mx-sm-0">
                             <div class="user-profile-info">
                                 <h4>{{ $user->name }}</h4>
-                                <small class="text-muted">{{ $user->email }}</small>
+                                <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-2">
+                                    <li class="list-inline-item">
+                                        <i class="ri ri-mail-line me-1"></i>
+                                        <span class="text-muted">{{ $user->email }}</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -76,7 +81,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Rol</label>
-                        <input type="text" class="form-control" value="{{ $user->role }}" readonly>
+                        <input type="text" class="form-control" value="{{ $user->getRoleNames()->first() ?? 'Sin rol asignado' }}" readonly>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -85,6 +90,22 @@
                         <input type="text" class="form-control" value="{{ $user->created_at->format('d/m/Y H:i') }}" readonly>
                     </div>
                 </div>
+                @if($user->empresa)
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" class="form-control" value="{{ $user->empresa->razon_social }}" readonly>
+                    </div>
+                </div>
+                @endif
+                @if($user->sucursal)
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Sucursal</label>
+                        <input type="text" class="form-control" value="{{ $user->sucursal->nombre }}" readonly>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

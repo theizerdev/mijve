@@ -68,14 +68,15 @@
 
   <ul class="menu-inner py-1">
     <!-- Dashboard -->
-    <li class="menu-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
-      <a href="{{ route('admin.dashboard') }}" class="menu-link">
+    <li class="menu-item {{ request()->is('superadmin/dashboard') ? 'active' : '' }}
+    {{ request()->is('admin/dashboard') ? 'active' : '' }}">
+      <a href="{{ url('/') }}" class="menu-link">
         <i class="menu-icon tf-icons ri ri-home-2-line"></i>
         <div data-i18n="Dashboard">Dashboard</div>
       </a>
     </li>
 
-    @can('view empresas') 
+    @can('view empresas')
     @can('view sucursales')
     <li class="menu-item
           {{ request()->is('admin/sucursales*') ? 'active open' : '' }}
@@ -92,7 +93,7 @@
           </a>
         </li>
         @endcan
-        
+
         @can('view sucursales')
         <li class="menu-item {{ request()->is('admin/sucursales*') ? 'active' : '' }}">
           <a href="{{ route('admin.sucursales.index') }}" class="menu-link">

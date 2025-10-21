@@ -8,16 +8,22 @@
                 </div>
                 <div class="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center mb-4">
                     <div class="flex-shrink-0 mt-n2 mx-sm-0 mx-auto">
-                        <img src="{{ asset('materialize/assets/img/avatars/1.png') }}" alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img">
+                        @if($user->avatar)
+                            <img src="{{ Storage::url($user->avatar) }}" alt="user image" class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img">
+                        @else
+                            <div class="d-block h-auto ms-0 ms-sm-4 rounded user-profile-img bg-light d-flex justify-content-center align-items-center">
+                                <i class="ri ri-user-line" style="font-size: 4rem;"></i>
+                            </div>
+                        @endif
                     </div>
                     <div class="flex-grow-1 mt-3 mt-sm-5">
                         <div class="d-flex align-items-md-end align-items-sm-start align-items-center flex-md-row flex-column flex-sm-row flex-column justify-content-between mx-4 mx-sm-0">
                             <div class="user-profile-info">
-                                <h4>{{ Auth::user()->name }}</h4>
+                                <h4>{{ $user->name }}</h4>
                                 <ul class="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-2">
                                     <li class="list-inline-item">
                                         <i class="ri ri-mail-line me-1"></i>
-                                        <span class="text-muted">{{ Auth::user()->email }}</span>
+                                        <span class="text-muted">{{ $user->email }}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -31,7 +37,7 @@
     <!-- Nav tabs -->
     <ul class="nav nav-pills flex-column flex-sm-row mb-4">
         <li class="nav-item">
-            <a class="nav-link " href="/admin/profile">
+            <a class="nav-link" href="{{ route('admin.users.profile', $user->id) }}">
                 <i class="ri ri-user-line me-1"></i> Resumen
             </a>
         </li>
@@ -65,7 +71,7 @@
                         <label class="form-label" for="current_password">Contraseña actual</label>
                         <input
                             type="password"
-                            class="form-control  @error('current_password') is-invalid @enderror"
+                            class="form-control @error('current_password') is-invalid @enderror"
                             id="current_password"
                             wire:model="current_password"
                             placeholder="Ingrese su contraseña actual"
@@ -77,7 +83,7 @@
                         <label class="form-label" for="password">Nueva contraseña</label>
                         <input
                             type="password"
-                            class="form-control  @error('password') is-invalid @enderror"
+                            class="form-control @error('password') is-invalid @enderror"
                             id="password"
                             wire:model="password"
                             placeholder="Ingrese nueva contraseña"
@@ -89,7 +95,7 @@
                         <label class="form-label" for="password_confirmation">Confirmar contraseña</label>
                         <input
                             type="password"
-                            class="form-control  @error('password_confirmation') is-invalid @enderror"
+                            class="form-control @error('password_confirmation') is-invalid @enderror"
                             id="password_confirmation"
                             wire:model="password_confirmation"
                             placeholder="Confirme la nueva contraseña"

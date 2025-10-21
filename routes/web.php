@@ -2,9 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Dashboard;
+use App\Livewire\Auth\TwoFactorLogin;
+use App\Livewire\SuperAdmin\Dashboard as SuperAdminDashboard;
 
 Route::get('/', function () {
-    return redirect()->route('admin.dashboard');
+   if (\Auth::check() && \Auth::user()->id == 1) {
+
+    return redirect()->to('superadmin/dashboard');
+   } else {
+    # code...
+    return redirect()->to('admin/dashboard');
+   }
+
 });
 
 // Rutas de autenticación con Livewire
@@ -33,4 +42,15 @@ Route::post('logout', function () {
     return redirect('/');
 })->name('logout');
 
-require __DIR__.'/admin.php';
+// Ruta para verificación 2FA
+Route::get('/two-factor-login', \App\Livewire\Auth\TwoFactorLogin::class)->name('two-factor.login');
+
+// Super Admin routes
+Route::group(['prefix' => 'superadmin', 'as' => 'superadmin.', 'middleware' => ['auth', 'verified']], function () {
+    Route::get('/dashboard', SuperAdminDashboard::class)->name('dashboard');
+});
+
+
+    require __DIR__.'/admin.php';
+
+

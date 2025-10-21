@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
           EmpresaSeeder::class,
           SucursalSeeder::class,
           UsersTableSeeder::class,
+          RolesAndPermissionsSeeder::class,
+          AssignRolesToUsersSeeder::class,
       ]);
     }
 }

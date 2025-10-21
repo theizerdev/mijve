@@ -6,105 +6,96 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use App\Models\ActiveSession;
 use PragmaRX\Google2FA\Google2FA;
+use App\Models\ActiveSession;
 
-class Login extends Component
+class TwoFactorLogin extends Component
 {
     public $email = '';
     public $password = '';
+    public $code = '';
     public $remember = false;
+    public $user = null;
 
     public $latitude;
     public $longitude;
 
-
     // Define un oyente para el evento 'set-coordinates'
     protected $listeners = ['setCoordinates' => 'setCoordinates'];
-
-    // Propiedades para manejar errores de validación
-    public $errors = [];
 
     public function rules()
     {
         return [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
+            'code' => 'required|string|size:6',
         ];
     }
 
-    public function updated($field)
+    public function mount()
     {
-        // Limpiar errores cuando el usuario empieza a escribir
-        if (isset($this->errors[$field])) {
-            unset($this->errors[$field]);
+        // Verificar que se haya pasado un usuario desde el login
+        if (!session()->has('2fa:user:id')) {
+            return redirect()->route('login');
         }
+
+        $this->email = session('2fa:user:email');
     }
 
-    public function authenticate()
+    public function verifyCode()
     {
-        $this->errors = []; // Limpiar errores anteriores
-
-        try {
-            $this->validate();
-        } catch (ValidationException $e) {
-            $this->errors = $e->validator->errors()->messages();
-            return;
-        }
+        $this->validate();
 
         $throttleKey = Str::transliterate(Str::lower($this->email).'|'.request()->ip());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            $this->errors['email'] = [trans('auth.throttle', [
+            session()->flash('error', trans('auth.throttle', [
                 'seconds' => RateLimiter::availableIn($throttleKey, 5),
-            ])];
+            ]));
             return;
         }
 
-        // Intentar autenticar al usuario
-        $credentials = ['email' => $this->email, 'password' => $this->password];
-        if (!Auth::attempt($credentials, $this->remember)) {
-            RateLimiter::hit($throttleKey);
+        // Obtener el usuario
+        $userId = session('2fa:user:id');
+        $this->user = \App\Models\User::find($userId);
 
-            $this->errors['email'] = [trans('auth.failed')];
+        if (!$this->user) {
+            session()->flash('error', trans('auth.failed'));
+            return redirect()->route('login');
+        }
+
+        // Verificar que el usuario tenga 2FA configurado
+        if (!$this->user->two_factor_secret) {
+            session()->flash('error', 'La autenticación en dos pasos no está configurada correctamente para este usuario.');
+            return redirect()->route('login');
+        }
+
+        try {
+            // Verificar el código 2FA
+            $google2fa = new Google2FA();
+            $valid = $google2fa->verifyKey(
+                decrypt($this->user->two_factor_secret),
+                $this->code
+            );
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al verificar el código. Por favor, inténtelo de nuevo.');
+            return;
+        }
+
+        if (!$valid) {
+            RateLimiter::hit($throttleKey);
+            session()->flash('error', 'Código de verificación inválido.');
             return;
         }
 
         RateLimiter::clear($throttleKey);
 
-        // Obtener el usuario autenticado
-        $user = Auth::user();
-
-        // Verificar si el usuario es el super administrador (id = 1)
-        if ($user->id === 1) {
-            // Registrar la sesión activa
-            $this->trackUserLogin();
-
-            // Regenerar sesión para prevenir session fixation
-            request()->session()->regenerate();
-
-            // Redirigir al dashboard de super administrador
-            return redirect()->route('superadmin.dashboard');
-        }
-
-        // Verificar si el usuario tiene 2FA habilitado
-        if ($user->two_factor_enabled) {
-            // Cerrar la sesión temporalmente
-            Auth::logout();
-
-            // Guardar información del usuario en la sesión para la verificación 2FA
-            session([
-                '2fa:user:id' => $user->id,
-                '2fa:user:email' => $user->email
-            ]);
-
-            // Redirigir a la página de verificación 2FA
-            return redirect()->route('two-factor.login');
-        }
+        // Iniciar sesión
+        Auth::login($this->user, $this->remember);
 
         // Registrar la sesión activa
         $this->trackUserLogin();
+
+        // Limpiar datos de sesión 2FA
+        session()->forget(['2fa:user:id', '2fa:user:email']);
 
         // Regenerar sesión para prevenir session fixation
         request()->session()->regenerate();
@@ -228,23 +219,9 @@ class Login extends Component
         return $locationData;
     }
 
-    // Método para verificar si un campo tiene error
-    public function hasError($field)
-    {
-        return isset($this->errors[$field]) && !empty($this->errors[$field]);
-    }
-
-    // Método para obtener los mensajes de error de un campo
-    public function getError($field)
-    {
-        return $this->hasError($field) ? $this->errors[$field][0] : '';
-    }
-
     public function render()
     {
-        return view('livewire.auth.login', [
-            'hasError' => $this->hasError(...),
-            'getError' => $this->getError(...),
-        ])->layout('components.layouts.auth-basic', ['title' => 'Login']);
+        return view('livewire.auth.two-factor-login')
+            ->layout('components.layouts.auth-basic', ['title' => 'Verificación 2FA']);
     }
 }
