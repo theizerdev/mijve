@@ -96,7 +96,7 @@
                                     <td>{{ $user->created_at->format('d/m/Y') }}</td>
                                 </tr>
                                 @endforeach
-                                
+
                                 @if($role->users->count() > 10)
                                 <tr>
                                     <td colspan="4" class="text-center">

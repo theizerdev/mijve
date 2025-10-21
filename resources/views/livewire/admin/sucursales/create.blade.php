@@ -60,7 +60,7 @@
 
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Dirección</label>
-                                <textarea class="form-control @error('direccion') is-invalid @enderror" 
+                                <textarea class="form-control @error('direccion') is-invalid @enderror"
                                           wire:model="direccion" rows="3" placeholder="Ingrese la dirección completa"></textarea>
                                 @error('direccion')
                                     <div class="invalid-feedback">{{ $message }}</div>

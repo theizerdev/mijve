@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('verification_code')->nullable()->after('email');
-            $table->timestamp('verification_code_sent_at')->nullable()->after('verification_code');
+
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['verification_code', 'verification_code_sent_at']);
+            $table->dropColumn(['verification_code']);
         });
     }
 };

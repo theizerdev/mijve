@@ -24,53 +24,54 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit users',
             'delete users',
             'view user profile',
-            
+
             // Permisos para empresas
             'view empresas',
             'create empresas',
             'edit empresas',
             'delete empresas',
-            
+
             // Permisos para sucursales
             'view sucursales',
             'create sucursales',
             'edit sucursales',
             'delete sucursales',
-            
+
             // Permisos para sesiones activas
             'view active sessions',
             'terminate active sessions',
-            
+
             // Permisos para roles
             'view roles',
             'create roles',
             'edit roles',
             'delete roles',
-            
+
             // Permisos para permisos
             'view permissions',
             'edit permissions',
-            
+
             // Permisos para perfil
             'view own profile',
             'edit own profile',
             'change own password',
+
         ];
-        
+
         // Crear permisos si no existen
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
-        
+
         // Crear roles si no existen
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $empresaAdminRole = Role::firstOrCreate(['name' => 'empresa-admin']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
-        
+
         // Asignar todos los permisos al super-admin
         $superAdminRole->syncPermissions($permissions);
-        
+
         // Asignar permisos al admin
         $adminPermissions = [
             'view users',
@@ -98,7 +99,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'change own password',
         ];
         $adminRole->syncPermissions($adminPermissions);
-        
+
         // Asignar permisos al empresa-admin
         $empresaAdminPermissions = [
             'view users',
@@ -111,7 +112,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'change own password',
         ];
         $empresaAdminRole->syncPermissions($empresaAdminPermissions);
-        
+
         // Asignar permisos al user
         $userPermissions = [
             'view own profile',

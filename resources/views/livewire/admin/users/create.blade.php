@@ -14,7 +14,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                    <input type="text" class="form-control @error('name') is-invalid @enderror"
                            wire:model="name" placeholder="Ingrese el nombre completo">
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -23,7 +23,7 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                    <input type="email" class="form-control @error('email') is-invalid @enderror"
                            wire:model="email" placeholder="Ingrese el correo electrónico">
                     @error('email')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -32,7 +32,7 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Contraseña <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                    <input type="password" class="form-control @error('password') is-invalid @enderror"
                            wire:model="password" placeholder="Ingrese la contraseña">
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -41,7 +41,7 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" 
+                    <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror"
                            wire:model="password_confirmation" placeholder="Confirme la contraseña">
                     @error('password_confirmation')
                         <div class="invalid-feedback">{{ $message }}</div>

@@ -62,7 +62,7 @@
                   <form method="POST" action="{{ route('admin.active-sessions.destroy', $session->id) }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" 
+                    <button type="submit" class="btn btn-sm btn-danger"
                             onclick="return confirm('¿Estás seguro de que deseas terminar esta sesión?')">
                       Terminar Sesión
                     </button>
