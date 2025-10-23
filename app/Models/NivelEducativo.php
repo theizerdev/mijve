@@ -14,7 +14,8 @@ class NivelEducativo extends Model
     protected $fillable = [
         'nombre',
         'costo',
-        'cuotas'
+        'numero_cuotas',
+        'cuota_inicial'
     ];
 
     protected $casts = [

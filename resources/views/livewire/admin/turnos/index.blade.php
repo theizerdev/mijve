@@ -121,11 +121,17 @@
                                 <th wire:click="sortBy('nombre')" style="cursor: pointer;">
                                     Nombre @if($sortField == 'nombre') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
+                                <th wire:click="sortBy('descripcion')" style="cursor: pointer;">
+                                    Descripción @if($sortField == 'descripcion') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
                                 <th wire:click="sortBy('hora_inicio')" style="cursor: pointer;">
                                     Hora Inicio @if($sortField == 'hora_inicio') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th wire:click="sortBy('hora_fin')" style="cursor: pointer;">
                                     Hora Fin @if($sortField == 'hora_fin') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
+                                <th wire:click="sortBy('status')" style="cursor: pointer;">
+                                    Estado @if($sortField == 'status') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th>Acciones</th>
                             </tr>
@@ -143,8 +149,16 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>{{ $turno->descripcion }}</td>
                                     <td>{{ $turno->hora_inicio->format('H:i') }}</td>
                                     <td>{{ $turno->hora_fin->format('H:i') }}</td>
+                                    <td>
+                                        @if($turno->status)
+                                            <span class="badge bg-success">Activo</span>
+                                        @else
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $turno->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -166,7 +180,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No se encontraron turnos</td>
+                                    <td colspan="6" class="text-center">No se encontraron turnos</td>
                                 </tr>
                             @endforelse
                         </tbody>

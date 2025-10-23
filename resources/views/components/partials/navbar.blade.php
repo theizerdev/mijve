@@ -270,7 +270,7 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar">
-                                <img src="../../assets/img/avatars/2.png" alt="avatar" class="rounded-circle" />
+                                <img src="/materialize/assets/img/avatars/2.png" alt="avatar" class="rounded-circle" />
                               </div>
                             </div>
                             <div class="flex-grow-1">
@@ -316,7 +316,7 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar">
-                                <img src="../../assets/img/avatars/9.png" alt="avatar" class="rounded-circle" />
+                                <img src="/materialize/assets/img/avatars/9.png" alt="avatar" class="rounded-circle" />
                               </div>
                             </div>
                             <div class="flex-grow-1">
@@ -364,7 +364,7 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar">
-                                <img src="../../assets/img/avatars/5.png" alt="avatar" class="rounded-circle" />
+                                <img src="/materialize/assets/img/avatars/5.png" alt="avatar" class="rounded-circle" />
                               </div>
                             </div>
                             <div class="flex-grow-1">
@@ -386,7 +386,7 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar">
-                                <img src="../../assets/img/avatars/6.png" alt="avatar" class="rounded-circle" />
+                                <img src="/materialize/assets/img/avatars/6.png" alt="avatar" class="rounded-circle" />
                               </div>
                             </div>
                             <div class="flex-grow-1">

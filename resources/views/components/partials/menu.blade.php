@@ -128,6 +128,32 @@
       </ul>
     </li>
 
+    @can('view students')
+    <li class="menu-item {{ request()->is('admin/students*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-group-line"></i>
+        <div data-i18n="Estudiantes">Estudiantes</div>
+      </a>
+      <ul class="menu-sub">
+        @can('view students')
+        <li class="menu-item {{ request()->is('admin/students') || request()->is('admin/students/index') ? 'active' : '' }}">
+          <a href="{{ route('admin.students.index') }}" class="menu-link">
+            <div data-i18n="Lista de Estudiantes">Lista de Estudiantes</div>
+          </a>
+        </li>
+        @endcan
+
+        @can('create students')
+        <li class="menu-item {{ request()->is('admin/students/create') ? 'active' : '' }}">
+          <a href="{{ route('admin.students.create') }}" class="menu-link">
+            <div data-i18n="Nuevo Estudiante">Nuevo Estudiante</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
     @can('view users')
     <li class="menu-item {{ request()->is('admin/users*') || request()->is('admin/roles*') || request()->is('admin/active-sessions*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">

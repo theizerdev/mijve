@@ -65,6 +65,28 @@
 
     <script src="/materialize/assets/js/config.js"></script>
 
+     <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+
+  <style>
+    .photo-preview-card {
+      transition: transform 0.2s;
+    }
+
+    .photo-preview-card:hover {
+      transform: scale(1.02);
+    }
+
+    .camera-feed {
+      background: #000;
+      border-radius: 0.5rem;
+    }
+
+    .capture-btn {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+
     @stack('styles')
   </head>
 
@@ -135,8 +157,9 @@
 
     <script src="/materialize/assets/js/main.js"></script>
 
-    <!-- Page JS -->
-    <script src="/materialize/assets/js/dashboards-analytics.js"></script>
+
+   <!-- Cropper.js JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
     @stack('scripts')
   </body>

@@ -56,7 +56,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ number_format(\App\Models\NivelEducativo::avg('cuotas') ?? 0, 1) }}</h4>
+                            <h4 class="mb-1">{{ number_format(\App\Models\NivelEducativo::avg('numero_cuotas') ?? 0, 1) }}</h4>
                             <p class="mb-0">Cuotas Promedio</p>
                         </div>
                         <div class="avatar">
@@ -94,7 +94,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Buscar</label>
-                            <input type="text" class="form-control" placeholder="Nombre..." 
+                            <input type="text" class="form-control" placeholder="Nombre..."
                                    wire:model.live.debounce.300ms="search">
                         </div>
 
@@ -123,11 +123,20 @@
                                 <th wire:click="sortBy('nombre')" style="cursor: pointer;">
                                     Nombre @if($sortField === 'nombre') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
+                                <th wire:click="sortBy('descripcion')" style="cursor: pointer;">
+                                    Descripción @if($sortField === 'descripcion') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
                                 <th wire:click="sortBy('costo')" style="cursor: pointer;">
                                     Costo @if($sortField === 'costo') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th wire:click="sortBy('cuotas')" style="cursor: pointer;">
                                     Cuotas @if($sortField === 'cuotas') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
+                                <th wire:click="sortBy('cuota_inicial')" style="cursor: pointer;">
+                                    Cuota Inicial @if($sortField === 'cuota_inicial') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
+                                <th wire:click="sortBy('status')" style="cursor: pointer;">
+                                    Estado @if($sortField === 'status') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th>Acciones</th>
                             </tr>
@@ -145,8 +154,17 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>{{ $nivel->descripcion }}</td>
                                     <td>${{ number_format($nivel->costo, 2) }}</td>
-                                    <td>{{ $nivel->cuotas }}</td>
+                                    <td>{{ $nivel->numero_cuotas }}</td>
+                                    <td>${{ number_format($nivel->cuota_inicial, 2) }}</td>
+                                    <td>
+                                        @if($nivel->status)
+                                            <span class="badge bg-success">Activo</span>
+                                        @else
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $nivel->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -174,7 +192,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No se encontraron niveles educativos</td>
+                                    <td colspan="7" class="text-center">No se encontraron niveles educativos</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -75,6 +75,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit own profile',
             'change own password',
 
+            // Permisos para estudiantes
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
+
         ];
 
         // Crear permisos si no existen
@@ -113,17 +119,28 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit roles',
             'delete roles',
             'view permissions',
-            'view own profile',
-            'edit own profile',
-            'change own password',
+            'edit permissions',
             'view school periods',
             'create school periods',
             'edit school periods',
+            'show school periods',
             'delete school periods',
+            'view turnos',
+            'create turnos',
+            'edit turnos',
+            'show turnos',
+            'delete turnos',
             'view niveles educativos',
             'create niveles educativos',
             'edit niveles educativos',
             'delete niveles educativos',
+            'view own profile',
+            'edit own profile',
+            'change own password',
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
         ];
         $adminRole->syncPermissions($adminPermissions);
 
@@ -138,6 +155,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit own profile',
             'change own password',
             'view school periods',
+            'view students',
+            'create students',
+            'edit students',
         ];
         $empresaAdminRole->syncPermissions($empresaAdminPermissions);
 
@@ -147,6 +167,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit own profile',
             'change own password',
             'view school periods',
+            'view students',
         ];
         $userRole->syncPermissions($userPermissions);
     }

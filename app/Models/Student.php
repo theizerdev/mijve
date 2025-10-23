@@ -1,0 +1,194 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
+
+class Student extends Model
+{
+    use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'nombres',
+        'apellidos',
+        'fecha_nacimiento',
+        'codigo',
+        'documento_identidad',
+        'grado',
+        'seccion',
+        'nivel_educativo_id',
+        'turno_id',
+        'school_periods_id',
+        'foto',
+        'correo_electronico',
+        'status',
+        // Campos para representante (solo para menores de edad)
+        'representante_nombres',
+        'representante_apellidos',
+        'representante_documento_identidad',
+        'representante_telefonos',
+        'representante_correo',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'fecha_nacimiento' => 'date',
+        'status' => 'boolean',
+        'representante_telefonos' => 'array',
+    ];
+
+    /**
+     * Get the educational level that owns the student.
+     */
+    public function nivelEducativo()
+    {
+        return $this->belongsTo(EducationalLevel::class, 'nivel_educativo_id');
+    }
+
+    /**
+     * Get the shift that owns the student.
+     */
+    public function turno()
+    {
+        return $this->belongsTo(Turno::class, 'turno_id');
+    }
+
+    /**
+     * Get the school period that owns the student.
+     */
+    public function schoolPeriod()
+    {
+        return $this->belongsTo(SchoolPeriod::class, 'school_periods_id');
+    }
+
+    /**
+     * Get the student's age in years.
+     */
+    public function getEdadAttribute()
+    {
+        return $this->fecha_nacimiento ? $this->fecha_nacimiento->age : null;
+    }
+
+    /**
+     * Get the student's age in years and months.
+     */
+    public function getEdadConMesesAttribute()
+    {
+        if (!$this->fecha_nacimiento) {
+            return 'Fecha no especificada';
+        }
+
+        $now = Carbon::now();
+        $birthday = $this->fecha_nacimiento;
+
+        // Asegurarse de que la fecha de nacimiento no sea futura
+        if ($birthday->isFuture()) {
+            return 'Fecha inválida';
+        }
+
+        // Calcular diferencia usando Carbon de forma precisa
+        $years = $now->diff($birthday)->y;
+        $months = $now->diff($birthday)->m;
+
+        if ($years < 10) {
+            if ($months == 0) {
+                return "$years año" . ($years != 1 ? 's' : '');
+            }
+            return "$years año" . ($years != 1 ? 's' : '') . " y $months mes" . ($months != 1 ? 'es' : '');
+        }
+
+        return "$years años";
+    }
+
+    /**
+     * Check if the student is a minor.
+     */
+    public function getEsMenorDeEdadAttribute()
+    {
+        return $this->fecha_nacimiento ? $this->fecha_nacimiento->age < 18 : false;
+    }
+
+    /**
+     * Generate QR code for the student
+     */
+    public function generateQrCode($size = 100)
+    {
+        try {
+            $renderer = new ImageRenderer(
+                new RendererStyle($size),
+                new SvgImageBackEnd()
+            );
+            $writer = new Writer($renderer);
+
+            // Generar código QR con la información del estudiante
+            $data = "Código: {$this->codigo}\n";
+            $data .= "Nombre: {$this->nombres} {$this->apellidos}\n";
+            $data .= "Documento: {$this->documento_identidad}\n";
+            $data .= "Grado: {$this->grado} - {$this->seccion}";
+
+            return 'data:image/svg+xml;base64,' . base64_encode($writer->writeString($data));
+        } catch (\Exception $e) {
+            // En caso de error, devolver un SVG simple con un cuadrado
+            return 'data:image/svg+xml;base64,' . base64_encode('<svg width="' . $size . '" height="' . $size . '" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="lightgray"/><text x="50%" y="50%" font-family="Arial" font-size="12" text-anchor="middle" fill="gray">QR no disponible</text></svg>');
+        }
+    }
+
+    /**
+     * Convert SVG QR code to PNG
+     */
+    public function generateQrCodePng($size = 100)
+    {
+        try {
+            // Usar directamente el backend PNG de BaconQrCode
+            $renderer = new ImageRenderer(
+                new RendererStyle($size),
+                new \BaconQrCode\Renderer\Image\SimpleImageBackEnd() // Usar SimpleImageBackEnd que no requiere Imagick
+            );
+            $writer = new Writer($renderer);
+
+            // Generar código QR con la información del estudiante
+            $data = "Código: {$this->codigo}\n";
+            $data .= "Nombre: {$this->nombres} {$this->apellidos}\n";
+            $data .= "Documento: {$this->documento_identidad}\n";
+            $data .= "Grado: {$this->grado} - {$this->seccion}";
+
+            // Devolver directamente la imagen PNG
+            return 'data:image/png;base64,' . base64_encode($writer->writeString($data));
+        } catch (\Exception $e) {
+            \Log::error('Error generando código QR PNG: ' . $e->getMessage());
+
+            // En caso de error, crear una imagen PNG simple con texto
+            $image = imagecreate($size, $size);
+            $bgColor = imagecolorallocate($image, 211, 211, 211); // Gris claro
+            $textColor = imagecolorallocate($image, 128, 128, 128); // Gris
+            imagefilledrectangle($image, 0, 0, $size, $size, $bgColor);
+            imagestring($image, 2, 10, $size/2 - 10, 'QR no disponible', $textColor);
+
+            // Crear un buffer para almacenar la imagen PNG
+            ob_start();
+            imagepng($image);
+            $pngContent = ob_get_contents();
+            ob_end_clean();
+
+            // Liberar la imagen
+            imagedestroy($image);
+
+            return 'data:image/png;base64,' . base64_encode($pngContent);
+        }
+    }
+}

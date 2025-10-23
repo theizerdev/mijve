@@ -12,15 +12,36 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción</label>
+                    <textarea wire:model="descripcion" class="form-control" id="descripcion"></textarea>
+                    @error('descripcion') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-3">
                     <label for="costo" class="form-label">Costo</label>
                     <input wire:model="costo" type="number" step="0.01" class="form-control" id="costo">
                     @error('costo') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="cuotas" class="form-label">Cuotas</label>
-                    <input wire:model="cuotas" type="number" class="form-control" id="cuotas">
-                    @error('cuotas') <span class="text-danger">{{ $message }}</span> @enderror
+                    <label for="numero_cuotas" class="form-label">Número de Cuotas</label>
+                    <input wire:model="numero_cuotas" type="number" class="form-control" id="numero_cuotas">
+                    @error('numero_cuotas') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="cuota_inicial" class="form-label">Cuota Inicial</label>
+                    <input wire:model="cuota_inicial" type="number" step="0.01" class="form-control" id="cuota_inicial">
+                    @error('cuota_inicial') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="status" class="form-label">Estado</label>
+                    <select wire:model="status" class="form-select" id="status">
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
+                    @error('status') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="d-flex justify-content-end">

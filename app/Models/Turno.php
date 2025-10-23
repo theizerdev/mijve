@@ -12,11 +12,16 @@ class Turno extends Model
     protected $fillable = [
         'nombre',
         'hora_inicio', 
-        'hora_fin'
+        'hora_fin',
+        'descripcion',
+        'status'
     ];
 
     protected $casts = [
         'hora_inicio' => 'datetime:H:i',
-        'hora_fin' => 'datetime:H:i'
+        'hora_fin' => 'datetime:H:i',
+        'status' => 'boolean'
     ];
+    
+    protected $table = 'turnos';
 }

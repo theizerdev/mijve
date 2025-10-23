@@ -21,6 +21,14 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea wire:model="descripcion" class="form-control @error('descripcion') is-invalid @enderror"></textarea>
+                        @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Hora de Inicio</label>
                         <input type="time" wire:model="hora_inicio" class="form-control @error('hora_inicio') is-invalid @enderror">
@@ -30,6 +38,17 @@
                         <label class="form-label">Hora de Fin</label>
                         <input type="time" wire:model="hora_fin" class="form-control @error('hora_fin') is-invalid @enderror">
                         @error('hora_fin') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Estado</label>
+                        <select wire:model="status" class="form-select @error('status') is-invalid @enderror">
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </select>
+                        @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
 

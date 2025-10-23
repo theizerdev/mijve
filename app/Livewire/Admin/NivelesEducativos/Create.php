@@ -8,19 +8,27 @@ use Illuminate\Support\Facades\Gate;
 
 class Create extends Component
 {
-    public $nombre;
-    public $costo;
-    public $cuotas;
+    public $nombre = '';
+    public $descripcion = '';
+    public $costo = 0;
+    public $numero_cuotas = 0;
+    public $cuota_inicial = 0;
+    public $status = true;
 
     protected $rules = [
-        'nombre' => 'required|string|max:255|unique:niveles_educativos',
+        'nombre' => 'required|string|max:255|unique:niveles_educativos,nombre',
+        'descripcion' => 'nullable|string',
         'costo' => 'required|numeric|min:0',
-        'cuotas' => 'required|integer|min:1'
+        'numero_cuotas' => 'required|integer|min:0',
+        'cuota_inicial' => 'required|numeric|min:0',
+        'status' => 'boolean',
     ];
 
     public function mount()
     {
-        Gate::authorize('create', NivelEducativo::class);
+        if (!auth()->user()->can('create', NivelEducativo::class)) {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
     }
 
     public function save()
@@ -29,11 +37,14 @@ class Create extends Component
 
         NivelEducativo::create([
             'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
             'costo' => $this->costo,
-            'cuotas' => $this->cuotas
+            'numero_cuotas' => $this->numero_cuotas,
+            'cuota_inicial' => $this->cuota_inicial,
+            'status' => $this->status
         ]);
 
-        session()->flash('success', 'Nivel educativo creado exitosamente');
+        session()->flash('message', 'Nivel educativo creado correctamente.');
         return redirect()->route('admin.niveles-educativos.index');
     }
 
