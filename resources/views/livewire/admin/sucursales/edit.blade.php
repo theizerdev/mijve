@@ -4,7 +4,7 @@
             <div class="card">
                 <div class="card-header border-bottom">
                     <h5 class="card-title mb-1">Editar Sucursal</h5>
-                    <p class="mb-0">Modifica la información de la sucursal</p>
+                    <p class="mb-0">Completa la información para registrar una nueva sucursal</p>
                 </div>
                 <div class="card-body">
                     @if (session()->has('message'))
@@ -66,15 +66,36 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                             <div class="col-md-6 mb-3">
+                                <label class="form-label">Latitud</label>
+                                <input type="text" class="form-control @error('latitud') is-invalid @enderror"
+                                       wire:model="latitud" placeholder="Ingrese la latitud">
+                                @error('latitud')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Longitud</label>
+                                <input type="text" class="form-control @error('longitud') is-invalid @enderror"
+                                       wire:model="longitud" placeholder="Ingrese la longitud">
+                                @error('longitud')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <div wire:ignore id="map" style="height: 400px;"></div>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{{ route('admin.sucursales.index') }}" class="btn btn-label-secondary">
                                 <i class="ri ri-arrow-left-line"></i> Volver
                             </a>
-                            @can('edit sucursales')
+                            @can('create sucursales')
                             <button type="submit" class="btn btn-primary">
-                                <i class="ri ri-save-line"></i> Actualizar Sucursal
+                                <i class="ri ri-save-line"></i> Guardar Sucursal
                             </button>
                             @endcan
                         </div>
@@ -92,19 +113,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener('livewire:init', function () {
-            // Coordenadas iniciales
-            var initialLat = {{ $latitud ?: 0 }};
-            var initialLng = {{ $longitud ?: 0 }};
-
             // Inicializar el mapa
-            var map = L.map('map').setView([initialLat, initialLng], initialLat === 0 && initialLng === 0 ? 2 : 15);
+            var map = L.map('map').setView([{{ $latitud }}, {{$longitud }}], 2);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
             // Marcador
-            var marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+            var marker = L.marker([0, 0], { draggable: true }).addTo(map);
 
             // Evento de clic en el mapa
             map.on('click', function(e) {

@@ -68,85 +68,55 @@
 
   <ul class="menu-inner py-1">
     <!-- Dashboard -->
-    <li class="menu-item {{ request()->is('superadmin/dashboard') ? 'active' : '' }}
-    {{ request()->is('admin/dashboard') ? 'active' : '' }}">
+    <li class="menu-item {{ request()->routeIs('admin/dashboard') ? 'active' : '' }}
+   || {{ request()->routeIs('superadmin/dashboard') ? 'active' : '' }}">
       <a href="{{ url('/') }}" class="menu-link">
-        <i class="menu-icon tf-icons ri ri-home-2-line"></i>
-        <div data-i18n="Dashboard">Dashboard</div>
+        <i class="menu-icon tf-icons ri ri-home-4-line"></i>
+        <div>Dashboard</div>
       </a>
     </li>
 
-    <!-- Configuración -->
-    <li class="menu-item {{ request()->is('admin/empresas*')
-    || request()->is('admin/sucursales*')
-    || request()->is('admin/school-periods*') ? 'active open' : '' }}
-    || {{ request()->is('admin/turnos*') ? 'active open' : '' }}
-    || {{ request()->is('admin/niveles-educativos*') ? 'active open' : '' }} ">
+    @can('access empresas')
+    <!-- Empresas -->
+    <li class="menu-item {{ request()->routeIs('admin.empresas.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-cogs-line"></i>
-        <div data-i18n="Configuración">Configuración</div>
+        <i class="menu-icon tf-icons ri ri-building-4-line"></i>
+        <div>Empresas</div>
       </a>
       <ul class="menu-sub">
-        @can('view empresas')
-        <li class="menu-item {{ request()->is('admin/empresas*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('admin.empresas.index') ? 'active' : '' }}">
           <a href="{{ route('admin.empresas.index') }}" class="menu-link">
-            <div data-i18n="Empresas">Empresas</div>
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create empresas')
+        <li class="menu-item {{ request()->routeIs('admin.empresas.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.empresas.create') }}" class="menu-link">
+            <div>Crear</div>
           </a>
         </li>
         @endcan
+      </ul>
+    </li>
+    @endcan
 
-        @can('view sucursales')
-        <li class="menu-item {{ request()->is('admin/sucursales*') ? 'active' : '' }}">
+    @can('access sucursales')
+    <!-- Sucursales -->
+    <li class="menu-item {{ request()->routeIs('admin.sucursales.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-community-line"></i>
+        <div>Sucursales</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.sucursales.index') ? 'active' : '' }}">
           <a href="{{ route('admin.sucursales.index') }}" class="menu-link">
-            <div data-i18n="Sucursales">Sucursales</div>
+            <div>Listado</div>
           </a>
         </li>
-        @endcan
-
-        @can('view school periods')
-        <li class="menu-item {{ request()->is('admin/school-periods*') ? 'active' : '' }}">
-          <a href="{{ route('admin.school-periods.index') }}" class="menu-link">
-            <div data-i18n="Periodo escolar">Periodo escolar</div>
-          </a>
-        </li>
-        @endcan
-
-        @can('view turnos')
-        <li class="menu-item {{ request()->is('admin/turnos*') ? 'active' : '' }}">
-          <a href="{{ route('admin.turnos.index') }}" class="menu-link">
-            <div data-i18n="Turnos">Turnos</div>
-          </a>
-        </li>
-        @endcan
-        @can('view niveles educativos')
-        <li class="menu-item {{ request()->is('admin/niveles-educativos*') ? 'active' : '' }}">
-          <a href="{{ route('admin.niveles-educativos.index') }}" class="menu-link">
-            <div data-i18n="Niveles Educativos">Niveles Educativos</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-
-    @can('view students')
-    <li class="menu-item {{ request()->is('admin/students*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-group-line"></i>
-        <div data-i18n="Estudiantes">Estudiantes</div>
-      </a>
-      <ul class="menu-sub">
-        @can('view students')
-        <li class="menu-item {{ request()->is('admin/students') || request()->is('admin/students/index') ? 'active' : '' }}">
-          <a href="{{ route('admin.students.index') }}" class="menu-link">
-            <div data-i18n="Lista de Estudiantes">Lista de Estudiantes</div>
-          </a>
-        </li>
-        @endcan
-
-        @can('create students')
-        <li class="menu-item {{ request()->is('admin/students/create') ? 'active' : '' }}">
-          <a href="{{ route('admin.students.create') }}" class="menu-link">
-            <div data-i18n="Nuevo Estudiante">Nuevo Estudiante</div>
+        @can('create sucursales')
+        <li class="menu-item {{ request()->routeIs('admin.sucursales.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.sucursales.create') }}" class="menu-link">
+            <div>Crear</div>
           </a>
         </li>
         @endcan
@@ -154,33 +124,23 @@
     </li>
     @endcan
 
-    @can('view users')
-    <li class="menu-item {{ request()->is('admin/users*') || request()->is('admin/roles*') || request()->is('admin/active-sessions*') ? 'active open' : '' }}">
+    @can('access users')
+    <!-- Usuarios -->
+    <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons ri ri-group-line"></i>
-        <div data-i18n="Gestión de Usuarios">Gestión de Usuarios</div>
+        <div>Usuarios</div>
       </a>
       <ul class="menu-sub">
-        @can('view users')
-        <li class="menu-item {{ request()->is('admin/users*') ? 'active' : '' }}">
+        <li class="menu-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
           <a href="{{ route('admin.users.index') }}" class="menu-link">
-            <div data-i18n="Usuarios">Usuarios</div>
+            <div>Listado</div>
           </a>
         </li>
-        @endcan
-
-        @can('view roles')
-        <li class="menu-item {{ request()->is('admin/roles*') ? 'active' : '' }}">
-          <a href="{{ route('admin.roles.index') }}" class="menu-link">
-            <div data-i18n="Roles y Permisos">Roles y Permisos</div>
-          </a>
-        </li>
-        @endcan
-
-        @can('view active sessions')
-        <li class="menu-item {{ request()->is('admin/active-sessions*') ? 'active' : '' }}">
-          <a href="{{ route('admin.active-sessions.index') }}" class="menu-link">
-            <div data-i18n="Sesiones Activas">Sesiones Activas</div>
+        @can('create users')
+        <li class="menu-item {{ request()->routeIs('admin.users.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.users.create') }}" class="menu-link">
+            <div>Crear</div>
           </a>
         </li>
         @endcan
@@ -188,28 +148,183 @@
     </li>
     @endcan
 
-    <li class="menu-item {{ request()->is('admin/profile*') ? 'active open' : '' }}">
+    @can('access roles')
+    <!-- Roles -->
+    <li class="menu-item {{ request()->routeIs('admin.roles.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-user-line"></i>
-        <div data-i18n="Perfil">Mi Perfil</div>
+        <i class="menu-icon tf-icons ri ri-shield-user-line"></i>
+        <div>Roles</div>
       </a>
       <ul class="menu-sub">
-        <li class="menu-item {{ request()->is('admin/profile') ? 'active' : '' }}">
-          <a href="{{ route('admin.users.profile') }}" class="menu-link">
-            <div data-i18n="Perfil">Perfil</div>
+        <li class="menu-item {{ request()->routeIs('admin.roles.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.roles.index') }}" class="menu-link">
+            <div>Listado</div>
           </a>
         </li>
-        <li class="menu-item {{ request()->is('admin/profile/*/password') ? 'active' : '' }}">
-          <a href="{{ route('admin.users.password', ['user_id' => auth()->id()]) }}" class="menu-link">
-            <div data-i18n="Cambiar Contraseña">Cambiar Contraseña</div>
+        @can('create roles')
+        <li class="menu-item {{ request()->routeIs('admin.roles.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.roles.create') }}" class="menu-link">
+            <div>Crear</div>
           </a>
         </li>
-        <li class="menu-item {{ request()->is('admin/profile/*/history') ? 'active' : '' }}">
-          <a href="{{ route('admin.users.history', ['user_id' => auth()->id()]) }}" class="menu-link">
-            <div data-i18n="Historial">Historial de Actividad</div>
-          </a>
-        </li>
+        @endcan
       </ul>
     </li>
+    @endcan
+
+    @can('access permissions')
+    <!-- Permisos -->
+    <li class="menu-item {{ request()->routeIs('admin.permissions.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-key-2-line"></i>
+        <div>Permisos</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.permissions.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.permissions.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create permissions')
+        <li class="menu-item {{ request()->routeIs('admin.permissions.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.permissions.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('access school years')
+    <!-- Años escolares -->
+    <li class="menu-item {{ request()->routeIs('admin.school-years.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-calendar-line"></i>
+        <div>Años escolares</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.school-years.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.school-years.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create school years')
+        <li class="menu-item {{ request()->routeIs('admin.school-years.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.school-years.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('access school periods')
+    <!-- Periodos escolares -->
+    <li class="menu-item {{ request()->routeIs('admin.school-periods.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-calendar-check-line"></i>
+        <div>Periodos escolares</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.school-periods.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.school-periods.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create school periods')
+        <li class="menu-item {{ request()->routeIs('admin.school-periods.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.school-periods.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('access niveles educativos')
+    <!-- Niveles Educativos -->
+    <li class="menu-item {{ request()->routeIs('admin.niveles-educativos.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-book-open-line"></i>
+        <div>Niveles Educativos</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.niveles-educativos.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.niveles-educativos.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create niveles educativos')
+        <li class="menu-item {{ request()->routeIs('admin.niveles-educativos.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.niveles-educativos.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('access turnos')
+    <!-- Turnos -->
+    <li class="menu-item {{ request()->routeIs('admin.turnos.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-time-line"></i>
+        <div>Turnos</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.turnos.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.turnos.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create turnos')
+        <li class="menu-item {{ request()->routeIs('admin.turnos.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.turnos.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
+
+    @can('access students')
+    <!-- Estudiantes -->
+    <li class="menu-item {{ request()->routeIs('admin.students.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-user-3-line"></i>
+        <div>Estudiantes</div>
+      </a>
+      <ul class="menu-sub">
+        <li class="menu-item {{ request()->routeIs('admin.students.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.students.index') }}" class="menu-link">
+            <div>Listado</div>
+          </a>
+        </li>
+        @can('create students')
+        <li class="menu-item {{ request()->routeIs('admin.students.create') ? 'active' : '' }}">
+          <a href="{{ route('admin.students.create') }}" class="menu-link">
+            <div>Crear</div>
+          </a>
+        </li>
+        @endcan
+
+      </ul>
+    </li>
+    @endcan
+
+    @can('view active sessions')
+    <!-- Sesiones activas -->
+    <li class="menu-item {{ request()->routeIs('admin.active-sessions*') ? 'active' : '' }}">
+      <a href="{{ route('admin.active-sessions.index') }}" class="menu-link">
+        <i class="menu-icon tf-icons ri ri-shut-down-line"></i>
+        <div>Sesiones activas</div>
+      </a>
+    </li>
+    @endcan
   </ul>
 </aside>

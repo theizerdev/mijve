@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'track-active-session' => \App\Http\Middleware\TrackActiveSession::class,
-            'superadmin' => App\Http\Middleware\RedirectIfSuperAdmin::class
+            'superadmin' => App\Http\Middleware\RedirectIfSuperAdmin::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

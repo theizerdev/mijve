@@ -14,15 +14,15 @@ class AssignRolesToUsersSeeder extends Seeder
     public function run(): void
     {
         // Obtener todos los roles
-        $superAdminRole = Role::where('name', 'super-admin')->first();
-        $adminRole = Role::where('name', 'admin')->first();
-        $empresaAdminRole = Role::where('name', 'empresa-admin')->first();
-        $userRole = Role::where('name', 'user')->first();
+        $superadminRole = Role::where('name', 'Super Administrador')->first();
 
-        // Asignar rol de super-admin al primer usuario creado (asumimos que es el administrador principal)
+        $adminRole = Role::where('name', 'Administrador')->first();
+        $receptionistRole = Role::where('name', 'Recepcionista')->first();
+
+        // Asignar rol de administrador al primer usuario creado (asumimos que es el administrador principal)
         $firstUser = User::orderBy('id')->first();
         if ($firstUser) {
-            $firstUser->assignRole($superAdminRole);
+            $firstUser->assignRole($superadminRole);
         }
 
         // Asignar roles a otros usuarios de ejemplo
@@ -30,7 +30,7 @@ class AssignRolesToUsersSeeder extends Seeder
         foreach ($users as $user) {
             // Si el usuario no tiene rol asignado, asignarle el rol de usuario regular
             if ($user->roles->count() == 0) {
-                $user->assignRole($userRole);
+                $user->assignRole($receptionistRole);
             }
         }
     }

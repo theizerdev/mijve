@@ -50,7 +50,7 @@ Route::group(['prefix' => 'superadmin', 'as' => 'superadmin.', 'middleware' => [
     Route::get('/dashboard', SuperAdminDashboard::class)->name('dashboard');
 });
 
-
+// Admin routes
+Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     require __DIR__.'/admin.php';
-
-
+});

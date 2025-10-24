@@ -92,7 +92,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Buscar</label>
-                            <input type="text" class="form-control" placeholder="Nombre, hora inicio, hora fin..." 
+                            <input type="text" class="form-control" placeholder="Nombre, hora inicio, hora fin..."
                                    wire:model.live.debounce.300ms="search">
                         </div>
 
@@ -165,9 +165,7 @@
                                                 <i class="ri ri-more-2-fill ri-24px"></i>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $turno->id }}">
-                                                <a class="dropdown-item" href="{{ route('admin.turnos.show', $turno) }}">
-                                                    <i class="ri ri-eye-line me-1"></i> Ver
-                                                </a>
+
                                                 <a class="dropdown-item" href="{{ route('admin.turnos.edit', $turno) }}">
                                                     <i class="ri ri-pencil-line me-1"></i> Editar
                                                 </a>

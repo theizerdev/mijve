@@ -1,86 +1,107 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Livewire\Dashboard;
+use App\Livewire\Admin\Empresas\Index as EmpresasIndex;
+use App\Livewire\Admin\Empresas\Create as EmpresasCreate;
+use App\Livewire\Admin\Empresas\Edit as EmpresasEdit;
+use App\Livewire\Admin\Sucursales\Index as SucursalesIndex;
+use App\Livewire\Admin\Sucursales\Create as SucursalesCreate;
+use App\Livewire\Admin\Sucursales\Edit as SucursalesEdit;
+use App\Livewire\Admin\Sucursales\Show as SucursalesShow;
+use App\Livewire\Admin\Users\Index as UsersIndex;
+use App\Livewire\Admin\Users\Create as UsersCreate;
+use App\Livewire\Admin\Users\Edit as UsersEdit;
+use App\Livewire\Admin\Roles\Index as RolesIndex;
+use App\Livewire\Admin\Roles\Create as RolesCreate;
+use App\Livewire\Admin\Roles\Edit as RolesEdit;
+use App\Livewire\Admin\Roles\Show as RolesShow;
+use App\Livewire\Admin\Permissions\Index as PermissionsIndex;
+use App\Livewire\Admin\Permissions\Create as PermissionsCreate;
+use App\Livewire\Admin\Permissions\Edit as PermissionsEdit;
+use App\Livewire\Admin\SchoolPeriods\Index as SchoolYearsIndex;
+use App\Livewire\Admin\SchoolPeriods\Create as SchoolYearsCreate;
+use App\Livewire\Admin\SchoolPeriods\Edit as SchoolYearsEdit;
+use App\Livewire\Admin\SchoolPeriods\Show as SchoolYearsShow;
+use App\Livewire\Admin\SchoolPeriods\Index as SchoolPeriodsIndex;
+use App\Livewire\Admin\SchoolPeriods\Create as SchoolPeriodsCreate;
+use App\Livewire\Admin\SchoolPeriods\Edit as SchoolPeriodsEdit;
+use App\Livewire\Admin\SchoolPeriods\Show as SchoolPeriodsShow;
+use App\Livewire\Admin\NivelesEducativos\Index as NivelesEducativosIndex;
+use App\Livewire\Admin\NivelesEducativos\Create as NivelesEducativosCreate;
+use App\Livewire\Admin\NivelesEducativos\Edit as NivelesEducativosEdit;
+use App\Livewire\Admin\Turnos\Index as TurnosIndex;
+use App\Livewire\Admin\Turnos\Create as TurnosCreate;
+use App\Livewire\Admin\Turnos\Edit as TurnosEdit;
+use App\Livewire\Admin\Students\Index as StudentsIndex;
+use App\Livewire\Admin\Students\Create as StudentsCreate;
+use App\Livewire\Admin\Students\Edit as StudentsEdit;
+use App\Livewire\Admin\Students\Show as StudentsShow;
+use App\Livewire\Admin\ActiveSessions;
 
-// Proteger todas las rutas de administración con el middleware de autenticación
-Route::prefix('admin')
-    ->middleware(['auth', 'verified'])
-    ->name('admin.')
-    ->group(function () {
-        // Dashboard de administración
-        Route::get('/dashboard', \App\Livewire\Dashboard::class)->name('dashboard');
+Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
-        // Ruta para sesiones activas usando Livewire
-        Route::get('/active-sessions', \App\Livewire\Admin\ActiveSessions::class)->name('active-sessions.index');
+// Empresas
+Route::get('/empresas', EmpresasIndex::class)->name('empresas.index');
+Route::get('/empresas/crear', EmpresasCreate::class)->name('empresas.create');
+Route::get('/empresas/{empresa}/editar', EmpresasEdit::class)->name('empresas.edit');
 
-        // Rutas para empresas
-        Route::prefix('empresas')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Empresas\Index::class)->name('empresas.index');
-            Route::get('/create', \App\Livewire\Admin\Empresas\Create::class)->name('empresas.create');
-            Route::get('/{empresa}', \App\Livewire\Admin\Empresas\Show::class)->name('empresas.show');
-            Route::get('/{empresa}/edit', \App\Livewire\Admin\Empresas\Edit::class)->name('empresas.edit');
-        });
+// Sucursales
+Route::get('/sucursales', SucursalesIndex::class)->name('sucursales.index');
+Route::get('/sucursales/crear', SucursalesCreate::class)->name('sucursales.create');
+Route::get('/sucursales/{sucursal}/editar', SucursalesEdit::class)->name('sucursales.edit');
+Route::get('/sucursales/{sucursal}', SucursalesShow::class)->name('sucursales.show');
 
-        // Rutas para sucursales
-        Route::prefix('sucursales')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Sucursales\Index::class)->name('sucursales.index');
-            Route::get('/create', \App\Livewire\Admin\Sucursales\Create::class)->name('sucursales.create');
-            Route::get('/{sucursal}', \App\Livewire\Admin\Sucursales\Show::class)->name('sucursales.show');
-            Route::get('/{sucursal}/edit', \App\Livewire\Admin\Sucursales\Edit::class)->name('sucursales.edit');
-        });
+// Usuarios
+Route::get('/usuarios', UsersIndex::class)->name('users.index');
+Route::get('/usuarios/crear', UsersCreate::class)->name('users.create');
+Route::get('/usuarios/{user}/editar', UsersEdit::class)->name('users.edit');
+ // Perfil de usuario
+Route::prefix('profile')->group(function () {
+    Route::get('/', \App\Livewire\Admin\Users\Profile\Index::class)->name('users.profile');
+    Route::get('/{user_id}/password', \App\Livewire\Admin\Users\Profile\ChangePassword::class)->name('users.password');
+    Route::get('/{user_id}/history', \App\Livewire\Admin\Users\Profile\HistoryUser::class)->name('users.history');
+});
 
-        // Rutas para usuarios
-        Route::prefix('users')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Users\Index::class)->name('users.index');
-            Route::get('/create', \App\Livewire\Admin\Users\Create::class)->name('users.create');
-            Route::get('/{user}', \App\Livewire\Admin\Users\Show::class)->name('users.show');
-            Route::get('/{user}/edit', \App\Livewire\Admin\Users\Edit::class)->name('users.edit');
-        });
+// Roles
+Route::get('/roles', RolesIndex::class)->name('roles.index');
+Route::get('/roles/crear', RolesCreate::class)->name('roles.create');
+Route::get('/roles/{role}/editar', RolesEdit::class)->name('roles.edit');
+Route::get('/roles/{role}', RolesShow::class)->name('roles.show');
 
-        // Rutas para roles
-        Route::prefix('roles')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Roles\Index::class)->name('roles.index');
-            Route::get('/create', \App\Livewire\Admin\Roles\Create::class)->name('roles.create');
-            Route::get('/{role}', \App\Livewire\Admin\Roles\Show::class)->name('roles.show');
-            Route::get('/{role}/edit', \App\Livewire\Admin\Roles\Edit::class)->name('roles.edit');
-        });
-        // Rutas para roles
-        Route::prefix('school-periods')->group(function () {
-            Route::get('/', \App\Livewire\Admin\SchoolPeriods\Index::class)->name('school-periods.index');
-            Route::get('/create', \App\Livewire\Admin\SchoolPeriods\Create::class)->name('school-periods.create');
-            Route::get('/{schoolPeriod}/edit', \App\Livewire\Admin\SchoolPeriods\Edit::class)->name('school-periods.edit');
-            Route::get('/{schoolPeriod}', \App\Livewire\Admin\SchoolPeriods\Show::class)->name('school-periods.show');
-        });
+// Permisos
+Route::get('/permisos', PermissionsIndex::class)->name('permissions.index');
+Route::get('/permisos/crear', PermissionsCreate::class)->name('permissions.create');
+Route::get('/permisos/{permission}/editar', PermissionsEdit::class)->name('permissions.edit');
 
-        // Rutas para turnos
-        Route::prefix('turnos')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Turnos\Index::class)->name('turnos.index');
-            Route::get('/create', \App\Livewire\Admin\Turnos\Create::class)->name('turnos.create');
-            Route::get('/{turno}', \App\Livewire\Admin\Turnos\Show::class)->name('turnos.show');
-            Route::get('/{turno}/edit', \App\Livewire\Admin\Turnos\Edit::class)->name('turnos.edit');
-        });
+// Años escolares
+Route::get('/school-years', SchoolYearsIndex::class)->name('school-years.index');
+Route::get('/school-years/crear', SchoolYearsCreate::class)->name('school-years.create');
+Route::get('/school-years/{schoolYear}/editar', SchoolYearsEdit::class)->name('school-years.edit');
+Route::get('/school-years/{schoolYear}', SchoolYearsShow::class)->name('school-years.show');
 
-        // Perfil de usuario
-        Route::prefix('profile')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Users\Profile\Index::class)->name('users.profile');
-            Route::get('/{user_id}/password', \App\Livewire\Admin\Users\Profile\ChangePassword::class)->name('users.password');
-            Route::get('/{user_id}/history', \App\Livewire\Admin\Users\Profile\HistoryUser::class)->name('users.history');
-        });
+// Periodos escolares
+Route::get('/school-periods', SchoolPeriodsIndex::class)->name('school-periods.index');
+Route::get('/school-periods/crear', SchoolPeriodsCreate::class)->name('school-periods.create');
+Route::get('/school-periods/{schoolPeriod}/editar', SchoolPeriodsEdit::class)->name('school-periods.edit');
+Route::get('/school-periods/{schoolPeriod}', SchoolPeriodsShow::class)->name('school-periods.show');
 
-        // Rutas para niveles educativos
-        Route::prefix('niveles-educativos')->group(function () {
-            Route::get('/', \App\Livewire\Admin\NivelesEducativos\Index::class)->name('niveles-educativos.index');
-            Route::get('/create', \App\Livewire\Admin\NivelesEducativos\Create::class)->name('niveles-educativos.create');
-            Route::get('/{nivel}', \App\Livewire\Admin\NivelesEducativos\Show::class)->name('niveles-educativos.show');
-            Route::get('/{nivel}/edit', \App\Livewire\Admin\NivelesEducativos\Edit::class)->name('niveles-educativos.edit');
-        });
-        // Rutas para niveles educativos
-        Route::prefix('students')->group(function () {
-            Route::get('/', \App\Livewire\Admin\Students\Index::class)->name('students.index');
-            Route::get('/create', \App\Livewire\Admin\Students\Create::class)->name('students.create');
-            Route::get('/{student}', \App\Livewire\Admin\Students\Show::class)->name('students.show');
-            Route::get('/{student}/edit', \App\Livewire\Admin\Students\Edit::class)->name('students.edit');
-        });
+// Niveles Educativos
+Route::get('/niveles-educativos', NivelesEducativosIndex::class)->name('niveles-educativos.index');
+Route::get('/niveles-educativos/crear', NivelesEducativosCreate::class)->name('niveles-educativos.create');
+Route::get('/niveles-educativos/{nivelEducativo}/editar', NivelesEducativosEdit::class)->name('niveles-educativos.edit');
 
-    });
+// Turnos
+Route::get('/turnos', TurnosIndex::class)->name('turnos.index');
+Route::get('/turnos/crear', TurnosCreate::class)->name('turnos.create');
+Route::get('/turnos/{turno}/editar', TurnosEdit::class)->name('turnos.edit');
+
+// Estudiantes
+Route::get('/students', StudentsIndex::class)->name('students.index');
+Route::get('/students/crear', StudentsCreate::class)->name('students.create');
+Route::get('/students/{student}/editar', StudentsEdit::class)->name('students.edit');
+Route::get('/students/{student}', StudentsShow::class)->name('students.show');
+
+
+// Sesiones activas
+Route::get('/active-sessions', ActiveSessions::class)->name('active-sessions.index');

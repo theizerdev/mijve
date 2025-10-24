@@ -33,28 +33,26 @@ class Create extends Component
     public function loadPermissions()
     {
         $allPermissions = Permission::all();
-        
-        // Agrupar permisos por módulo (basado en el nombre del permiso)
+
+        // Agrupar permisos por módulo usando el campo module
         foreach ($allPermissions as $permission) {
-            // Extraer el módulo del permiso (ej: "view users" -> "users")
-            $parts = explode(' ', $permission->name);
-            $module = end($parts);
-            
-            // Convertir plural a singular para agrupación
-            $module = rtrim($module, 's');
-            
+            $module = $permission->module ?? 'general';
+
             if (!isset($this->groupedPermissions[$module])) {
                 $this->groupedPermissions[$module] = [];
             }
-            
+
             $this->groupedPermissions[$module][] = $permission;
         }
-        
+
+        // Ordenar módulos alfabéticamente
+        ksort($this->groupedPermissions);
+
         // Inicializar estados de módulos
         foreach ($this->groupedPermissions as $module => $permissions) {
             $this->moduleStates[$module] = false;
         }
-        
+
         // Inicializar el array de permisos seleccionados
         $this->selectedPermissions = [];
     }
@@ -83,7 +81,7 @@ class Create extends Component
         foreach ($this->groupedPermissions as $module => $permissions) {
             $this->checkModuleState($module);
         }
-        
+
         // Verificar si todos los permisos están seleccionados
         $allPermissions = [];
         foreach ($this->groupedPermissions as $permissions) {
@@ -91,7 +89,7 @@ class Create extends Component
                 $allPermissions[] = $permission->id;
             }
         }
-        
+
         $this->selectAll = count($this->selectedPermissions) == count($allPermissions);
     }
 
@@ -99,14 +97,14 @@ class Create extends Component
     {
         $modulePermissions = $this->groupedPermissions[$module];
         $allSelected = true;
-        
+
         foreach ($modulePermissions as $permission) {
             if (!in_array($permission->id, $this->selectedPermissions)) {
                 $allSelected = false;
                 break;
             }
         }
-        
+
         $this->moduleStates[$module] = $allSelected;
     }
 
@@ -123,7 +121,7 @@ class Create extends Component
         try {
             // Crear el rol
             $role = Role::create(['name' => $this->name]);
-            
+
             // Asignar permisos seleccionados
             if (!empty($this->selectedPermissions)) {
                 $permissions = Permission::whereIn('id', $this->selectedPermissions)->get();
@@ -141,7 +139,7 @@ class Create extends Component
     {
         $modulePermissions = $this->groupedPermissions[$module];
         $allSelected = true;
-        
+
         // Verificar si todos los permisos del módulo están seleccionados
         foreach ($modulePermissions as $permission) {
             if (!in_array($permission->id, $this->selectedPermissions)) {
@@ -149,7 +147,7 @@ class Create extends Component
                 break;
             }
         }
-        
+
         // Si todos están seleccionados, deseleccionarlos; de lo contrario, seleccionarlos todos
         if ($allSelected) {
             foreach ($modulePermissions as $permission) {
@@ -165,23 +163,23 @@ class Create extends Component
                 }
             }
         }
-        
+
         // Reindexar el array
         $this->selectedPermissions = array_values($this->selectedPermissions);
-        
+
         // Actualizar estado del módulo
         $this->moduleStates[$module] = !$allSelected;
-        
+
         // Verificar estado de selección completa
         $this->updatedSelectedPermissions();
     }
-    
+
     public function toggleSelectAll()
     {
         if ($this->selectAll) {
             // Deseleccionar todos
             $this->selectedPermissions = [];
-            
+
             // Actualizar estados de módulos
             foreach ($this->groupedPermissions as $module => $permissions) {
                 $this->moduleStates[$module] = false;
@@ -194,13 +192,13 @@ class Create extends Component
                     $this->selectedPermissions[] = $permission->id;
                 }
             }
-            
+
             // Actualizar estados de módulos
             foreach ($this->groupedPermissions as $module => $permissions) {
                 $this->moduleStates[$module] = true;
             }
         }
-        
+
         // Usar updatedSelectedPermissions para determinar el estado de selectAll
         // Esto asegura consistencia con la lógica de verificación
         $this->updatedSelectedPermissions();

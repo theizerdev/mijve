@@ -31,7 +31,7 @@ class Index extends Component
     public function mount()
     {
         // Verificar permiso para ver sucursales
-        if (!Auth::user()->can('view sucursales')) {
+        if (!Auth::user()->can('access sucursales')) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
     }

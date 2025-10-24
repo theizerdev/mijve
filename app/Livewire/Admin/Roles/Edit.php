@@ -13,7 +13,7 @@ class Edit extends Component
     public $role;
     public $name;
     public $selectedPermissions = [];
-    
+
     // Propiedades para agrupar permisos por módulo
     public $groupedPermissions = [];
     public $moduleStates = []; // Para mantener el estado de los toggles
@@ -28,13 +28,13 @@ class Edit extends Component
 
         $this->role = $role;
         $this->name = $role->name;
-        
+
         // Cargar permisos actuales del rol
         $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
-        
+
         // Cargar todos los permisos y agruparlos
         $this->loadPermissions();
-        
+
         // Verificar si todos los permisos están seleccionados inicialmente
         $this->checkSelectAllState();
     }
@@ -42,23 +42,21 @@ class Edit extends Component
     public function loadPermissions()
     {
         $allPermissions = Permission::all();
-        
-        // Agrupar permisos por módulo (basado en el nombre del permiso)
+
+        // Agrupar permisos por módulo usando el campo module
         foreach ($allPermissions as $permission) {
-            // Extraer el módulo del permiso (ej: "view users" -> "users")
-            $parts = explode(' ', $permission->name);
-            $module = end($parts);
-            
-            // Convertir plural a singular para agrupación
-            $module = rtrim($module, 's');
-            
+            $module = $permission->module ?? 'general';
+
             if (!isset($this->groupedPermissions[$module])) {
                 $this->groupedPermissions[$module] = [];
             }
-            
+
             $this->groupedPermissions[$module][] = $permission;
         }
-        
+
+        // Ordenar módulos alfabéticamente
+        ksort($this->groupedPermissions);
+
         // Inicializar estados de módulos
         foreach ($this->groupedPermissions as $module => $permissions) {
             $this->checkModuleState($module);
@@ -69,17 +67,17 @@ class Edit extends Component
     {
         $modulePermissions = $this->groupedPermissions[$module];
         $allSelected = true;
-        
+
         foreach ($modulePermissions as $permission) {
             if (!in_array($permission->id, $this->selectedPermissions)) {
                 $allSelected = false;
                 break;
             }
         }
-        
+
         $this->moduleStates[$module] = $allSelected;
     }
-    
+
     public function checkSelectAllState()
     {
         $allPermissions = [];
@@ -88,7 +86,7 @@ class Edit extends Component
                 $allPermissions[] = $permission->id;
             }
         }
-        
+
         $this->selectAll = count($this->selectedPermissions) == count($allPermissions);
     }
 
@@ -116,7 +114,7 @@ class Edit extends Component
         foreach ($this->groupedPermissions as $module => $permissions) {
             $this->checkModuleState($module);
         }
-        
+
         // Verificar si todos los permisos están seleccionados
         $this->checkSelectAllState();
     }
@@ -140,7 +138,7 @@ class Edit extends Component
         try {
             // Actualizar el rol
             $this->role->update(['name' => $this->name]);
-            
+
             // Sincronizar permisos seleccionados
             if (!empty($this->selectedPermissions)) {
                 $permissions = Permission::whereIn('id', $this->selectedPermissions)->get();
@@ -160,7 +158,7 @@ class Edit extends Component
     {
         $modulePermissions = $this->groupedPermissions[$module];
         $allSelected = true;
-        
+
         // Verificar si todos los permisos del módulo están seleccionados
         foreach ($modulePermissions as $permission) {
             if (!in_array($permission->id, $this->selectedPermissions)) {
@@ -168,7 +166,7 @@ class Edit extends Component
                 break;
             }
         }
-        
+
         // Si todos están seleccionados, deseleccionarlos; de lo contrario, seleccionarlos todos
         if ($allSelected) {
             foreach ($modulePermissions as $permission) {
@@ -184,24 +182,24 @@ class Edit extends Component
                 }
             }
         }
-        
+
         // Reindexar el array
         $this->selectedPermissions = array_values($this->selectedPermissions);
-        
+
         // Actualizar estado del módulo
         $this->moduleStates[$module] = !$allSelected;
-        
+
         // Verificar estado de selección completa
         $this->checkSelectAllState();
     }
-    
+
     public function toggleSelectAll()
     {
         if ($this->selectAll) {
             // Deseleccionar todos
             $this->selectedPermissions = [];
             $this->selectAll = false;
-            
+
             // Actualizar estados de módulos
             foreach ($this->groupedPermissions as $module => $permissions) {
                 $this->moduleStates[$module] = false;
@@ -215,7 +213,7 @@ class Edit extends Component
                 }
             }
             $this->selectAll = true;
-            
+
             // Actualizar estados de módulos
             foreach ($this->groupedPermissions as $module => $permissions) {
                 $this->moduleStates[$module] = true;

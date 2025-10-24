@@ -35,7 +35,7 @@ class Index extends Component
     public function mount()
     {
         // Verificar permiso para ver usuarios
-        if (!Auth::user()->can('view users')) {
+        if (!Auth::user()->can('access users')) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
     }
@@ -96,7 +96,7 @@ class Index extends Component
                 $query->where('empresa_id', $this->empresa_id);
             })
             ->get();
-        
+
         $roles = Role::all();
 
         // Calcular estadísticas
@@ -149,7 +149,7 @@ class Index extends Component
         session()->flash('message', 'Usuario eliminado correctamente.');
         $this->resetPage();
     }
-    
+
     public function clearFilters()
     {
         $this->search = '';
@@ -161,7 +161,7 @@ class Index extends Component
         $this->perPage = 10;
         $this->resetPage();
     }
-    
+
     public function loadSucursales()
     {
         // Este método se llama cuando se cambia la empresa en los filtros

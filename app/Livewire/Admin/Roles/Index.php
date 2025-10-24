@@ -13,12 +13,14 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+    public $guard = '';
     public $sortBy = 'name';
     public $sortDirection = 'asc';
     public $perPage = 10;
 
     protected $queryString = [
         'search' => ['except' => ''],
+        'guard' => ['except' => ''],
         'sortBy' => ['except' => 'name'],
         'sortDirection' => ['except' => 'asc'],
         'perPage' => ['except' => 10]
@@ -26,16 +28,22 @@ class Index extends Component
 
     public function mount()
     {
-        // Verificar permiso para ver roles
-        if (!Auth::user()->can('view roles')) {
-            // Si no tiene permiso para ver roles, verificamos si tiene permiso para ver permisos
-            if (!Auth::user()->can('view permissions')) {
-                abort(403, 'No tienes permiso para acceder a esta sección.');
-            }
+        if (!Auth::user()->can('access roles') && !Auth::user()->can('view permissions')) {
+            abort(403, 'No tienes permiso para ver roles.');
         }
     }
 
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingGuard()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
     {
         $this->resetPage();
     }
@@ -45,66 +53,79 @@ class Index extends Component
         if ($this->sortBy === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
+            $this->sortBy = $field;
             $this->sortDirection = 'asc';
         }
-
-        $this->sortBy = $field;
-        $this->resetPage();
     }
 
-    public function clearFilters()
+    public function deleteRole($roleId)
     {
-        $this->search = '';
-        $this->sortBy = 'name';
-        $this->sortDirection = 'asc';
-        $this->perPage = 10;
-        $this->resetPage();
-    }
-
-    public function delete(Role $role)
-    {
-        // Verificar permiso para eliminar roles
         if (!Auth::user()->can('delete roles')) {
             session()->flash('error', 'No tienes permiso para eliminar roles.');
             return;
         }
 
-        // No permitir eliminar roles predeterminados
-        if (in_array($role->name, ['super-admin', 'admin', 'empresa-admin', 'user'])) {
-            session()->flash('error', 'No puedes eliminar roles del sistema.');
+        $role = Role::findOrFail($roleId);
+
+        // Verificar si es un rol del sistema
+        if (in_array($role->name, ['admin', 'super-admin'])) {
+            session()->flash('error', 'No se pueden eliminar roles del sistema.');
             return;
         }
 
-        $role->delete();
-        session()->flash('message', 'Rol eliminado correctamente.');
+        try {
+            $role->delete();
+            session()->flash('message', 'Rol eliminado exitosamente.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al eliminar el rol: ' . $e->getMessage());
+        }
+    }
+
+    public function clearFilters()
+    {
+        $this->reset(['search', 'guard', 'sortBy', 'sortDirection', 'perPage']);
+        $this->sortBy = 'name';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
     }
 
     public function render()
     {
-        $query = Role::query();
+        $query = Role::with(['permissions']);
 
         // Aplicar búsqueda
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%');
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('guard_name', 'like', '%' . $this->search . '%');
+            });
         }
 
-        // Aplicar ordenamiento
+        // Filtrar por guard
+        if ($this->guard) {
+            $query->where('guard_name', $this->guard);
+        }
+
+        // Ordenar
         $query->orderBy($this->sortBy, $this->sortDirection);
 
-        // Obtener resultados con paginación
+        // Obtener roles paginados
         $roles = $query->paginate($this->perPage);
 
-        // Estadísticas
+        // Calcular estadísticas
         $totalRoles = Role::count();
         $totalPermissions = Permission::count();
+        $rolesWithPermissions = Role::has('permissions')->count();
+        $rolesWithoutPermissions = Role::doesntHave('permissions')->count();
+        $guards = Role::select('guard_name')->distinct()->pluck('guard_name');
 
         return view('livewire.admin.roles.index', [
             'roles' => $roles,
             'totalRoles' => $totalRoles,
             'totalPermissions' => $totalPermissions,
-        ])
-            ->layout('components.layouts.admin', [
-                'title' => 'Lista de Roles'
-            ]);
+            'rolesWithPermissions' => $rolesWithPermissions,
+            'rolesWithoutPermissions' => $rolesWithoutPermissions,
+            'guards' => $guards
+        ])->layout('components.layouts.admin', ['title' => 'Roles']);
     }
 }

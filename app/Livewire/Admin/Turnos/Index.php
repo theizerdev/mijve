@@ -36,7 +36,7 @@ class Index extends Component
 
     public function render()
     {
-        Gate::authorize('view turnos', Turno::class);
+        Gate::authorize('access turnos');
 
         return view('livewire.admin.turnos.index', [
             'turnos' => Turno::query()

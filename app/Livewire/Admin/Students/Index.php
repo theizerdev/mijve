@@ -46,7 +46,7 @@ class Index extends Component
     public function mount()
     {
         // Verificar permiso para ver estudiantes
-        if (!Auth::user()->can('view students')) {
+        if (!Auth::user()->can('access students')) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
     }
