@@ -9,10 +9,11 @@ use App\Models\Empresa;
 use App\Models\Sucursal;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
@@ -71,14 +72,37 @@ class Index extends Component
         $this->sortBy = $field;
     }
 
-    public function render()
+    protected function getExportQuery()
     {
-        $users = User::with(['empresa', 'sucursal'])
+        return $this->getBaseQuery();
+    }
+
+    protected function getExportHeaders(): array
+    {
+        return ['ID', 'Nombre', 'Email', 'Empresa', 'Sucursal', 'Rol', 'Status'];
+    }
+
+    protected function formatExportRow($user): array
+    {
+        return [
+            $user->id,
+            $user->name,
+            $user->email,
+            $user->empresa->razon_social ?? 'N/A',
+            $user->sucursal->nombre ?? 'N/A',
+            $user->roles->pluck('name')->join(', '),
+            $user->status ? 'Activo' : 'Inactivo'
+        ];
+    }
+
+    private function getBaseQuery()
+    {
+        return User::forUser()->with(['empresa', 'sucursal', 'roles'])
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%');
             })
-            ->when($this->status, function ($query) {
+            ->when($this->status !== '', function ($query) {
                 $query->where('status', $this->status);
             })
             ->when($this->empresa_id, function ($query) {
@@ -86,12 +110,17 @@ class Index extends Component
             })
             ->when($this->sucursal_id, function ($query) {
                 $query->where('sucursal_id', $this->sucursal_id);
-            })
+            });
+    }
+
+    public function render()
+    {
+        $users = $this->getBaseQuery()
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $empresas = Empresa::where('status', 'active')->get();
-        $sucursales = Sucursal::where('status', 'active')
+        $empresas = Empresa::forUser()->where('status', 'active')->get();
+        $sucursales = Sucursal::forUser()->where('status', 'active')
             ->when($this->empresa_id, function ($query) {
                 $query->where('empresa_id', $this->empresa_id);
             })
@@ -100,10 +129,10 @@ class Index extends Component
         $roles = Role::all();
 
         // Calcular estadísticas
-        $totalUsers = User::count();
-        $activeUsers = User::where('status', 'active')->count();
-        $pendingUsers = User::where('status', 'pending')->count();
-        $inactiveUsers = User::where('status', 'inactive')->count();
+        $totalUsers = User::forUser()->count();
+        $activeUsers = User::forUser()->where('status', 1)->count();
+        $pendingUsers = 0;
+        $inactiveUsers = User::forUser()->where('status', 0)->count();
 
         return view('livewire.admin.users.index', compact('users', 'empresas', 'sucursales', 'roles', 'totalUsers', 'activeUsers', 'pendingUsers', 'inactiveUsers'))
             ->layout('components.layouts.admin', [
@@ -113,19 +142,17 @@ class Index extends Component
 
     public function toggleStatus(User $user)
     {
-        // Verificar permiso para editar usuarios
         if (!Auth::user()->can('edit users')) {
             session()->flash('error', 'No tienes permiso para editar usuarios.');
             return;
         }
 
-        // No permitir desactivar al usuario actual
         if ($user->id === Auth::id()) {
             session()->flash('error', 'No puedes desactivar tu propia cuenta.');
             return;
         }
 
-        $user->status = $user->status === 'active' ? 'inactive' : 'active';
+        $user->status = !$user->status;
         $user->save();
 
         session()->flash('message', 'Estado de usuario actualizado correctamente.');

@@ -8,6 +8,9 @@ use App\Models\Student;
 use App\Models\EducationalLevel;
 use App\Models\Turno;
 use App\Models\SchoolPeriod;
+use App\Models\Empresa;
+use App\Models\Sucursal;
+use App\Traits\Exportable;
 use App\Mail\StudentWelcomeMail;
 use App\Mail\RepresentativeWelcomeMail;
 use Illuminate\Support\Facades\Auth;
@@ -19,13 +22,16 @@ use BaconQrCode\Writer;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
+    public $empresa_id = '';
+    public $sucursal_id = '';
     public $nivelEducativoId = '';
     public $turnoId = '';
     public $schoolPeriodId = '';
+    public $grado = '';
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
     public $perPage = 10;
@@ -35,9 +41,12 @@ class Index extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
+        'empresa_id' => ['except' => ''],
+        'sucursal_id' => ['except' => ''],
         'nivelEducativoId' => ['except' => ''],
         'turnoId' => ['except' => ''],
         'schoolPeriodId' => ['except' => ''],
+        'grado' => ['except' => ''],
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
@@ -89,7 +98,8 @@ class Index extends Component
 
     public function render()
     {
-        $students = Student::with(['nivelEducativo', 'turno', 'schoolPeriod'])
+        $students = Student::query()
+            ->with(['nivelEducativo', 'turno', 'schoolPeriod', 'empresa', 'sucursal'])
             ->when($this->search, function ($query) {
                 $query->where('nombres', 'like', '%' . $this->search . '%')
                     ->orWhere('apellidos', 'like', '%' . $this->search . '%')
@@ -98,6 +108,12 @@ class Index extends Component
             })
             ->when($this->status !== '', function ($query) {
                 $query->where('status', $this->status);
+            })
+            ->when($this->empresa_id, function ($query) {
+                $query->where('empresa_id', $this->empresa_id);
+            })
+            ->when($this->sucursal_id, function ($query) {
+                $query->where('sucursal_id', $this->sucursal_id);
             })
             ->when($this->nivelEducativoId, function ($query) {
                 $query->where('nivel_educativo_id', $this->nivelEducativoId);
@@ -108,23 +124,32 @@ class Index extends Component
             ->when($this->schoolPeriodId, function ($query) {
                 $query->where('school_periods_id', $this->schoolPeriodId);
             })
+            ->when($this->grado, function ($query) {
+                $query->where('grado', $this->grado);
+            })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $nivelesEducativos = EducationalLevel::all();
-        $turnos = Turno::all();
-        $schoolPeriods = SchoolPeriod::all();
+        $empresas = Empresa::forUser()->get();
+        $sucursales = Sucursal::forUser()->get();
+        $nivelesEducativos = EducationalLevel::query()->get();
+        $turnos = Turno::query()->get();
+        $schoolPeriods = SchoolPeriod::query()->get();
+        $grados = Student::query()->select('grado')->distinct()->pluck('grado');
 
         // Calcular estadísticas
-        $totalStudents = Student::count();
-        $activeStudents = Student::where('status', 1)->count();
-        $inactiveStudents = Student::where('status', 0)->count();
+        $totalStudents = Student::query()->count();
+        $activeStudents = Student::query()->where('status', 1)->count();
+        $inactiveStudents = Student::query()->where('status', 0)->count();
 
         return view('livewire.admin.students.index', compact(
             'students',
+            'empresas',
+            'sucursales',
             'nivelesEducativos',
             'turnos',
             'schoolPeriods',
+            'grados',
             'totalStudents',
             'activeStudents',
             'inactiveStudents'
@@ -151,13 +176,52 @@ class Index extends Component
     {
         $this->search = '';
         $this->status = '';
+        $this->empresa_id = '';
+        $this->sucursal_id = '';
         $this->nivelEducativoId = '';
         $this->turnoId = '';
         $this->schoolPeriodId = '';
+        $this->grado = '';
         $this->sortBy = 'created_at';
         $this->sortDirection = 'desc';
         $this->perPage = 10;
         $this->resetPage();
+    }
+
+    protected function getExportQuery()
+    {
+        return Student::query()
+            ->with(['nivelEducativo', 'turno', 'schoolPeriod', 'empresa', 'sucursal'])
+            ->when($this->search, fn($q) => $q->where('nombres', 'like', "%{$this->search}%")
+                ->orWhere('apellidos', 'like', "%{$this->search}%"))
+            ->when($this->status !== '', fn($q) => $q->where('status', $this->status))
+            ->when($this->empresa_id, fn($q) => $q->where('empresa_id', $this->empresa_id))
+            ->when($this->sucursal_id, fn($q) => $q->where('sucursal_id', $this->sucursal_id))
+            ->when($this->nivelEducativoId, fn($q) => $q->where('nivel_educativo_id', $this->nivelEducativoId))
+            ->when($this->turnoId, fn($q) => $q->where('turno_id', $this->turnoId))
+            ->when($this->grado, fn($q) => $q->where('grado', $this->grado));
+    }
+
+    protected function getExportHeaders()
+    {
+        return ['Código', 'Nombres', 'Apellidos', 'Documento', 'Grado', 'Sección', 'Nivel', 'Turno', 'Empresa', 'Sucursal', 'Estado'];
+    }
+
+    protected function formatExportRow($student)
+    {
+        return [
+            $student->codigo,
+            $student->nombres,
+            $student->apellidos,
+            $student->documento_identidad,
+            $student->grado,
+            $student->seccion,
+            $student->nivelEducativo->nombre ?? '',
+            $student->turno->nombre ?? '',
+            $student->empresa->razon_social ?? '',
+            $student->sucursal->nombre ?? '',
+            $student->status ? 'Activo' : 'Inactivo'
+        ];
     }
 
     public function sendWelcomeEmail(Student $student)

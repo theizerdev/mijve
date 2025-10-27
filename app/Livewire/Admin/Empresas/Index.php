@@ -6,10 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Empresa;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
@@ -109,11 +110,33 @@ class Index extends Component
         $this->perPage = 10;
     }
 
-    public function render()
+    protected function getExportQuery()
     {
-        $query = Empresa::with(['sucursales']);
+        return $this->getBaseQuery();
+    }
 
-        // Aplicar búsqueda
+    protected function getExportHeaders(): array
+    {
+        return ['ID', 'Razón Social', 'Documento', 'Email', 'Teléfono', 'Dirección', 'Status'];
+    }
+
+    protected function formatExportRow($empresa): array
+    {
+        return [
+            $empresa->id,
+            $empresa->razon_social,
+            $empresa->documento,
+            $empresa->email,
+            $empresa->telefono,
+            $empresa->direccion,
+            $empresa->status ? 'Activo' : 'Inactivo'
+        ];
+    }
+
+    private function getBaseQuery()
+    {
+        $query = Empresa::forUser()->with(['sucursales']);
+
         if ($this->search) {
             $query->where(function($q) {
                 $q->where('razon_social', 'like', '%' . $this->search . '%')
@@ -122,10 +145,16 @@ class Index extends Component
             });
         }
 
-        // Filtrar por status
         if ($this->status !== '') {
             $query->where('status', $this->status);
         }
+
+        return $query;
+    }
+
+    public function render()
+    {
+        $query = $this->getBaseQuery();
 
         // Ordenar
         $query->orderBy($this->sortBy, $this->sortDirection);
@@ -134,9 +163,9 @@ class Index extends Component
         $empresas = $query->paginate($this->perPage);
 
         // Calcular estadísticas
-        $totalEmpresas = Empresa::count();
-        $empresasActivas = Empresa::where('status', 'activo')->count();
-        $empresasInactivas = Empresa::where('status', 'inactivo')->count();
+        $totalEmpresas = Empresa::forUser()->count();
+        $empresasActivas = Empresa::forUser()->where('status', 'activo')->count();
+        $empresasInactivas = Empresa::forUser()->where('status', 'inactivo')->count();
 
         return view('livewire.admin.empresas.index', [
             'empresas' => $empresas,

@@ -18,7 +18,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->foreignId('sucursal_id')
                 ->nullable()
-                ->constrained('sucursals')
+                ->constrained('sucursales')
                 ->nullOnDelete();
 
             $table->boolean('status')->default(true);

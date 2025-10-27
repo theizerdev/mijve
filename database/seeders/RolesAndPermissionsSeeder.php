@@ -88,6 +88,20 @@ class RolesAndPermissionsSeeder extends Seeder
             'dashboard' => [
                 'access dashboard',
             ],
+            'niveles_educativos' => [
+                'access niveles educativos',
+                'create niveles educativos',
+                'edit niveles educativos',
+                'delete niveles educativos',
+            ],
+            'monitoreo' => [
+                'access monitoreo',
+                'view monitoreo servidor',
+                'view monitoreo base-datos',
+                'view monitoreo estudiantes',
+                'view monitoreo accesos',
+                'export monitoreo accesos',
+            ],
         ];
 
         // Crear permisos organizados por módulos
@@ -101,8 +115,8 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         // Crear roles y asignar permisos
-        $adminRole = Role::firstOrCreate(['name' => 'Administrador']);
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Administrador']);
+        $adminRole = Role::firstOrCreate(['name' => 'Administrador']);
         $recepcionistaRole = Role::firstOrCreate(['name' => 'Recepcionista']);
 
         // Asignar todos los permisos al Super Administrador

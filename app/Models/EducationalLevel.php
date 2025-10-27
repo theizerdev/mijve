@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Multitenantable;
 
 class EducationalLevel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Multitenantable;
 
     /**
      * The attributes that are mass assignable.
@@ -16,6 +17,8 @@ class EducationalLevel extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'empresa_id',
+        'sucursal_id',
         'nombre',
         'descripcion',
         'costo',
@@ -49,5 +52,15 @@ class EducationalLevel extends Model
     public function students()
     {
         return $this->hasMany(Student::class, 'nivel_educativo_id');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

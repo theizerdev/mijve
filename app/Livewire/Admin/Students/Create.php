@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use App\Models\Notification;
 
 class Create extends Component
 {
@@ -192,15 +193,27 @@ class Create extends Component
             }
         }
 
+        // Crear notificación
+        Notification::create([
+            'user_id' => auth()->id(),
+            'type' => 'success',
+            'title' => 'Estudiante registrado',
+            'message' => "El estudiante {$student->nombres} {$student->apellidos} ha sido registrado exitosamente",
+            'data' => ['student_id' => $student->id]
+        ]);
+
+        // Disparar evento para actualizar en tiempo real
+        $this->dispatch('notification-created');
+
         session()->flash('message', 'Estudiante creado correctamente.');
         return redirect()->route('admin.students.index');
     }
 
     public function render()
     {
-        $nivelesEducativos = EducationalLevel::where('status', 1)->get();
-        $turnos = Turno::where('status', 1)->get();
-        $schoolPeriods = SchoolPeriod::where('is_active', 1)->get();
+        $nivelesEducativos = EducationalLevel::query()->where('status', 1)->get();
+        $turnos = Turno::query()->where('status', 1)->get();
+        $schoolPeriods = SchoolPeriod::query()->where('is_active', 1)->get();
 
         return view('livewire.admin.students.create', compact('nivelesEducativos', 'turnos', 'schoolPeriods'))
             ->layout('components.layouts.admin');

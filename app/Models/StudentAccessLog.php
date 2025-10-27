@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Multitenantable;
 
 class StudentAccessLog extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable;
 
     /**
      * The attributes that are mass assignable.
@@ -15,6 +16,8 @@ class StudentAccessLog extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'empresa_id',
+        'sucursal_id',
         'student_id',
         'type',
         'access_time',
@@ -45,5 +48,15 @@ class StudentAccessLog extends Model
     public function registeredBy()
     {
         return $this->belongsTo(User::class, 'registered_by');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

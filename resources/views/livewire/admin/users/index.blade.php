@@ -112,31 +112,30 @@
 
                         <div class="col-md-2">
                             <label class="form-label">Empresa</label>
-                            <select class="form-select" wire:model.live="filters.empresa">
+                            <select class="form-select" wire:model.live="empresa_id">
                                 <option value="">Todas</option>
                                 @foreach($empresas as $empresa)
-                                    <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
+                                    <option value="{{ $empresa->id }}">{{ $empresa->razon_social }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">Sucursal</label>
+                            <select class="form-select" wire:model.live="sucursal_id">
+                                <option value="">Todas</option>
+                                @foreach($sucursales as $sucursal)
+                                    <option value="{{ $sucursal->id }}">{{ $sucursal->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <div class="col-md-2">
                             <label class="form-label">Estado</label>
-                            <select class="form-select" wire:model.live="filters.status">
+                            <select class="form-select" wire:model.live="status">
                                 <option value="">Todos</option>
-                                <option value="active">Activos</option>
-                                <option value="pending">Pendientes</option>
-                                <option value="inactive">Inactivos</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label class="form-label">Rol</label>
-                            <select class="form-select" wire:model.live="filters.role">
-                                <option value="">Todos</option>
-                                @foreach($roles as $role)
-                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                @endforeach
+                                <option value="1">Activos</option>
+                                <option value="0">Inactivos</option>
                             </select>
                         </div>
 
@@ -144,8 +143,8 @@
                             <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
                                 <i class="ri ri-eraser-line"></i> Limpiar
                             </button>
-                            <button type="button" class="btn btn-label-secondary" wire:click="$refresh">
-                                <i class="ri ri-refresh-line"></i> Actualizar
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
                             </button>
                         </div>
                     </div>
@@ -167,8 +166,8 @@
                                 <th wire:click="sortBy('email_verified_at')" style="cursor: pointer;">
                                     Verificado @if($sortBy === 'email_verified_at') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
-                                <th wire:click="sortBy('empresa.nombre')" style="cursor: pointer;">
-                                    Empresa @if($sortBy === 'empresa.nombre') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                <th wire:click="sortBy('empresa.razon_social')" style="cursor: pointer;">
+                                    Empresa @if($sortBy === 'empresa.razon_social') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th>Sucursal</th>
                                 <th wire:click="sortBy('status')" style="cursor: pointer;">
@@ -193,13 +192,17 @@
                                                     <span class="avatar-initial rounded-circle bg-label-primary">{{ substr($user->name, 0, 1) }}</span>
                                                 </div>
                                             @endif
-                                            <div>
-                                                <h6 class="mb-0">{{ $user->name }}</h6>
+                                            <div style="max-width: 200px;">
+                                                <h6 class="mb-0 text-truncate" title="{{ $user->name }}">{{ $user->name }}</h6>
                                                 <small class="text-muted">{{ $user->username }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $user->email }}</td>
+                                    <td>
+                                        <span class="d-inline-block text-truncate" style="max-width: 200px;" title="{{ $user->email }}">
+                                            {{ $user->email }}
+                                        </span>
+                                    </td>
                                     <td class="text-center">
                                         @if($user->email_verified_at)
                                             <span class="badge bg-success">Verificado</span>
@@ -209,7 +212,7 @@
                                     </td>
                                     <td>
                                         @if($user->empresa)
-                                            <span class="badge bg-primary">{{ $user->empresa->nombre }}</span>
+                                            <span class="badge bg-primary">{{ $user->empresa->razon_social }}</span>
                                         @else
                                             <span class="badge bg-secondary">Sin empresa</span>
                                         @endif
@@ -222,17 +225,11 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        @switch($user->status)
-                                            @case('active')
-                                                <span class="badge bg-success">Activo</span>
-                                                @break
-                                            @case('pending')
-                                                <span class="badge bg-warning">Pendiente</span>
-                                                @break
-                                            @case('inactive')
-                                                <span class="badge bg-danger">Inactivo</span>
-                                                @break
-                                        @endswitch
+                                        @if($user->status)
+                                            <span class="badge bg-success">Activo</span>
+                                        @else
+                                            <span class="badge bg-danger">Inactivo</span>
+                                        @endif
                                     </td>
                                     <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                                     <td>

@@ -7,10 +7,11 @@ use Livewire\WithPagination;
 use App\Models\Sucursal;
 use App\Models\Empresa;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
@@ -62,9 +63,31 @@ class Index extends Component
         $this->sortBy = $field;
     }
 
-    public function render()
+    protected function getExportQuery()
     {
-        $sucursales = Sucursal::with('empresa')
+        return $this->getBaseQuery();
+    }
+
+    protected function getExportHeaders(): array
+    {
+        return ['ID', 'Empresa', 'Nombre', 'Teléfono', 'Dirección', 'Status'];
+    }
+
+    protected function formatExportRow($sucursal): array
+    {
+        return [
+            $sucursal->id,
+            $sucursal->empresa->razon_social ?? 'N/A',
+            $sucursal->nombre,
+            $sucursal->telefono,
+            $sucursal->direccion,
+            $sucursal->status ? 'Activo' : 'Inactivo'
+        ];
+    }
+
+    private function getBaseQuery()
+    {
+        return Sucursal::forUser()->with('empresa')
             ->when($this->search, function ($query) {
                 $query->where('nombre', 'like', '%' . $this->search . '%');
             })
@@ -73,16 +96,21 @@ class Index extends Component
             })
             ->when($this->empresa_id, function ($query) {
                 $query->where('empresa_id', $this->empresa_id);
-            })
+            });
+    }
+
+    public function render()
+    {
+        $sucursales = $this->getBaseQuery()
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $empresas = Empresa::where('status', 'active')->get();
+        $empresas = Empresa::forUser()->where('status', 'active')->get();
 
         // Calcular estadísticas
-        $totalSucursales = Sucursal::count();
-        $sucursalesActivas = Sucursal::where('status', 'active')->count();
-        $sucursalesInactivas = Sucursal::where('status', 'inactive')->count();
+        $totalSucursales = Sucursal::forUser()->count();
+        $sucursalesActivas = Sucursal::forUser()->where('status', 'active')->count();
+        $sucursalesInactivas = Sucursal::forUser()->where('status', 'inactive')->count();
 
         return view('livewire.admin.sucursales.index', compact('sucursales', 'empresas', 'totalSucursales', 'sucursalesActivas', 'sucursalesInactivas'))
             ->layout('components.layouts.admin', [

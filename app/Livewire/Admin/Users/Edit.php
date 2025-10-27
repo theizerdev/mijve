@@ -31,8 +31,9 @@ class Edit extends Component
         $this->empresa_id = $user->empresa_id;
         $this->sucursal_id = $user->sucursal_id;
         $this->status = $user->status;
-        $this->role = $user->getRoleNames()->first(); // Obtener el primer rol del usuario
-        $this->sucursales = Sucursal::where('empresa_id', $user->empresa_id)
+        $this->role = $user->getRoleNames()->first();
+        $this->sucursales = Sucursal::forUser()
+            ->where('empresa_id', $user->empresa_id)
             ->where('status', true)
             ->get();
     }
@@ -44,7 +45,7 @@ class Edit extends Component
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->user->id],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'empresa_id' => ['required', 'exists:empresas,id'],
-            'sucursal_id' => ['required', 'exists:sucursals,id'],
+            'sucursal_id' => ['required', 'exists:sucursales,id'],
             'status' => ['boolean'],
             'role' => ['required', 'exists:roles,name']
         ];
@@ -58,7 +59,8 @@ class Edit extends Component
     public function loadSucursales()
     {
         if ($this->empresa_id) {
-            $this->sucursales = Sucursal::where('empresa_id', $this->empresa_id)
+            $this->sucursales = Sucursal::forUser()
+                ->where('empresa_id', $this->empresa_id)
                 ->where('status', true)
                 ->get();
         } else {
@@ -102,7 +104,7 @@ class Edit extends Component
 
     public function render()
     {
-        $empresas = Empresa::where('status', true)->get();
+        $empresas = Empresa::forUser()->where('status', true)->get();
         $roles = Role::all();
 
         return view('livewire.admin.users.edit', [

@@ -195,31 +195,6 @@
       </ul>
     </li>
     @endcan
-
-    @can('access school years')
-    <!-- Años escolares -->
-    <li class="menu-item {{ request()->routeIs('admin.school-years.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-calendar-line"></i>
-        <div>Años escolares</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('admin.school-years.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.school-years.index') }}" class="menu-link">
-            <div>Listado</div>
-          </a>
-        </li>
-        @can('create school years')
-        <li class="menu-item {{ request()->routeIs('admin.school-years.create') ? 'active' : '' }}">
-          <a href="{{ route('admin.school-years.create') }}" class="menu-link">
-            <div>Crear</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
     @can('access school periods')
     <!-- Periodos escolares -->
     <li class="menu-item {{ request()->routeIs('admin.school-periods.*') ? 'active open' : '' }}">
@@ -294,7 +269,7 @@
 
     @can('access students')
     <!-- Estudiantes -->
-    <li class="menu-item {{ request()->routeIs('admin.students.*') ? 'active open' : '' }}">
+    <li class="menu-item {{ request()->routeIs('admin.students.*') ? 'active open' : '' }} || {{ request()->routeIs('admin.access.students') ? 'active open' : '' }} ">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons ri ri-user-3-line"></i>
         <div>Estudiantes</div>
@@ -303,6 +278,11 @@
         <li class="menu-item {{ request()->routeIs('admin.students.index') ? 'active' : '' }}">
           <a href="{{ route('admin.students.index') }}" class="menu-link">
             <div>Listado</div>
+          </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.access.students') ? 'active' : '' }}">
+          <a href="{{ route('admin.access.students') }}" class="menu-link">
+            <div>Control de Acceso</div>
           </a>
         </li>
         @can('create students')
@@ -324,6 +304,46 @@
         <i class="menu-icon tf-icons ri ri-shut-down-line"></i>
         <div>Sesiones activas</div>
       </a>
+    </li>
+    @endcan
+
+    @can('access monitoreo')
+    <!-- Monitoreo -->
+    <li class="menu-item {{ request()->routeIs('admin.monitoreo.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-line-chart-line"></i>
+        <div>Monitoreo</div>
+      </a>
+      <ul class="menu-sub">
+        @can('view monitoreo servidor')
+        <li class="menu-item {{ request()->routeIs('admin.monitoreo.servidor') ? 'active' : '' }}">
+          <a href="{{ route('admin.monitoreo.servidor') }}" class="menu-link">
+            <div>Servidor</div>
+          </a>
+        </li>
+        @endcan
+        @can('view monitoreo base-datos')
+        <li class="menu-item {{ request()->routeIs('admin.monitoreo.base-datos') ? 'active' : '' }}">
+          <a href="{{ route('admin.monitoreo.base-datos') }}" class="menu-link">
+            <div>Base de Datos</div>
+          </a>
+        </li>
+        @endcan
+        @can('view monitoreo estudiantes')
+        <li class="menu-item {{ request()->routeIs('admin.monitoreo.estudiantes') ? 'active' : '' }}">
+          <a href="{{ route('admin.monitoreo.estudiantes') }}" class="menu-link">
+            <div>Estudiantes</div>
+          </a>
+        </li>
+        @endcan
+        @can('view monitoreo accesos')
+        <li class="menu-item {{ request()->routeIs('admin.monitoreo.accesos') ? 'active' : '' }}">
+          <a href="{{ route('admin.monitoreo.accesos') }}" class="menu-link">
+            <div>Accesos</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
     </li>
     @endcan
   </ul>

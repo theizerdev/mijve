@@ -113,8 +113,8 @@
                             <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
                                 <i class="ri ri-eraser-line"></i> Limpiar
                             </button>
-                            <button type="button" class="btn btn-label-secondary" wire:click="$refresh">
-                                <i class="ri ri-refresh-line"></i> Actualizar
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
                             </button>
                         </div>
                     </div>

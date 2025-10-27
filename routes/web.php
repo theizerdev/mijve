@@ -5,6 +5,14 @@ use App\Livewire\Dashboard;
 use App\Livewire\Auth\TwoFactorLogin;
 use App\Livewire\SuperAdmin\Dashboard as SuperAdminDashboard;
 
+
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['es', 'en'])) {
+        Session::put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 Route::get('/', function () {
    if (\Auth::check() && \Auth::user()->id == 1) {
 
@@ -14,7 +22,7 @@ Route::get('/', function () {
     return redirect()->to('admin/dashboard');
    }
 
-});
+})->middleware('auth');
 
 // Rutas de autenticación con Livewire
 Route::middleware('guest')->group(function () {
@@ -42,6 +50,9 @@ Route::post('logout', function () {
     return redirect('/');
 })->name('logout');
 
+
+
+
 // Ruta para verificación 2FA
 Route::get('/two-factor-login', \App\Livewire\Auth\TwoFactorLogin::class)->name('two-factor.login');
 
@@ -52,5 +63,7 @@ Route::group(['prefix' => 'superadmin', 'as' => 'superadmin.', 'middleware' => [
 
 // Admin routes
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::get('/dashboard', \App\Livewire\Admin\Dashboard::class)->name('dashboard');
     require __DIR__.'/admin.php';
 });
+

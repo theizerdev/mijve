@@ -27,7 +27,7 @@ class Edit extends Component
 
     public function mount(NivelEducativo $nivel)
     {
-        Gate::authorize('update', $nivel);
+        
 
         $this->nivel = $nivel;
         $this->nombre = $nivel->nombre;

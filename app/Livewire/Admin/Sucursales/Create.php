@@ -30,7 +30,7 @@ class Create extends Component
 
     public function mount()
     {
-        $this->empresas = Empresa::where('status', true)->get();
+        $this->empresas = Empresa::forUser()->where('status', true)->get();
     }
 
     public function save()

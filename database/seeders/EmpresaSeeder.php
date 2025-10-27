@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Empresa;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class EmpresaSeeder extends Seeder
 {
@@ -38,8 +40,38 @@ class EmpresaSeeder extends Seeder
             ],
         ];
 
-        foreach ($empresas as $empresa) {
-            Empresa::create($empresa);
+        foreach ($empresas as $empresaData) {
+            $empresa = Empresa::create($empresaData);
+
+            // Crear Super Administrador
+            $superAdmin = User::create([
+                'name' => 'Super Admin ' . $empresa->razon_social,
+                'email' => 'superadmin@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
+                'password' => Hash::make('password'),
+                'empresa_id' => $empresa->id,
+                'status' => true,
+            ]);
+            $superAdmin->assignRole('Super Administrador');
+
+            // Crear Administrador
+            $admin = User::create([
+                'name' => 'Admin ' . $empresa->razon_social,
+                'email' => 'admin@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
+                'password' => Hash::make('password'),
+                'empresa_id' => $empresa->id,
+                'status' => true,
+            ]);
+            $admin->assignRole('Administrador');
+
+            // Crear Recepcionista
+            $recepcionista = User::create([
+                'name' => 'Recepcionista ' . $empresa->razon_social,
+                'email' => 'recepcionista@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
+                'password' => Hash::make('password'),
+                'empresa_id' => $empresa->id,
+                'status' => true,
+            ]);
+            $recepcionista->assignRole('Recepcionista');
         }
     }
 }

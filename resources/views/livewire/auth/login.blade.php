@@ -60,8 +60,8 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Welcome to {{ config('app.name', 'Laravel') }}! 👋</h4>
-          <p class="mb-5">Please sign-in to your account and start the adventure</p>
+          <h4 class="mb-1">{{ __('auth_ui.login_title') }} {{ config('app.name', 'Laravel') }}! 👋</h4>
+          <p class="mb-5">{{ __('auth_ui.login_subtitle') }}</p>
 
           <form wire:submit.prevent="authenticate" id="loginForm">
             <input type="hidden" wire:model="latitude" id="latitude">
@@ -74,9 +74,9 @@
                 id="email"
                 name="email"
                 wire:model="email"
-                placeholder="Enter your email or username"
+                placeholder="{{ __('auth_ui.email') }}"
                 autofocus />
-              <label for="email">Email</label>
+              <label for="email">{{ __('auth_ui.email') }}</label>
               @if($hasError('email'))
                 <div class="invalid-feedback d-block">{{ $getError('email') }}</div>
               @endif
@@ -93,7 +93,7 @@
                       wire:model="password"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                       aria-describedby="password" />
-                    <label for="password">Password</label>
+                    <label for="password">{{ __('auth_ui.password') }}</label>
 
                   </div>
                   <span class="input-group-text cursor-pointer"
@@ -108,21 +108,21 @@
             <div class="mb-5 d-flex justify-content-between mt-5">
               <div class="form-check mt-2">
                 <input class="form-check-input" type="checkbox" id="remember-me" wire:model="remember" />
-                <label class="form-check-label" for="remember-me"> Remember Me </label>
+                <label class="form-check-label" for="remember-me"> {{ __('auth_ui.remember_me') }} </label>
               </div>
               <a href="{{ route('password.request') }}" class="float-end mb-1 mt-2">
-                <span>Forgot Password?</span>
+                <span>{{ __('auth_ui.forgot_password') }}</span>
               </a>
             </div>
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.login_button') }}</button>
             </div>
           </form>
 
           <p class="text-center mb-5">
-            <span>New on our platform?</span>
+            <span>{{ __('auth_ui.no_account') }}</span>
             <a href="{{ route('register') }}">
-              <span>Create an account</span>
+              <span>{{ __('auth_ui.register_here') }}</span>
             </a>
           </p>
 

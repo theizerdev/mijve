@@ -199,7 +199,7 @@ class Edit extends Component
     public function render()
     {
         $nivelesEducativos = EducationalLevel::where('status', 1)->get();
-        $turnos = Shift::where('status', 1)->get();
+        $turnos = Turno::where('status', 1)->get();
         $schoolPeriods = SchoolPeriod::where('is_active', 1)->get();
 
         return view('livewire.admin.students.edit', compact('nivelesEducativos', 'turnos', 'schoolPeriods'))

@@ -120,9 +120,12 @@
                             </select>
                         </div>
 
-                        <div class="col-md-3 d-flex align-items-end">
+                        <div class="col-md-3 d-flex align-items-end gap-2">
                             <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
-                                <i class="ri ri-eraser-line"></i> Limpiar filtros
+                                <i class="ri ri-eraser-line"></i> Limpiar
+                            </button>
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
                             </button>
                         </div>
                     </div>

@@ -16,7 +16,7 @@ class Create extends Component
     public $status = true;
 
     protected $rules = [
-        'nombre' => 'required|string|max:255|unique:niveles_educativos,nombre',
+        'nombre' => 'required|string|max:255',
         'descripcion' => 'nullable|string',
         'costo' => 'required|numeric|min:0',
         'numero_cuotas' => 'required|integer|min:0',

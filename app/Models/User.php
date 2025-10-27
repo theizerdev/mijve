@@ -10,10 +10,12 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -139,9 +141,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getCommonLocationsAttribute()
     {
-        // Verificar si existe el método sessions
         if (method_exists($this, 'sessions')) {
-            // Obtener ubicaciones comunes de las sesiones activas
             return $this->sessions()
                 ->whereNotNull('location')
                 ->select('location')
@@ -152,5 +152,26 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return [];
+    }
+
+    public function scopeForUser($query)
+    {
+        if (auth()->check() && !auth()->user()->hasRole('Super Administrador')) {
+            if (auth()->user()->empresa_id) {
+                $query->where('empresa_id', auth()->user()->empresa_id);
+            }
+            if (auth()->user()->sucursal_id) {
+                $query->where('sucursal_id', auth()->user()->sucursal_id);
+            }
+        }
+        return $query;
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'empresa_id', 'sucursal_id', 'status'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

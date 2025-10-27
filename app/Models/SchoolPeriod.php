@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Multitenantable;
 
 class SchoolPeriod extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable;
 
     /**
      * The attributes that are mass assignable.
@@ -15,6 +16,8 @@ class SchoolPeriod extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'empresa_id',
+        'sucursal_id',
         'name',
         'start_date',
         'end_date',
@@ -55,5 +58,15 @@ class SchoolPeriod extends Model
     public function scopeCurrent($query)
     {
         return $query->where('is_current', true);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

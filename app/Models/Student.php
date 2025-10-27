@@ -10,10 +10,13 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use App\Models\StudentAccessLog;
+use App\Traits\Multitenantable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Student extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +24,8 @@ class Student extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'empresa_id',
+        'sucursal_id',
         'nombres',
         'apellidos',
         'fecha_nacimiento',
@@ -34,7 +39,6 @@ class Student extends Model
         'foto',
         'correo_electronico',
         'status',
-        // Campos para representante (solo para menores de edad)
         'representante_nombres',
         'representante_apellidos',
         'representante_documento_identidad',
@@ -199,5 +203,23 @@ class Student extends Model
     public function accessLogs()
     {
         return $this->hasMany(StudentAccessLog::class);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nombres', 'apellidos', 'codigo', 'documento_identidad', 'grado', 'seccion', 'status'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

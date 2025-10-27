@@ -37,9 +37,10 @@ use App\Livewire\Admin\Students\Index as StudentsIndex;
 use App\Livewire\Admin\Students\Create as StudentsCreate;
 use App\Livewire\Admin\Students\Edit as StudentsEdit;
 use App\Livewire\Admin\Students\Show as StudentsShow;
+use App\Livewire\Admin\Students\QrAccess;
 use App\Livewire\Admin\ActiveSessions;
 
-Route::get('/dashboard', Dashboard::class)->name('dashboard');
+
 
 // Empresas
 Route::get('/empresas', EmpresasIndex::class)->name('empresas.index');
@@ -89,7 +90,7 @@ Route::get('/school-periods/{schoolPeriod}', SchoolPeriodsShow::class)->name('sc
 // Niveles Educativos
 Route::get('/niveles-educativos', NivelesEducativosIndex::class)->name('niveles-educativos.index');
 Route::get('/niveles-educativos/crear', NivelesEducativosCreate::class)->name('niveles-educativos.create');
-Route::get('/niveles-educativos/{nivelEducativo}/editar', NivelesEducativosEdit::class)->name('niveles-educativos.edit');
+Route::get('/niveles-educativos/{nivel}/editar', NivelesEducativosEdit::class)->name('niveles-educativos.edit');
 
 // Turnos
 Route::get('/turnos', TurnosIndex::class)->name('turnos.index');
@@ -101,7 +102,17 @@ Route::get('/students', StudentsIndex::class)->name('students.index');
 Route::get('/students/crear', StudentsCreate::class)->name('students.create');
 Route::get('/students/{student}/editar', StudentsEdit::class)->name('students.edit');
 Route::get('/students/{student}', StudentsShow::class)->name('students.show');
+Route::get('/students/qr-access', QrAccess::class)->name('students.qr-access');
+Route::get('/access/students', QrAccess::class)->name('access.students');
 
 
 // Sesiones activas
 Route::get('/active-sessions', ActiveSessions::class)->name('active-sessions.index');
+
+// Monitoreo
+Route::prefix('monitoreo')->as('monitoreo.')->group(function () {
+    Route::get('/servidor', \App\Livewire\Admin\Monitoreo\Servidor::class)->name('servidor');
+    Route::get('/base-datos', \App\Livewire\Admin\Monitoreo\BaseDatos::class)->name('base-datos');
+    Route::get('/estudiantes', \App\Livewire\Admin\Monitoreo\Estudiantes::class)->name('estudiantes');
+    Route::get('/accesos', \App\Livewire\Admin\Monitoreo\Accesos::class)->name('accesos');
+});

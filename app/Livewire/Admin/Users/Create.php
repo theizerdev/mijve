@@ -8,6 +8,8 @@ use App\Models\Empresa;
 use App\Models\Sucursal;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserWelcomeMail;
 use Illuminate\Validation\Rules;
 
 class Create extends Component
@@ -29,7 +31,7 @@ class Create extends Component
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'empresa_id' => ['required', 'exists:empresas,id'],
-            'sucursal_id' => ['required', 'exists:sucursals,id'],
+            'sucursal_id' => ['required', 'exists:sucursales,id'],
             'status' => ['boolean'],
             'role' => ['required', 'exists:roles,name']
         ];
@@ -43,7 +45,8 @@ class Create extends Component
     public function loadSucursales()
     {
         if ($this->empresa_id) {
-            $this->sucursales = Sucursal::where('empresa_id', $this->empresa_id)
+            $this->sucursales = Sucursal::forUser()
+                ->where('empresa_id', $this->empresa_id)
                 ->where('status', true)
                 ->get();
         } else {
@@ -56,26 +59,34 @@ class Create extends Component
     {
         $this->validate();
 
+        $plainPassword = $this->password;
+
         $user = new User();
         $user->name = $this->name;
         $user->email = $this->email;
-        $user->password = Hash::make($this->password);
+        $user->password = Hash::make($plainPassword);
         $user->empresa_id = $this->empresa_id;
         $user->sucursal_id = $this->sucursal_id;
         $user->status = $this->status;
         $user->save();
         
-        // Asignar rol al usuario
         $user->assignRole($this->role);
 
-        session()->flash('message', 'Usuario creado correctamente.');
+        // Enviar correo de bienvenida
+        try {
+            Mail::to($user->email)->send(new UserWelcomeMail($user, $plainPassword));
+        } catch (\Exception $e) {
+            \Log::error('Error enviando correo de bienvenida: ' . $e->getMessage());
+        }
+
+        session()->flash('message', 'Usuario creado correctamente. Se ha enviado un correo con las credenciales.');
 
         return redirect()->route('admin.users.index');
     }
 
     public function render()
     {
-        $empresas = Empresa::where('status', true)->get();
+        $empresas = Empresa::forUser()->where('status', true)->get();
         $roles = Role::all();
 
         return view('livewire.admin.users.create', [

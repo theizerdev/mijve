@@ -54,10 +54,10 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-12 mb-3">
+                            <div class="col-12 mb-3">
                                 <label class="form-label">Dirección</label>
                                 <textarea class="form-control @error('direccion') is-invalid @enderror"
-                                          wire:model="direccion" rows="3" placeholder="Ingrese la dirección completa"></textarea>
+                                          wire:model="direccion" rows="2" placeholder="La dirección se completará automáticamente al seleccionar en el mapa"></textarea>
                                 @error('direccion')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -83,26 +83,36 @@
 
 
 
-                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Latitud</label>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Latitud <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('latitud') is-invalid @enderror"
-                                       wire:model="latitud" placeholder="Ingrese la latitud">
+                                       wire:model="latitud" placeholder="Seleccione en el mapa" readonly>
                                 @error('latitud')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Longitud</label>
+                                <label class="form-label">Longitud <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('longitud') is-invalid @enderror"
-                                       wire:model="longitud" placeholder="Ingrese la longitud">
+                                       wire:model="longitud" placeholder="Seleccione en el mapa" readonly>
                                 @error('longitud')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-12 mb-3">
-                                <div wire:ignore id="map" style="height: 400px;"></div>
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Ubicación en el Mapa <span class="text-danger">*</span></h6>
+                                        <button type="button" onclick="getCurrentLocation()" class="btn btn-primary btn-sm">
+                                            <i class="mdi mdi-crosshairs-gps"></i> Ubicación Actual
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div wire:ignore id="map" style="height: 400px;"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -120,93 +130,62 @@
         </div>
     </div>
 
-      @push('styles')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    @endpush
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+@endpush
 
-    @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        document.addEventListener('livewire:init', function () {
-            // Coordenadas iniciales
-            var initialLat = {{ $latitud ?: 0 }};
-            var initialLng = {{ $longitud ?: 0 }};
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('livewire:init', function () {
+        var initialLat = {{ $latitud ?: -12.0464 }};
+        var initialLng = {{ $longitud ?: -77.0428 }};
 
-            // Inicializar el mapa
-            var map = L.map('map').setView([initialLat, initialLng], initialLat === 0 && initialLng === 0 ? 2 : 15);
+        var map = L.map('map').setView([initialLat, initialLng], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-            // Marcador
-            var marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+        var marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
 
-            // Evento de clic en el mapa
-            map.on('click', function(e) {
-                marker.setLatLng(e.latlng);
-                @this.set('latitud', e.latlng.lat);
-                @this.set('longitud', e.latlng.lng);
+        function updateLocation(lat, lng) {
+            @this.set('latitud', lat);
+            @this.set('longitud', lng);
 
-                // Obtener dirección inversa
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.display_name) {
-                            @this.set('direccion', data.display_name);
-                        }
-                    });
-            });
-
-            // Evento de arrastre del marcador
-            marker.on('dragend', function(e) {
-                var latlng = marker.getLatLng();
-                @this.set('latitud', latlng.lat);
-                @this.set('longitud', latlng.lng);
-
-                // Obtener dirección inversa
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.display_name) {
-                            @this.set('direccion', data.display_name);
-                        }
-                    });
-            });
-
-            // Botón para obtener la ubicación actual
-            var currentLocationBtn = L.control({ position: 'topright' });
-            currentLocationBtn.onAdd = function(map) {
-                var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                div.innerHTML = '<a href="#" title="Ubicación actual" style="color: #333; text-decoration: none; display: block; padding: 6px 10px; font-size: 18px;">📍</a>';
-                div.onclick = function(e) {
-                    e.preventDefault();
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(function(position) {
-                            var lat = position.coords.latitude;
-                            var lng = position.coords.longitude;
-
-                            marker.setLatLng([lat, lng]);
-                            map.setView([lat, lng], 15);
-
-                            @this.set('latitud', lat);
-                            @this.set('longitud', lng);
-
-                            // Obtener dirección inversa
-                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.display_name) {
-                                        @this.set('direccion', data.display_name);
-                                    }
-                                });
-                        });
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name) {
+                        @this.set('direccion', data.display_name);
                     }
-                };
-                return div;
-            };
-            currentLocationBtn.addTo(map);
+                });
+        }
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateLocation(e.latlng.lat, e.latlng.lng);
         });
-    </script>
-    @endpush
+
+        marker.on('dragend', function(e) {
+            var latlng = marker.getLatLng();
+            updateLocation(latlng.lat, latlng.lng);
+        });
+
+        window.getCurrentLocation = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 15);
+                    updateLocation(lat, lng);
+                });
+            } else {
+                alert('Tu navegador no soporta geolocalización.');
+            }
+        };
+    });
+</script>
+@endpush
 </div>

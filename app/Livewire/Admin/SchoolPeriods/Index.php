@@ -8,10 +8,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $sortField = 'created_at';
@@ -35,9 +36,32 @@ class Index extends Component
         $this->sortField = $field;
     }
 
-    public function render()
+    protected function getExportQuery()
     {
-        $query = SchoolPeriod::query()
+        return $this->getBaseQuery();
+    }
+
+    protected function getExportHeaders(): array
+    {
+        return ['ID', 'Nombre', 'Descripción', 'Fecha Inicio', 'Fecha Fin', 'Actual', 'Activo'];
+    }
+
+    protected function formatExportRow($period): array
+    {
+        return [
+            $period->id,
+            $period->name,
+            $period->description ?? 'N/A',
+            $period->start_date->format('d/m/Y'),
+            $period->end_date->format('d/m/Y'),
+            $period->is_current ? 'Sí' : 'No',
+            $period->is_active ? 'Activo' : 'Inactivo'
+        ];
+    }
+
+    private function getBaseQuery()
+    {
+        return SchoolPeriod::query()
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('description', 'like', '%' . $this->search . '%');
@@ -64,7 +88,12 @@ class Index extends Component
                     return $query->whereBetween('start_date', [$startDate, $endDate])
                                 ->orWhereBetween('end_date', [$startDate, $endDate]);
                 }
-            })
+            });
+    }
+
+    public function render()
+    {
+        $query = $this->getBaseQuery()
             ->orderBy($this->sortField, $this->sortDirection);
 
         $schoolPeriods = $query->paginate($this->perPage);

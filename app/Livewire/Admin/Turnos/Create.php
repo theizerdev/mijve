@@ -15,7 +15,7 @@ class Create extends Component
     public $status = 1;
 
     protected $rules = [
-        'nombre' => 'required|string|max:255|unique:turnos,nombre',
+        'nombre' => 'required|string|max:255',
         'descripcion' => 'required|string|max:255',
         'hora_inicio' => 'required|date_format:H:i',
         'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
