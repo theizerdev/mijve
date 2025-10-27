@@ -34,19 +34,19 @@
                       id="paint0_linear_2989_100980"
                       x1="5.36642"
                       y1="0.849138"
-                      x2="10.532"
+                       x2="10.532"
                       y2="24.104"
-                      gradientUnits="userSpaceOnUse">
+                       gradientUnits="userSpaceOnUse">
                       <stop offset="0" stop-opacity="1" />
                       <stop offset="1" stop-opacity="0" />
                     </linearGradient>
                     <linearGradient
                       id="paint1_linear_2989_100980"
                       x1="5.19475"
-                      y1="0.849139"
-                      x2="10.3357"
-                      y2="24.1155"
-                      gradientUnits="userSpaceOnUse">
+                       y1="0.849139"
+                       x2="10.3357"
+                       y2="24.1155"
+                       gradientUnits="userSpaceOnUse">
                       <stop offset="0" stop-opacity="1" />
                       <stop offset="1" stop-opacity="0" />
                     </linearGradient>
@@ -60,8 +60,8 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Verificación en dos pasos</h4>
-          <p class="mb-5">Ingrese el código de verificación de su aplicación de autenticación</p>
+          <h4 class="mb-1">{{ __('auth_ui.two_factor_title') }}</h4>
+          <p class="mb-5">{{ __('auth_ui.two_factor_subtitle') }}</p>
 
           @if (session()->has('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -82,23 +82,23 @@
                   id="code"
                   name="code"
                   wire:model="code"
-                  placeholder="Ingrese su código de 6 dígitos"
+                  placeholder="{{ __('auth_ui.two_factor_code') }}"
                   autofocus
                   maxlength="6"
                   inputmode="numeric"
                   pattern="[0-9]*" />
-                <label for="code">Código de verificación</label>
+                <label for="code">{{ __('auth_ui.two_factor_code') }}</label>
               </div>
-              <div class="form-text">Ingrese el código de 6 dígitos de su aplicación de autenticación</div>
+              <div class="form-text">{{ __('auth_ui.two_factor_subtitle') }}</div>
             </div>
 
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Verificar</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.verify_2fa') }}</button>
             </div>
           </form>
 
           <div class="text-center">
-            <a href="{{ route('login') }}">Volver al inicio de sesión</a>
+            <a href="{{ route('login') }}">{{ __('auth_ui.back_to_login') }}</a>
           </div>
         </div>
       </div>

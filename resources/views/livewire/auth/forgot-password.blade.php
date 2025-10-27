@@ -43,10 +43,10 @@
                     <linearGradient
                       id="paint1_linear_2989_100980"
                       x1="5.19475"
-                      y1="0.849139"
-                      x2="10.3357"
-                      y2="24.1155"
-                      gradientUnits="userSpaceOnUse">
+                       y1="0.849139"
+                       x2="10.3357"
+                       y2="24.1155"
+                       gradientUnits="userSpaceOnUse">
                       <stop offset="0" stop-opacity="1" />
                       <stop offset="1" stop-opacity="0" />
                     </linearGradient>
@@ -60,8 +60,8 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Forgot Password? 🔒</h4>
-          <p class="mb-5">Enter your email and we'll send you instructions to reset your password</p>
+          <h4 class="mb-1">{{ __('auth_ui.forgot_password_title') }} 🔒</h4>
+          <p class="mb-5">{{ __('auth_ui.forgot_password_subtitle') }}</p>
 
           @if (session()->has('status'))
             <div class="alert alert-success" role="alert">
@@ -83,22 +83,22 @@
                 id="email"
                 name="email"
                 wire:model="email"
-                placeholder="Enter your email"
+                placeholder="{{ __('auth_ui.email') }}"
                 autofocus />
-              <label for="email">Email</label>
+              <label for="email">{{ __('auth_ui.email') }}</label>
               @if($hasError('email'))
                 <div class="invalid-feedback d-block">{{ $getError('email') }}</div>
               @endif
             </div>
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Send Reset Link</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.send_reset_link') }}</button>
             </div>
           </form>
 
           <div class="text-center">
             <a href="{{ route('login') }}" class="d-flex align-items-center justify-content-center">
               <i class="icon-base ri ri-arrow-left-s-line"></i>
-              Back to login
+              {{ __('auth_ui.back_to_login') }}
             </a>
           </div>
         </div>

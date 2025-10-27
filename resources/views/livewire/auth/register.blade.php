@@ -60,8 +60,8 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Adventure starts here 🚀</h4>
-          <p class="mb-5">Make your app management easy and fun!</p>
+          <h4 class="mb-1">{{ __('auth_ui.register_title') }} 🚀</h4>
+          <p class="mb-5">{{ __('auth_ui.register_subtitle') }}</p>
 
           <form wire:submit="register">
             <div class="form-floating form-floating-outline mb-5 form-control-validation">
@@ -71,9 +71,9 @@
                 id="name"
                 name="name"
                 wire:model="name"
-                placeholder="Enter your username"
+                placeholder="{{ __('auth_ui.name') }}"
                 autofocus />
-              <label for="name">Username</label>
+              <label for="name">{{ __('auth_ui.name') }}</label>
               @if($hasError('name') || $nameAvailable === false)
                 <div class="invalid-feedback d-block">{{ $getError('name') ?: 'This username is already taken.' }}</div>
               @elseif($nameAvailable && strlen($name) >= 3)
@@ -87,8 +87,8 @@
                 id="email"
                 name="email"
                 wire:model="email"
-                placeholder="Enter your email" />
-              <label for="email">Email</label>
+                placeholder="{{ __('auth_ui.email') }}" />
+              <label for="email">{{ __('auth_ui.email') }}</label>
               @if($hasError('email') || $emailAvailable === false)
                 <div class="invalid-feedback d-block">{{ $getError('email') ?: 'This email is already registered.' }}</div>
               @elseif($emailAvailable && filter_var($email, FILTER_VALIDATE_EMAIL))
@@ -107,7 +107,7 @@
                       wire:model="password"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                       aria-describedby="password" />
-                    <label for="password">Password</label>
+                    <label for="password">{{ __('auth_ui.password') }}</label>
                     @if($hasError('password'))
                       <div class="invalid-feedback d-block">{{ $getError('password') }}</div>
                     @endif
@@ -146,7 +146,7 @@
                       wire:model="password_confirmation"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                       aria-describedby="password" />
-                    <label for="password_confirmation">Confirm Password</label>
+                    <label for="password_confirmation">{{ __('auth_ui.confirm_password') }}</label>
                     @if($hasError('password_confirmation'))
                       <div class="invalid-feedback d-block">{{ $getError('password_confirmation') }}</div>
                     @endif
@@ -170,14 +170,14 @@
               </div>
             </div>
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Sign up</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.register_button') }}</button>
             </div>
           </form>
 
           <p class="text-center mb-5">
-            <span>Already have an account?</span>
+            <span>{{ __('auth_ui.already_have_account') }}</span>
             <a href="{{ route('login') }}">
-              <span>Sign in instead</span>
+              <span>{{ __('auth_ui.login_here') }}</span>
             </a>
           </p>
 

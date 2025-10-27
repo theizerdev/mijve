@@ -34,19 +34,19 @@
                       id="paint0_linear_2989_100980"
                       x1="5.36642"
                       y1="0.849138"
-                      x2="10.532"
+                       x2="10.532"
                       y2="24.104"
-                      gradientUnits="userSpaceOnUse">
+                       gradientUnits="userSpaceOnUse">
                       <stop offset="0" stop-opacity="1" />
                       <stop offset="1" stop-opacity="0" />
                     </linearGradient>
                     <linearGradient
                       id="paint1_linear_2989_100980"
                       x1="5.19475"
-                      y1="0.849139"
-                      x2="10.3357"
-                      y2="24.1155"
-                      gradientUnits="userSpaceOnUse">
+                       y1="0.849139"
+                       x2="10.3357"
+                       y2="24.1155"
+                       gradientUnits="userSpaceOnUse">
                       <stop offset="0" stop-opacity="1" />
                       <stop offset="1" stop-opacity="0" />
                     </linearGradient>
@@ -60,8 +60,8 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Reset Password 🔒</h4>
-          <p class="mb-5">for <span class="fw-medium">{{ $email }}</span></p>
+          <h4 class="mb-1">{{ __('auth_ui.reset_password_title') }} 🔒</h4>
+          <p class="mb-5">{{ __('auth_ui.reset_password_subtitle') }} <span class="fw-medium">{{ $email }}</span></p>
 
           @if (session()->has('status'))
             <div class="alert alert-success" role="alert">
@@ -85,9 +85,9 @@
                 id="email"
                 name="email"
                 wire:model="email"
-                placeholder="Enter your email"
+                placeholder="{{ __('auth_ui.email') }}"
                 autofocus />
-              <label for="email">Email</label>
+              <label for="email">{{ __('auth_ui.email') }}</label>
               @if($hasError('email'))
                 <div class="invalid-feedback d-block">{{ $getError('email') }}</div>
               @endif
@@ -104,7 +104,7 @@
                       wire:model="password"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                       aria-describedby="password" />
-                    <label for="password">New Password</label>
+                    <label for="password">{{ __('auth_ui.new_password') }}</label>
                     @if($hasError('password'))
                       <div class="invalid-feedback d-block">{{ $getError('password') }}</div>
                     @endif
@@ -127,7 +127,7 @@
                       wire:model="password_confirmation"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                       aria-describedby="password" />
-                    <label for="password_confirmation">Confirm Password</label>
+                    <label for="password_confirmation">{{ __('auth_ui.confirm_password') }}</label>
                     @if($hasError('password_confirmation'))
                       <div class="invalid-feedback d-block">{{ $getError('password_confirmation') }}</div>
                     @endif
@@ -139,14 +139,14 @@
               </div>
             </div>
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Set New Password</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.reset_button') }}</button>
             </div>
           </form>
 
           <div class="text-center">
             <a href="{{ route('login') }}" class="d-flex align-items-center justify-content-center">
               <i class="icon-base ri ri-arrow-left-s-line"></i>
-              Back to login
+              {{ __('auth_ui.back_to_login') }}
             </a>
           </div>
         </div>

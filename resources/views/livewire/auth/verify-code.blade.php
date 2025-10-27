@@ -60,10 +60,9 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">Verifica tu correo electrónico ✉️</h4>
+          <h4 class="mb-1">{{ __('auth_ui.verify_email_title') }} ✉️</h4>
           <p class="text-start mb-5">
-            Hemos enviado un código de verificación a tu correo: <span class="fw-medium">{{ Auth::user()->email }}</span>.
-            Por favor, ingrésalo a continuación para verificar tu cuenta.
+            {{ __('auth_ui.verify_email_subtitle') }} <span class="fw-medium">{{ Auth::user()->email }}</span>.
           </p>
 
           @if (session('resent'))
@@ -74,7 +73,7 @@
 
           <form wire:submit="verifyCode">
             <div class="mb-5 form-control-validation">
-              <label class="form-label">Código de verificación</label>
+              <label class="form-label">{{ __('auth_ui.verification_code') }}</label>
               <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
                 @for ($i = 0; $i < 6; $i++)
                   <input
@@ -103,7 +102,7 @@
             </div>
 
             <div class="mb-5">
-              <button class="btn btn-primary d-grid w-100" type="submit">Verificar correo</button>
+              <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.verify_button') }}</button>
             </div>
           </form>
 
@@ -111,11 +110,11 @@
             <div class="mb-5">
               @if($canResend)
                 <button class="btn btn-outline-primary d-grid w-100" type="submit">
-                  Reenviar código
+                  {{ __('auth_ui.resend_code') }}
                 </button>
               @else
                 <button class="btn btn-outline-secondary d-grid w-100" type="button" disabled>
-                  Reenviar código ({{ floor($resendCountdown/60) }}:{{ str_pad($resendCountdown%60, 2, '0', STR_PAD_LEFT) }})
+                  {{ __('auth_ui.resend_code') }} ({{ floor($resendCountdown/60) }}:{{ str_pad($resendCountdown%60, 2, '0', STR_PAD_LEFT) }})
                 </button>
               @endif
             </div>
@@ -126,7 +125,7 @@
                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                class="d-flex align-items-center justify-content-center">
               <i class="icon-base ri ri-arrow-left-s-line"></i>
-              Cerrar sesión
+              {{ __('auth_ui.logout') }}
             </a>
 
             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

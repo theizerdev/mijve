@@ -184,7 +184,7 @@
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
                     <li>
-                      <a class="dropdown-item" href="pages-account-settings-account.html">
+                      <a class="dropdown-item" href="{{ route('admin.users.profile') }}">
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0 me-2">
                             <div class="avatar avatar-online">
@@ -208,45 +208,19 @@
                     <li>
                       <a class="dropdown-item" href="{{ route('admin.users.profile') }}">
                         <i class="icon-base ri ri-user-3-line icon-22px me-3"></i
-                        ><span class="align-middle">My Profile</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="pages-account-settings-account.html">
-                        <i class="icon-base ri ri-settings-4-line icon-22px me-3"></i
-                        ><span class="align-middle">Settings</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="pages-account-settings-billing.html">
-                        <span class="d-flex align-items-center align-middle">
-                          <i class="flex-shrink-0 icon-base ri ri-file-text-line icon-22px me-3"></i>
-                          <span class="flex-grow-1 align-middle">Billing Plan</span>
-                          <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger">4</span>
-                        </span>
+                        ><span class="align-middle">Mi perfil</span>
                       </a>
                     </li>
                     <li>
                       <div class="dropdown-divider"></div>
                     </li>
-                    <li>
-                      <a class="dropdown-item" href="pages-pricing.html">
-                        <i class="icon-base ri ri-money-dollar-circle-line icon-22px me-3"></i
-                        ><span class="align-middle">Pricing</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="pages-faq.html">
-                        <i class="icon-base ri ri-question-line icon-22px me-3"></i
-                        ><span class="align-middle">FAQ</span>
-                      </a>
-                    </li>
+
                     <li>
                         <div class="d-grid px-4 pt-2 pb-1">
                       <a class="btn btn-sm btn-danger d-flex" href="{{ route('logout') }}"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="icon-base ri ri-logout-box-r-line ms-2 icon-16px"></i>
-                        <span>Logout</span>
+                        <span>Salir del sistema</span>
                        </a>
                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                          @csrf
