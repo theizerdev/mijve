@@ -175,7 +175,11 @@
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                   <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                      <img src="{{ asset('materialize/assets/img/avatars/1.png') }}" alt="avatar" class="rounded-circle" />
+                      @if(Auth::check() && Auth::user()->initials)
+                        <span class="avatar-initials bg-primary text-white">{{ Auth::user()->initials }}</span>
+                      @else
+                        <img src="{{ asset('materialize/assets/img/avatars/1.png') }}" alt="avatar" class="rounded-circle" />
+                      @endif
                     </div>
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
@@ -184,10 +188,11 @@
                         <div class="d-flex align-items-center">
                           <div class="flex-shrink-0 me-2">
                             <div class="avatar avatar-online">
-                              <img
-                                src="{{ asset('materialize/assets/img/avatars/1.png') }}"
-                                alt="alt"
-                                class="w-px-40 h-auto rounded-circle" />
+                              @if(Auth::check() && Auth::user()->initials)
+                                <span class="avatar-initials bg-primary text-white">{{ Auth::user()->initials }}</span>
+                              @else
+                                <img src="{{ asset('materialize/assets/img/avatars/1.png') }}" alt="avatar" class="w-px-40 h-auto rounded-circle" />
+                              @endif
                             </div>
                           </div>
                           <div class="flex-grow-1">
@@ -254,3 +259,36 @@
               </ul>
             </div>
           </nav>
+ <style>
+        /* Estilos para avatar con iniciales */
+    .avatar-initials {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        font-weight: 500;
+        font-size: 1rem;
+        background-color: #007bff;
+        color: white;
+    }
+
+    /* Versión para avatares con fondo label */
+    .avatar-initials.bg-label-primary {
+        background-color: #e0f1ff;
+        color: #007bff;
+    }
+
+    /* Asegurar que los avatares tengan el tamaño correcto */
+    .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        border-radius: 50%;
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
+|

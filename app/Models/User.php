@@ -67,6 +67,21 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get user initials from their name
+     */
+    public function getInitialsAttribute()
+    {
+        $names = explode(' ', $this->name);
+        $initials = '';
+        
+        foreach ($names as $name) {
+            $initials .= strtoupper(substr($name, 0, 1));
+        }
+        
+        return $initials;
+    }
+
+    /**
      * Generar un código de verificación de 8 caracteres (alfanumérico)
      */
     public function generateVerificationCode()
