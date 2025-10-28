@@ -102,6 +102,48 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view monitoreo accesos',
                 'export monitoreo accesos',
             ],
+            // Módulo de matrículas
+            'matriculas' => [
+                'access matriculas',
+                'create matriculas',
+                'edit matriculas',
+                'delete matriculas',
+                'view matriculas',
+            ],
+            // Módulo de pagos
+            'pagos' => [
+                'access pagos',
+                'create pagos',
+                'edit pagos',
+                'delete pagos',
+                'view pagos',
+            ],
+            // Módulo de conceptos de pago
+            'conceptos_pago' => [
+                'access conceptos pago',
+                'create conceptos pago',
+                'edit conceptos pago',
+                'delete conceptos pago',
+                'view conceptos pago',
+            ],
+            // Módulo de programas
+            'programas' => [
+                'access programas',
+                'create programas',
+                'edit programas',
+                'delete programas',
+                'view programas',
+            ],
+            // Módulo de reportes
+            'reportes' => [
+                'access reportes',
+                'view estado cuentas',
+                'view resumen pagos',
+                'view morosidad',
+                'view ingresos totales',
+                'view historico matriculas',
+                'export reportes',
+            ],
         ];
 
         // Crear permisos organizados por módulos
@@ -129,8 +171,13 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Asignar permisos al Recepcionista (solo de estudiantes y dashboard)
-        $recepcionistaPermissions = Permission::whereIn('module', ['students', 'dashboard'])->get();
+        // Asignar permisos al Recepcionista (solo de estudiantes, matrículas, pagos y dashboard)
+        $recepcionistaPermissions = Permission::whereIn('module', [
+            'students', 
+            'dashboard',
+            'matriculas',
+            'pagos'
+        ])->get();
         $recepcionistaRole->syncPermissions($recepcionistaPermissions);
     }
 }

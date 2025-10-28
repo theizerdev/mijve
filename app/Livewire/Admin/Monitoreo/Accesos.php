@@ -50,27 +50,31 @@ class Accesos extends Component
     
     public function render()
     {
+        // Asegurarse de que las fechas incluyan todo el día
+        $startDateTime = Carbon::parse($this->startDate)->startOfDay();
+        $endDateTime = Carbon::parse($this->endDate)->endOfDay();
+        
         $stats = [
-            'total' => StudentAccessLog::whereBetween('access_time', [$this->startDate, $this->endDate])->count(),
-            'entradas' => StudentAccessLog::where('type', 'entrada')->whereBetween('access_time', [$this->startDate, $this->endDate])->count(),
-            'salidas' => StudentAccessLog::where('type', 'salida')->whereBetween('access_time', [$this->startDate, $this->endDate])->count(),
+            'total' => StudentAccessLog::whereBetween('access_time', [$startDateTime, $endDateTime])->count(),
+            'entradas' => StudentAccessLog::where('type', 'entrada')->whereBetween('access_time', [$startDateTime, $endDateTime])->count(),
+            'salidas' => StudentAccessLog::where('type', 'salida')->whereBetween('access_time', [$startDateTime, $endDateTime])->count(),
         ];
         
         $byDay = StudentAccessLog::selectRaw('DATE(access_time) as date, COUNT(*) as count')
-            ->whereBetween('access_time', [$this->startDate, $this->endDate])
+            ->whereBetween('access_time', [$startDateTime, $endDateTime])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
             
         $byHour = StudentAccessLog::selectRaw('HOUR(access_time) as hour, COUNT(*) as count')
-            ->whereBetween('access_time', [$this->startDate, $this->endDate])
+            ->whereBetween('access_time', [$startDateTime, $endDateTime])
             ->groupBy('hour')
             ->orderBy('count', 'desc')
             ->take(10)
             ->get();
             
         $recent = StudentAccessLog::with(['student', 'registeredBy'])
-            ->whereBetween('access_time', [$this->startDate, $this->endDate])
+            ->whereBetween('access_time', [$startDateTime, $endDateTime])
             ->orderBy('access_time', 'desc')
             ->take(20)
             ->get();

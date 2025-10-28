@@ -282,7 +282,7 @@
                     Mostrando {{ $students->firstItem() }} a {{ $students->lastItem() }} de {{ $students->total() }} estudiantes
                 </div>
                 <div>
-                    {{ $students->links() }}
+                    {{ $students->links('livewire.admin.pagination') }}
                 </div>
             </div>
         </div>

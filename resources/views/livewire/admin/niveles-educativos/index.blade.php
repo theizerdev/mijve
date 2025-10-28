@@ -15,7 +15,7 @@
 
     <div class="row">
         <!-- Estadísticas -->
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -51,17 +51,35 @@
             </div>
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ number_format(\App\Models\NivelEducativo::avg('numero_cuotas') ?? 0, 1) }}</h4>
-                            <p class="mb-0">Cuotas Promedio</p>
+                            <h4 class="mb-1">${{ number_format(\App\Models\NivelEducativo::avg('costo_matricula') ?? 0, 2) }}</h4>
+                            <p class="mb-0">Matrícula Promedio</p>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-info">
-                                <i class="ri ri-list-ordered ri-24px"></i>
+                                <i class="ri ri-bank-card-line ri-24px"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1">${{ number_format(\App\Models\NivelEducativo::avg('costo_mensualidad') ?? 0, 2) }}</h4>
+                            <p class="mb-0">Mensualidad Promedio</p>
+                        </div>
+                        <div class="avatar">
+                            <span class="avatar-initial rounded bg-label-warning">
+                                <i class="ri ri-calendar-line ri-24px"></i>
                             </span>
                         </div>
                     </div>
@@ -129,6 +147,12 @@
                                 <th wire:click="sortBy('costo')" style="cursor: pointer;">
                                     Costo @if($sortField === 'costo') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
+                                <th wire:click="sortBy('costo_matricula')" style="cursor: pointer;">
+                                    Matrícula @if($sortField === 'costo_matricula') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
+                                <th wire:click="sortBy('costo_mensualidad')" style="cursor: pointer;">
+                                    Mensualidad @if($sortField === 'costo_mensualidad') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                </th>
                                 <th wire:click="sortBy('cuotas')" style="cursor: pointer;">
                                     Cuotas @if($sortField === 'cuotas') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
@@ -156,6 +180,8 @@
                                     </td>
                                     <td>{{ $nivel->descripcion }}</td>
                                     <td>${{ number_format($nivel->costo, 2) }}</td>
+                                    <td>${{ number_format($nivel->costo_matricula, 2) }}</td>
+                                    <td>${{ number_format($nivel->costo_mensualidad, 2) }}</td>
                                     <td>{{ $nivel->numero_cuotas }}</td>
                                     <td>${{ number_format($nivel->cuota_inicial, 2) }}</td>
                                     <td>
@@ -192,7 +218,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center">No se encontraron niveles educativos</td>
+                                    <td colspan="9" class="text-center">No se encontraron niveles educativos</td>
                                 </tr>
                             @endforelse
                         </tbody>

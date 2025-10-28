@@ -85,6 +85,76 @@
     .capture-btn {
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+
+    /* Estilos para breadcrumbs */
+    .breadcrumb-style {
+      background-color: transparent;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+    }
+
+    .breadcrumb-style .breadcrumb-item + .breadcrumb-item::before {
+      content: ">";
+      color: #6c757d;
+    }
+
+    .breadcrumb-style .breadcrumb-item a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .breadcrumb-style .breadcrumb-item a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumb-style .breadcrumb-item.active {
+      color: #495057;
+    }
+
+    /* Mejoras de accesibilidad */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Estilos para notificaciones */
+    .notification-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform: translate(50%, -50%);
+      padding: 0.25em 0.5em;
+      font-size: 0.75em;
+      border-radius: 50%;
+      min-width: 1.5em;
+      min-height: 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .breadcrumb-style {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+      }
+
+      .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
   </style>
 
     @stack('styles')
@@ -104,8 +174,10 @@
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
+
             <!-- Content -->
             <div class="container-fluid flex-grow-1 container-p-y">
+
               {{ $slot }}
             </div>
             <!-- /Content -->
@@ -160,10 +232,49 @@
 
    <!-- Cropper.js JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     @stack('scripts')
+
+    <!-- Accessibility improvements -->
+    <script>
+      // Mejorar la navegación por teclado
+      document.addEventListener('DOMContentLoaded', function() {
+        // Añadir skip links para usuarios de teclado
+        const skipLink = document.createElement('a');
+        skipLink.href = '#main-content';
+        skipLink.className = 'sr-only sr-only-focusable';
+        skipLink.textContent = 'Saltar al contenido principal';
+        skipLink.style.cssText = `
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: #000;
+          color: #fff;
+          padding: 10px;
+          z-index: 10000;
+        `;
+
+        skipLink.addEventListener('focus', function() {
+          this.style.top = '10px';
+        });
+
+        skipLink.addEventListener('blur', function() {
+          this.style.top = '-40px';
+        });
+
+        document.body.insertBefore(skipLink, document.body.firstChild);
+
+        // Asegurar que todos los elementos interactivos tengan focus visible
+        const focusableElements = document.querySelectorAll('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        focusableElements.forEach(element => {
+          if (!element.hasAttribute('aria-label') && !element.hasAttribute('aria-labelledby') && element.title) {
+            element.setAttribute('aria-label', element.title);
+          }
+        });
+      });
+    </script>
   </body>
 </html>

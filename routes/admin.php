@@ -39,8 +39,13 @@ use App\Livewire\Admin\Students\Edit as StudentsEdit;
 use App\Livewire\Admin\Students\Show as StudentsShow;
 use App\Livewire\Admin\Students\QrAccess;
 use App\Livewire\Admin\ActiveSessions;
-
-
+// Componentes para matrículas
+use App\Livewire\Admin\Programas\Index as ProgramasIndex;
+use App\Livewire\Admin\Programas\Create as ProgramasCreate;
+use App\Livewire\Admin\Programas\Edit as ProgramasEdit;
+use App\Livewire\Admin\ConceptosPago\Index as ConceptosPagoIndex;
+use App\Livewire\Admin\ConceptosPago\Create as ConceptosPagoCreate;
+use App\Livewire\Admin\ConceptosPago\Edit as ConceptosPagoEdit;
 
 // Empresas
 Route::get('/empresas', EmpresasIndex::class)->name('empresas.index');
@@ -115,4 +120,35 @@ Route::prefix('monitoreo')->as('monitoreo.')->group(function () {
     Route::get('/base-datos', \App\Livewire\Admin\Monitoreo\BaseDatos::class)->name('base-datos');
     Route::get('/estudiantes', \App\Livewire\Admin\Monitoreo\Estudiantes::class)->name('estudiantes');
     Route::get('/accesos', \App\Livewire\Admin\Monitoreo\Accesos::class)->name('accesos');
+});
+
+// Programas
+Route::get('/programas', ProgramasIndex::class)->name('programas.index');
+Route::get('/programas/crear', ProgramasCreate::class)->name('programas.create');
+Route::get('/programas/{programa}/editar', ProgramasEdit::class)->name('programas.edit');
+
+// Conceptos de Pago
+Route::get('/conceptos-pago', ConceptosPagoIndex::class)->name('conceptos-pago.index');
+Route::get('/conceptos-pago/crear', ConceptosPagoCreate::class)->name('conceptos-pago.create');
+Route::get('/conceptos-pago/{concepto}/editar', ConceptosPagoEdit::class)->name('conceptos-pago.edit');
+
+// Matrículas
+Route::get('/matriculas', \App\Livewire\Admin\Matriculas\Index::class)->name('matriculas.index');
+Route::get('/matriculas/crear', \App\Livewire\Admin\Matriculas\Create::class)->name('matriculas.create');
+Route::get('/matriculas/{matricula}/editar', \App\Livewire\Admin\Matriculas\Edit::class)->name('matriculas.edit');
+Route::get('/matriculas/{matricula}', \App\Livewire\Admin\Matriculas\Show::class)->name('matriculas.show');
+
+// Pagos
+Route::get('/pagos', \App\Livewire\Admin\Pagos\Index::class)->name('pagos.index');
+Route::get('/pagos/crear', \App\Livewire\Admin\Pagos\Create::class)->name('pagos.create');
+Route::get('/pagos/{pago}/editar', \App\Livewire\Admin\Pagos\Edit::class)->name('pagos.edit');
+Route::get('/pagos/{pago}', \App\Livewire\Admin\Pagos\Show::class)->name('pagos.show');
+
+// Reportes
+Route::prefix('reportes')->as('reportes.')->group(function () {
+    Route::get('/estado-cuentas', \App\Livewire\Admin\Reportes\EstadoCuentas::class)->name('estado-cuentas');
+    Route::get('/resumen-pagos', \App\Livewire\Admin\Reportes\ResumenPagos::class)->name('resumen-pagos');
+    Route::get('/morosidad', \App\Livewire\Admin\Reportes\Morosidad::class)->name('morosidad');
+    Route::get('/ingresos-totales', \App\Livewire\Admin\Reportes\IngresosTotales::class)->name('ingresos-totales');
+    Route::get('/historico-matriculas', \App\Livewire\Admin\Reportes\HistoricoMatriculas::class)->name('historico-matriculas');
 });

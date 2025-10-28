@@ -15,27 +15,27 @@ class EducationalLevelSeeder extends Seeder
     {
         $educationalLevels = [
             [
-                'nombre' => 'Inicial',
-                'descripcion' => 'Educación inicial para niños de 3 a 5 años',
-                'costo' => 0.00,
+                'nombre' => 'Educación Inicial',
+                'descripcion' => 'Educación inicial para niños menores de 8 años',
+                'costo' => 1200.00,
                 'numero_cuotas' => 12,
-                'cuota_inicial' => 0.00,
+                'cuota_inicial' => 200.00,
                 'status' => 1,
             ],
             [
                 'nombre' => 'Primaria',
                 'descripcion' => 'Educación primaria de 1ro a 6to grado',
-                'costo' => 0.00,
+                'costo' => 1500.00,
                 'numero_cuotas' => 12,
-                'cuota_inicial' => 0.00,
+                'cuota_inicial' => 250.00,
                 'status' => 1,
             ],
             [
                 'nombre' => 'Secundaria',
                 'descripcion' => 'Educación secundaria de 1ro a 5to grado',
-                'costo' => 0.00,
+                'costo' => 1800.00,
                 'numero_cuotas' => 12,
-                'cuota_inicial' => 0.00,
+                'cuota_inicial' => 300.00,
                 'status' => 1,
             ],
         ];

@@ -22,38 +22,28 @@ class SucursalSeeder extends Seeder
                 'telefono' => $empresa->telefono,
             ]);
 
-            // Crear Super Administrador para la sucursal
+            // Crear Super Administrador
             $superAdmin = User::create([
-                'name' => 'Super Admin Sucursal ' . $sucursal->nombre,
-                'email' => 'superadmin.sucursal' . $sucursal->id . '@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
+                'name' => 'Super Admin ' . $empresa->razon_social,
+                'email' => 'superadmin@devtechvnzla.com',
                 'password' => Hash::make('password'),
                 'empresa_id' => $empresa->id,
-                'sucursal_id' => $sucursal->id,
+                'sucursal_id' => 1,
                 'status' => true,
             ]);
+
             $superAdmin->assignRole('Super Administrador');
 
-            // Crear Administrador para la sucursal
+            // Crear Administrador
             $admin = User::create([
-                'name' => 'Admin Sucursal ' . $sucursal->nombre,
-                'email' => 'admin.sucursal' . $sucursal->id . '@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
+                'name' => 'Admin ' . $empresa->razon_social,
+                'email' => 'admin@devtechvnzla.com',
                 'password' => Hash::make('password'),
                 'empresa_id' => $empresa->id,
-                'sucursal_id' => $sucursal->id,
+                'sucursal_id' => 1,
                 'status' => true,
             ]);
             $admin->assignRole('Administrador');
-
-            // Crear Recepcionista para la sucursal
-            $recepcionista = User::create([
-                'name' => 'Recepcionista Sucursal ' . $sucursal->nombre,
-                'email' => 'recepcionista.sucursal' . $sucursal->id . '@' . strtolower(str_replace(' ', '', $empresa->razon_social)) . '.com',
-                'password' => Hash::make('password'),
-                'empresa_id' => $empresa->id,
-                'sucursal_id' => $sucursal->id,
-                'status' => true,
-            ]);
-            $recepcionista->assignRole('Recepcionista');
         }
     }
 }

@@ -17,6 +17,8 @@ class NivelEducativo extends Model
         'nombre',
         'descripcion',
         'costo',
+        'costo_matricula',
+        'costo_mensualidad',
         'numero_cuotas',
         'cuota_inicial',
         'status'
@@ -24,6 +26,8 @@ class NivelEducativo extends Model
 
     protected $casts = [
         'costo' => 'decimal:2',
+        'costo_matricula' => 'decimal:2',
+        'costo_mensualidad' => 'decimal:2',
         'cuota_inicial' => 'decimal:2',
         'status' => 'boolean',
     ];

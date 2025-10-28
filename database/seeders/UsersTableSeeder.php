@@ -13,11 +13,14 @@ class UsersTableSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => now()
+         $superUser =  User::create([
+                    'name' => 'Test User',
+                    'email' => 'test@example.com',
+                    'password' => bcrypt('password'),
+                    'email_verified_at' => now()
         ]);
+
+
+             $superUser->assignRole('Super Administrador');
     }
 }

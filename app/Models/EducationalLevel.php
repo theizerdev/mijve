@@ -21,6 +21,8 @@ class EducationalLevel extends Model
         'sucursal_id',
         'nombre',
         'descripcion',
+        'costo_matricula',
+        'costo_mensualidad',
         'costo',
         'cuota_inicial',
         'numero_cuotas',
@@ -40,6 +42,8 @@ class EducationalLevel extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'costo_matricula' => 'decimal:2',
+        'costo_mensualidad' => 'decimal:2',
         'costo' => 'decimal:2',
         'cuota_inicial' => 'decimal:2',
         'numero_cuotas' => 'integer',

@@ -82,6 +82,14 @@ class Student extends Model
     }
 
     /**
+     * Get the student's matriculas.
+     */
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class, 'estudiante_id');
+    }
+
+    /**
      * Get the student's age in years.
      */
     public function getEdadAttribute()
