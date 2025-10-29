@@ -166,7 +166,7 @@
                     Mostrando {{ $pagos->firstItem() }} a {{ $pagos->lastItem() }} de {{ $pagos->total() }} pagos
                 </div>
                 <div>
-                    {{ $pagos->links('livewire.admin.pagination') }}
+                    {{ $pagos->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

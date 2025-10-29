@@ -16,8 +16,15 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
+
+        // Disable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
         // Delete all records from the students table to avoid duplicates
         DB::table('students')->delete();
+        
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // Get all educational levels
         $niveles = EducationalLevel::all();
@@ -61,7 +68,7 @@ class StudentSeeder extends Seeder
                 'nombres' => $faker->firstName,
                 'apellidos' => $faker->lastName,
                 'fecha_nacimiento' => $fechaNacimiento,
-                'codigo' => strtoupper($prefix) . str_pad($i, 4, '0', STR_PAD_LEFT),
+                'codigo' => str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
                 'documento_identidad' => $this->generateDocumentNumber($prefix, $i),
                 'grado' => $this->assignGrade($prefix, $i),
                 'seccion' => $faker->randomElement(['A', 'B', 'C']),

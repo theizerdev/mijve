@@ -231,7 +231,7 @@
                             Mostrando {{ $niveles->firstItem() }} a {{ $niveles->lastItem() }} de {{ $niveles->total() }} resultados
                         </div>
                         <div>
-                            {{ $niveles->links('livewire.admin.pagination') }}
+                            {{ $niveles->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

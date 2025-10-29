@@ -150,7 +150,7 @@
                     Mostrando {{ $conceptos->firstItem() }} a {{ $conceptos->lastItem() }} de {{ $conceptos->total() }} conceptos
                 </div>
                 <div>
-                    {{ $conceptos->links('livewire.admin.pagination') }}
+                    {{ $conceptos->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

@@ -247,7 +247,7 @@
                             Mostrando {{ $permissions->firstItem() }} a {{ $permissions->lastItem() }} de {{ $permissions->total() }} resultados
                         </div>
                         <div>
-                            {{ $permissions->links('livewire.admin.pagination') }}
+                            {{ $permissions->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

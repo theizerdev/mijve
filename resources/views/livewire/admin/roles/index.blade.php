@@ -229,7 +229,7 @@
                             Mostrando {{ $roles->firstItem() }} a {{ $roles->lastItem() }} de {{ $roles->total() }} resultados
                         </div>
                         <div>
-                            {{ $roles->links('livewire.admin.pagination') }}
+                            {{ $roles->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

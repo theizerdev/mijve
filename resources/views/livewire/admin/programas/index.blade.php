@@ -173,7 +173,7 @@
                     Mostrando {{ $programas->firstItem() }} a {{ $programas->lastItem() }} de {{ $programas->total() }} programas
                 </div>
                 <div>
-                    {{ $programas->links('livewire.admin.pagination') }}
+                    {{ $programas->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

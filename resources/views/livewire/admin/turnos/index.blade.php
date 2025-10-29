@@ -191,7 +191,7 @@
                             Mostrando {{ $turnos->firstItem() }} a {{ $turnos->lastItem() }} de {{ $turnos->total() }} resultados
                         </div>
                         <div>
-                            {{ $turnos->links('livewire.admin.pagination') }}
+                            {{ $turnos->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

@@ -173,7 +173,7 @@
                             Mostrando {{ $sessions->firstItem() }} a {{ $sessions->lastItem() }} de {{ $sessions->total() }} resultados
                         </div>
                         <div>
-                            {{ $sessions->links('livewire.admin.pagination') }}
+                            {{ $sessions->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

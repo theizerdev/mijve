@@ -223,7 +223,7 @@
                             Mostrando {{ $empresas->firstItem() }} a {{ $empresas->lastItem() }} de {{ $empresas->total() }} resultados
                         </div>
                         <div>
-                            {{ $empresas->links('livewire.admin.pagination') }}
+                            {{ $empresas->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

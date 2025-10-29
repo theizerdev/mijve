@@ -144,6 +144,13 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view historico matriculas',
                 'export reportes',
             ],
+            // Módulo de actividad
+            'activity_log' => [
+                'access activity log',
+                'view activity log',
+                'delete activity log',
+                'export activity log',
+            ],
         ];
 
         // Crear permisos organizados por módulos

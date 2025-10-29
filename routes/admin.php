@@ -152,3 +152,6 @@ Route::prefix('reportes')->as('reportes.')->group(function () {
     Route::get('/ingresos-totales', \App\Livewire\Admin\Reportes\IngresosTotales::class)->name('ingresos-totales');
     Route::get('/historico-matriculas', \App\Livewire\Admin\Reportes\HistoricoMatriculas::class)->name('historico-matriculas');
 });
+
+// Registro de Actividad
+Route::get('/activity-log', \App\Livewire\Admin\ActivityLog::class)->name('activity-log');

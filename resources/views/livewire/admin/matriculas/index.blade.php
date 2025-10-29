@@ -180,7 +180,7 @@
                     Mostrando {{ $matriculas->firstItem() }} a {{ $matriculas->lastItem() }} de {{ $matriculas->total() }} matrículas
                 </div>
                 <div>
-                    {{ $matriculas->links('livewire.admin.pagination') }}
+                    {{ $matriculas->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

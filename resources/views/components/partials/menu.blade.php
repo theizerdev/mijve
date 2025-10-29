@@ -456,6 +456,14 @@
       </a>
     </li>
     @endcan
+     @can('access activity log')
+    <li class="menu-item {{ request()->is('admin/activity-log*') ? 'active' : '' }}">
+        <a href="{{ route('admin.activity-log') }}" class="menu-link">
+            <i class="menu-icon tf-icons ri ri-folder-line"></i>
+            <div data-i18n="Registro de Actividad">Registro de Actividad</div>
+        </a>
+    </li>
+    @endcan
 
     @can('access monitoreo')
     <!-- Monitoreo -->

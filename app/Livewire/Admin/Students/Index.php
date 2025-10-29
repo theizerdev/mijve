@@ -270,6 +270,11 @@ class Index extends Component
 
     public function downloadQrCode(Student $student)
     {
+        // Verificar permiso para descargar QR
+        if (!Auth::user()->can('edit students')) {
+            session()->flash('error', 'No tienes permiso para descargar el código QR.');
+            return;
+        }
         // Generar código QR en formato PNG
         $qrCode = $student->generateQrCode(300);
         $imageData = base64_decode(substr($qrCode, strpos($qrCode, ",") + 1));

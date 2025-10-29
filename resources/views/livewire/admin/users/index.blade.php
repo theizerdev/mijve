@@ -272,7 +272,7 @@
                             Mostrando {{ $users->firstItem() }} a {{ $users->lastItem() }} de {{ $users->total() }} resultados
                         </div>
                         <div>
-                            {{ $users->links('livewire.admin.pagination') }}
+                            {{ $users->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>

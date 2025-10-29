@@ -211,7 +211,7 @@
                             Mostrando {{ $schoolPeriods->firstItem() }} a {{ $schoolPeriods->lastItem() }} de {{ $schoolPeriods->total() }} resultados
                         </div>
                         <div>
-                            {{ $schoolPeriods->links('livewire.admin.pagination') }}
+                            {{ $schoolPeriods->links('vendor.pagination.materialize') }}
                         </div>
                     </div>
                 </div>
