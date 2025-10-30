@@ -7,6 +7,7 @@ use App\Models\Matricula;
 use App\Models\Student;
 use App\Models\Programa;
 use App\Models\SchoolPeriod;
+use App\Models\PaymentSchedule;
 
 class Create extends Component
 {
@@ -24,6 +25,10 @@ class Create extends Component
     public $students = [];
     public $programas = [];
     public $periodos = [];
+    
+    // Tabla de amortización
+    public $paymentSchedule = [];
+    public $showSchedule = false;
 
     protected $rules = [
         'student_id' => 'required|exists:students,id',
@@ -44,7 +49,13 @@ class Create extends Component
 
     public function loadData()
     {
-        $this->students = Student::with('nivelEducativo')->orderBy('nombres')->orderBy('apellidos')->get();
+        // Cargar solo estudiantes que no tienen matrícula
+        $this->students = Student::whereDoesntHave('matriculas')
+            ->with('nivelEducativo')
+            ->orderBy('nombres')
+            ->orderBy('apellidos')
+            ->get();
+            
         $this->programas = Programa::where('activo', true)->orderBy('nombre')->get();
         $this->periodos = SchoolPeriod::orderBy('name')->get();
     }
@@ -59,7 +70,111 @@ class Create extends Component
                 $this->cuota_inicial = $student->nivelEducativo->cuota_inicial;
                 $this->numero_cuotas = $student->nivelEducativo->numero_cuotas;
             }
+            
+            // Generar tabla de amortización cuando se selecciona un estudiante
+            $this->generatePaymentSchedule();
         }
+    }
+    
+    public function updatedCosto()
+    {
+        $this->generatePaymentSchedule();
+    }
+    
+    public function updatedCuotaInicial()
+    {
+        $this->generatePaymentSchedule();
+    }
+    
+    public function updatedNumeroCuotas()
+    {
+        $this->generatePaymentSchedule();
+    }
+
+    public function generatePaymentSchedule()
+    {
+        // Solo generar si tenemos todos los datos necesarios
+        if (!$this->costo || !$this->periodo_id) {
+            $this->paymentSchedule = [];
+            $this->showSchedule = false;
+            return;
+        }
+
+        $periodo = SchoolPeriod::find($this->periodo_id);
+        if (!$periodo) {
+            $this->paymentSchedule = [];
+            $this->showSchedule = false;
+            return;
+        }
+
+        // Calcular monto restante después de la cuota inicial
+        $montoRestante = $this->costo - $this->cuota_inicial;
+        
+        // Si no hay cuotas, todo se cobra en la cuota inicial
+        if ($this->numero_cuotas <= 0) {
+            $this->paymentSchedule = [
+                [
+                    'numero_cuota' => 1,
+                    'descripcion' => 'Pago único',
+                    'monto' => $this->costo,
+                    'fecha_vencimiento' => $periodo->start_date
+                ]
+            ];
+            $this->showSchedule = true;
+            return;
+        }
+
+        // Calcular monto por cuota
+        $montoCuota = $montoRestante / $this->numero_cuotas;
+        
+        // Generar cuotas mensuales
+        $this->paymentSchedule = [];
+        
+        // Agregar cuota inicial
+        if ($this->cuota_inicial > 0) {
+            $this->paymentSchedule[] = [
+                'numero_cuota' => 0,
+                'descripcion' => 'Cuota inicial',
+                'monto' => $this->cuota_inicial,
+                'fecha_vencimiento' => $periodo->start_date
+            ];
+        }
+        
+        // Agregar cuotas distribuidas uniformemente a lo largo del período escolar
+        $startDate = new \DateTime($periodo->start_date);
+        $endDate = new \DateTime($periodo->end_date);
+        
+        // Calcular intervalo total en días
+        $totalDays = $startDate->diff($endDate)->days;
+        
+        // Para cada cuota, calcular la fecha de vencimiento distribuida uniformemente
+        for ($i = 1; $i <= $this->numero_cuotas; $i++) {
+            $dueDate = clone $startDate;
+            
+            // Calcular días entre cuotas (distribución uniforme)
+            if ($this->numero_cuotas > 1) {
+                $daysBetweenPayments = floor($totalDays / ($this->numero_cuotas - 1));
+                $dueDate->modify('+' . ($daysBetweenPayments * ($i - 1)) . ' days');
+            } else {
+                // Si solo hay una cuota, colocarla a la mitad del período
+                $daysBetweenPayments = floor($totalDays / 2);
+                $dueDate->modify('+' . $daysBetweenPayments . ' days');
+            }
+            
+            // Asegurarse de que la fecha no exceda la fecha final
+            if ($dueDate > $endDate) {
+                $dueDate = clone $endDate;
+            }
+            
+            $this->paymentSchedule[] = [
+                'numero_cuota' => $i,
+                'descripcion' => 'Cuota ' . $i,
+                'monto' => round($montoCuota, 2),
+                'fecha_vencimiento' => $dueDate->format('Y-m-d')
+            ];
+        }
+        
+        $this->showSchedule = true;
     }
 
     public function store()
@@ -73,7 +188,7 @@ class Create extends Component
         $this->validate();
 
         try {
-            Matricula::create([
+            $matricula = Matricula::create([
                 'estudiante_id' => $this->student_id,
                 'programa_id' => $this->programa_id,
                 'periodo_id' => $this->periodo_id,
@@ -84,10 +199,28 @@ class Create extends Component
                 'numero_cuotas' => $this->numero_cuotas
             ]);
 
+            // Generar cronograma de pagos
+            $this->createPaymentSchedule($matricula);
+
             session()->flash('message', 'Matrícula creada correctamente.');
             return redirect()->route('admin.matriculas.index');
         } catch (\Exception $e) {
             session()->flash('error', 'Error al crear la matrícula: ' . $e->getMessage());
+        }
+    }
+    
+    private function createPaymentSchedule($matricula)
+    {
+        foreach ($this->paymentSchedule as $schedule) {
+            PaymentSchedule::create([
+                'matricula_id' => $matricula->id,
+                'numero_cuota' => $schedule['numero_cuota'],
+                'monto' => $schedule['monto'],
+                'fecha_vencimiento' => $schedule['fecha_vencimiento'],
+                'estado' => 'pendiente',
+                'empresa_id' => auth()->user()->empresa_id,
+                'sucursal_id' => auth()->user()->sucursal_id,
+            ]);
         }
     }
 

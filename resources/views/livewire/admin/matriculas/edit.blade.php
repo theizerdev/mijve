@@ -73,22 +73,58 @@
 
                     <div class="col-md-4">
                         <label for="costo" class="form-label">Costo Total *</label>
-                        <input type="number" step="0.01" wire:model="costo" class="form-control" id="costo" required>
+                        <input type="number" step="0.01" wire:model.live="costo" class="form-control" id="costo" required>
                         @error('costo') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label for="cuota_inicial" class="form-label">Cuota Inicial *</label>
-                        <input type="number" step="0.01" wire:model="cuota_inicial" class="form-control" id="cuota_inicial" required>
+                        <input type="number" step="0.01" wire:model.live="cuota_inicial" class="form-control" id="cuota_inicial" required>
                         @error('cuota_inicial') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label for="numero_cuotas" class="form-label">Número de Cuotas *</label>
-                        <input type="number" wire:model="numero_cuotas" class="form-control" id="numero_cuotas" required>
+                        <input type="number" wire:model.live="numero_cuotas" class="form-control" id="numero_cuotas" required>
                         @error('numero_cuotas') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
                 </div>
+
+                <!-- Tabla de amortización -->
+                @if($showSchedule && count($paymentSchedule) > 0)
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5 class="mb-3">Tabla de Amortización</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cuota</th>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Fecha de Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($paymentSchedule as $schedule)
+                                    <tr>
+                                        <td>{{ $schedule['numero_cuota'] }}</td>
+                                        <td>{{ $schedule['descripcion'] }}</td>
+                                        <td>${{ number_format($schedule['monto'], 2) }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($schedule['fecha_vencimiento'])->format('d/m/Y') }}</td>
+                                    </tr>
+                                    @endforeach
+                                    <tr class="table-info">
+                                        <td colspan="2"><strong>Total</strong></td>
+                                        <td><strong>${{ number_format(array_sum(array_column($paymentSchedule, 'monto')), 2) }}</strong></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary">

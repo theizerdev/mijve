@@ -1,10 +1,6 @@
 @if ($paginator->hasPages())
   <nav class="d-flex justify-content-between align-items-center">
-    <div>
-      <p class="mb-0 text-muted">
-        Mostrando {{ $paginator->firstItem() }} a {{ $paginator->lastItem() }} de {{ $paginator->total() }} resultados
-      </p>
-    </div>
+
 
     <div>
       <ul class="pagination mb-0">

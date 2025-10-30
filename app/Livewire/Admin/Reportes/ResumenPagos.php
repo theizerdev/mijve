@@ -32,38 +32,83 @@ class ResumenPagos extends Component
         if ($this->periodo_id) {
             $periodo = SchoolPeriod::find($this->periodo_id);
             if ($periodo) {
-                $this->fecha_inicio = $periodo->fecha_inicio ? $periodo->fecha_inicio->format('Y-m-d') : now()->startOfMonth()->format('Y-m-d');
-                $this->fecha_fin = $periodo->fecha_fin ? $periodo->fecha_fin->format('Y-m-d') : now()->endOfMonth()->format('Y-m-d');
+                // Ensure dates are set, fallback to period name if dates are missing
+                $this->fecha_inicio = $periodo->fecha_inicio?->format('Y-m-d') ?? now()->startOfMonth()->format('Y-m-d');
+                $this->fecha_fin = $periodo->fecha_fin?->format('Y-m-d') ?? now()->endOfMonth()->format('Y-m-d');
+
+                // If period has no dates, use the period name in the display
+                if (!$periodo->fecha_inicio || !$periodo->fecha_fin) {
+                    session()->flash('warning', 'El período seleccionado no tiene fechas definidas. Se usará el rango actual.');
+                }
+
                 $this->cargarReporte();
             }
         }
     }
 
+    public $cargando = false;
+
     public function cargarReporte()
     {
-        // Validar fechas
-        if (!$this->fecha_inicio || !$this->fecha_fin) {
-            return;
+        try {
+            \Log::info('Iniciando cargarReporte', [
+                'fecha_inicio' => $this->fecha_inicio,
+                'fecha_fin' => $this->fecha_fin,
+                'periodo_id' => $this->periodo_id
+            ]);
+
+            $this->cargando = true;
+            $this->resetErrorBag();
+
+            \Log::debug('Validando fechas');
+
+            // Validar fechas
+            if (!$this->fecha_inicio || !$this->fecha_fin) {
+                \Log::warning('Fechas no proporcionadas');
+                throw new \Exception('Debe seleccionar un rango de fechas válido');
+            }
+
+            if ($this->fecha_inicio > $this->fecha_fin) {
+                \Log::warning('Fechas inválidas', [
+                    'fecha_inicio' => $this->fecha_inicio,
+                    'fecha_fin' => $this->fecha_fin
+                ]);
+                throw new \Exception('La fecha de inicio no puede ser mayor a la fecha fin');
+            }
+
+            \Log::debug('Obteniendo pagos');
+            $this->pagos = Pago::with(['matricula.student', 'conceptoPago'])
+                ->whereBetween('fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
+                ->where('estado', 'completado')
+                ->get();
+
+            \Log::debug('Calculando totales');
+            $this->totales = DB::table('pagos')
+                ->join('conceptos_pago', 'pagos.concepto_pago_id', '=', 'conceptos_pago.id')
+                ->select(
+                    'conceptos_pago.nombre as concepto',
+                    DB::raw('SUM(pagos.monto_pagado) as total'),
+                    DB::raw('COUNT(pagos.id) as cantidad')
+                )
+                ->whereBetween('pagos.fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
+                ->where('pagos.estado', 'completado')
+                ->groupBy('conceptos_pago.nombre')
+                ->get();
+
+            if ($this->pagos->isEmpty()) {
+                \Log::info('No se encontraron pagos');
+                session()->flash('info', 'No se encontraron pagos en el rango seleccionado');
+            } else {
+                \Log::info('Pagos encontrados', ['count' => $this->pagos->count()]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error en cargarReporte: ' . $e->getMessage());
+            $this->addError('error', $e->getMessage());
+            session()->flash('error', $e->getMessage());
+        } finally {
+            $this->cargando = false;
+            \Log::info('Finalizando cargarReporte');
         }
-
-        // Obtener pagos en el rango de fechas
-        $this->pagos = Pago::with(['matricula.student', 'conceptoPago'])
-            ->whereBetween('fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
-            ->where('estado', 'pagado')
-            ->get();
-
-        // Calcular totales por concepto
-        $this->totales = DB::table('pagos')
-            ->join('conceptos_pago', 'pagos.concepto_pago_id', '=', 'conceptos_pago.id')
-            ->select(
-                'conceptos_pago.nombre as concepto',
-                DB::raw('SUM(pagos.monto_pagado) as total'),
-                DB::raw('COUNT(pagos.id) as cantidad')
-            )
-            ->whereBetween('pagos.fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
-            ->where('pagos.estado', 'pagado')
-            ->groupBy('conceptos_pago.nombre')
-            ->get();
     }
 
     public function exportarExcel()
@@ -76,17 +121,17 @@ class ResumenPagos extends Component
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Título
         $sheet->setCellValue('A1', 'Resumen de Pagos');
         $sheet->mergeCells('A1:F1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-        
+
         // Fechas del reporte
         $sheet->setCellValue('A3', 'Período:');
-        $sheet->setCellValue('B3', ($this->fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_inicio)->format('d/m/Y') : 'N/A') . ' - ' . 
+        $sheet->setCellValue('B3', ($this->fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_inicio)->format('d/m/Y') : 'N/A') . ' - ' .
                               ($this->fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_fin)->format('d/m/Y') : 'N/A'));
-        
+
         // Encabezados de la tabla de pagos
         $sheet->setCellValue('A5', 'Fecha');
         $sheet->setCellValue('B5', 'Estudiante');
@@ -94,10 +139,10 @@ class ResumenPagos extends Component
         $sheet->setCellValue('D5', 'Monto');
         $sheet->setCellValue('E5', 'Pagado');
         $sheet->setCellValue('F5', 'Método');
-        
+
         // Formato de encabezados
         $sheet->getStyle('A5:F5')->getFont()->setBold(true);
-        
+
         // Datos de pagos
         $row = 6;
         foreach ($this->pagos as $pago) {
@@ -109,10 +154,10 @@ class ResumenPagos extends Component
             $sheet->setCellValue('F' . $row, ucfirst($pago->metodo_pago ?? 'N/A'));
             $row++;
         }
-        
+
         // Formato de moneda
         $sheet->getStyle('D6:E' . ($row - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
-        
+
         // Ancho de columnas
         $sheet->getColumnDimension('A')->setWidth(15);
         $sheet->getColumnDimension('B')->setWidth(30);
@@ -120,28 +165,28 @@ class ResumenPagos extends Component
         $sheet->getColumnDimension('D')->setWidth(15);
         $sheet->getColumnDimension('E')->setWidth(15);
         $sheet->getColumnDimension('F')->setWidth(15);
-        
+
         // Segunda hoja con totales por concepto
         $sheet2 = $spreadsheet->createSheet();
         $sheet2->setTitle('Totales por Concepto');
-        
+
         // Título de la segunda hoja
         $sheet2->setCellValue('A1', 'Totales por Concepto');
         $sheet2->mergeCells('A1:D1');
         $sheet2->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-        
+
         // Encabezados de la tabla de totales
         $sheet2->setCellValue('A3', 'Concepto');
         $sheet2->setCellValue('B3', 'Cantidad');
         $sheet2->setCellValue('C3', 'Total');
         $sheet2->setCellValue('D3', 'Porcentaje');
-        
+
         // Formato de encabezados
         $sheet2->getStyle('A3:D3')->getFont()->setBold(true);
-        
+
         // Calcular total general para porcentajes
         $totalGeneral = $this->totales->sum('total');
-        
+
         // Datos de totales
         $row2 = 4;
         foreach ($this->totales as $total) {
@@ -151,20 +196,20 @@ class ResumenPagos extends Component
             $sheet2->setCellValue('D' . $row2, $totalGeneral > 0 ? ($total->total / $totalGeneral) * 100 : 0);
             $row2++;
         }
-        
+
         // Formato de moneda y porcentaje
         $sheet2->getStyle('C4:C' . ($row2 - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
         $sheet2->getStyle('D4:D' . ($row2 - 1))->getNumberFormat()->setFormatCode('0.00%');
-        
+
         // Ancho de columnas en la segunda hoja
         $sheet2->getColumnDimension('A')->setWidth(30);
         $sheet2->getColumnDimension('B')->setWidth(15);
         $sheet2->getColumnDimension('C')->setWidth(15);
         $sheet2->getColumnDimension('D')->setWidth(15);
-        
+
         // Crear respuesta de descarga
         $filename = 'resumen_pagos_' . date('Y-m-d') . '.xlsx';
-        
+
         return new StreamedResponse(
             function () use ($spreadsheet) {
                 $writer = new Xlsx($spreadsheet);

@@ -250,12 +250,14 @@
                                             <td class="text-end">${{ number_format($pago->monto, 2) }}</td>
                                             <td class="text-end">${{ number_format($pago->monto_pagado, 2) }}</td>
                                             <td>
-                                                @if($pago->estado == 'pagado')
+                                                @if($pago->estado == \App\Models\Pago::ESTADO_COMPLETADO)
                                                     <span class="badge bg-success">Pagado</span>
-                                                @elseif($pago->estado == 'parcial')
-                                                    <span class="badge bg-warning">Parcial</span>
+                                                @elseif($pago->estado == \App\Models\Pago::ESTADO_PENDIENTE)
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                @elseif($pago->estado == \App\Models\Pago::ESTADO_CANCELADO)
+                                                    <span class="badge bg-danger">Cancelado</span>
                                                 @else
-                                                    <span class="badge bg-danger">Pendiente</span>
+                                                    <span class="badge bg-info">Reembolsado</span>
                                                 @endif
                                             </td>
                                         </tr>

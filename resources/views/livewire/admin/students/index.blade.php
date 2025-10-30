@@ -18,13 +18,39 @@
             <h5 class="card-title mb-1">Lista de Estudiantes</h5>
             <p class="mb-0">Administra los estudiantes del sistema</p>
         </div>
-        @can('create students')
-        <div>
+        <div class="d-flex gap-2">
+            @can('create students')
             <a href="{{ route('admin.students.create') }}" class="btn btn-primary">
                 <i class="ri ri-add-line"></i> Nuevo Estudiante
             </a>
+            @endcan
+            
+            @can('export students')
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ri ri-download-line"></i> Exportar
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                    <li>
+                        <button class="dropdown-item" wire:click="export">
+                            <i class="ri ri-file-excel-line me-2"></i> Exportar a Excel
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" wire:click="exportAdvanced">
+                            <i class="ri ri-file-chart-line me-2"></i> Exportación Avanzada
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            @endcan
+            
+            @can('import students')
+            <a href="{{ route('admin.students.import') }}" class="btn btn-outline-secondary">
+                <i class="ri ri-upload-line"></i> Importar
+            </a>
+            @endcan
         </div>
-        @endcan
     </div>
 
     <!-- Filtros -->
@@ -52,6 +78,42 @@
                         <option value="">Todos</option>
                         @foreach($nivelesEducativos as $nivel)
                             <option value="{{ $nivel->id }}">{{ $nivel->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="turnoId" class="form-label">Turno</label>
+                    <select class="form-select" id="turnoId" wire:model.live="turnoId">
+                        <option value="">Todos</option>
+                        @foreach($turnos as $turno)
+                            <option value="{{ $turno->id }}">{{ $turno->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="grado" class="form-label">Grado</label>
+                    <select class="form-select" id="grado" wire:model.live="grado">
+                        <option value="">Todos</option>
+                        @foreach($grados as $g)
+                            <option value="{{ $g }}">{{ $g }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="seccion" class="form-label">Sección</label>
+                    <select class="form-select" id="seccion" wire:model.live="seccion">
+                        <option value="">Todas</option>
+                        @foreach($secciones as $s)
+                            <option value="{{ $s }}">{{ $s }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="schoolPeriodId" class="form-label">Período Escolar</label>
+                    <select class="form-select" id="schoolPeriodId" wire:model.live="schoolPeriodId">
+                        <option value="">Todos</option>
+                        @foreach($schoolPeriods as $period)
+                            <option value="{{ $period->id }}">{{ $period->nombre }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -141,7 +203,7 @@
                 <thead>
                     <tr>
                         <th wire:click="sortBy('codigo')" style="cursor: pointer;">
-                            Código QR @if($sortBy === 'codigo') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            Código @if($sortBy === 'codigo') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                         </th>
                         <th wire:click="sortBy('nombres')" style="cursor: pointer;">
                             Estudiante @if($sortBy === 'nombres') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
@@ -150,6 +212,7 @@
                             Grado/Sección @if($sortBy === 'grado') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                         </th>
                         <th>Nivel Educativo</th>
+                        <th>Edad</th>
                         <th>Contacto</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -160,14 +223,11 @@
                         <tr>
                             <td>
                                 <div class="d-flex flex-column align-items-center">
-                                    <!-- Mostrar código QR directamente en la tabla -->
-                                    <img src="{{ $student->generateQrCode(80) }}"
-                                         alt="Código QR"
-                                         class="img-fluid mb-1"
-                                         style="max-width: 40px; cursor: pointer;"
-                                         wire:click="downloadQrCode({{ $student->id }})"
-                                         title="Haz clic para descargar el código QR">
-
+                                    <!-- Mostrar ícono de QR en lugar del código directamente -->
+                                    <button class="btn btn-sm btn-outline-primary" wire:click="showQrCode({{ $student->id }})" title="Ver código QR">
+                                        <i class="ri ri-qr-code-line"></i>
+                                    </button>
+                                    <small class="text-muted">{{ $student->codigo }}</small>
                                 </div>
                             </td>
                             <td>
@@ -187,7 +247,7 @@
                             </td>
                             <td>
                                 <div>{{ $student->grado }} - {{ $student->seccion }}</div>
-                                <small class="text-muted">{{ $student->fecha_nacimiento->format('d/m/Y') }} ({{ $student->edad_con_meses }})</small>
+                                <small class="text-muted">{{ $student->fecha_nacimiento?->format('d/m/Y') }} ({{ $student->edad_con_meses }})</small>
                             </td>
                             <td>
                                 @if($student->nivelEducativo)
@@ -197,6 +257,16 @@
                                 @endif
                                 @if($student->turno)
                                     <small class="text-muted">{{ $student->turno->nombre }}</small>
+                                @endif
+                                @if($student->schoolPeriod)
+                                    <small class="text-muted">{{ $student->schoolPeriod->nombre }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                @if($student->fecha_nacimiento)
+                                    {{ $student->edad }} años
+                                @else
+                                    <span class="text-muted">N/A</span>
                                 @endif
                             </td>
                             <td>
@@ -214,6 +284,12 @@
                                                 @else
                                                     {{ $student->representante_telefonos }}
                                                 @endif
+                                            </small>
+                                        @endif
+                                        @if($student->representante_correo)
+                                            <small class="text-muted">
+                                                <i class="ri ri-mail-line me-1"></i>
+                                                {{ $student->representante_correo }}
                                             </small>
                                         @endif
                                     @else
@@ -269,7 +345,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">No se encontraron estudiantes</td>
+                            <td colspan="8" class="text-center">No se encontraron estudiantes</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -288,7 +364,7 @@
         </div>
     </div>
 
-    <!-- Modal para mostrar el código QR (opcional, se puede eliminar si no se necesita) -->
+    <!-- Modal para mostrar el código QR -->
     @if($showQrModal && $selectedStudent)
     <div class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-centered">

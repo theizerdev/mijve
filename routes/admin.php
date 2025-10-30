@@ -37,12 +37,14 @@ use App\Livewire\Admin\Students\Index as StudentsIndex;
 use App\Livewire\Admin\Students\Create as StudentsCreate;
 use App\Livewire\Admin\Students\Edit as StudentsEdit;
 use App\Livewire\Admin\Students\Show as StudentsShow;
+use App\Livewire\Admin\Students\Import as StudentsImport;
 use App\Livewire\Admin\Students\QrAccess;
 use App\Livewire\Admin\ActiveSessions;
 // Componentes para matrículas
 use App\Livewire\Admin\Programas\Index as ProgramasIndex;
 use App\Livewire\Admin\Programas\Create as ProgramasCreate;
 use App\Livewire\Admin\Programas\Edit as ProgramasEdit;
+use App\Livewire\Admin\Programas\Show as ProgramasShow;
 use App\Livewire\Admin\ConceptosPago\Index as ConceptosPagoIndex;
 use App\Livewire\Admin\ConceptosPago\Create as ConceptosPagoCreate;
 use App\Livewire\Admin\ConceptosPago\Edit as ConceptosPagoEdit;
@@ -109,6 +111,8 @@ Route::get('/students/{student}/editar', StudentsEdit::class)->name('students.ed
 Route::get('/students/{student}', StudentsShow::class)->name('students.show');
 Route::get('/students/qr-access', QrAccess::class)->name('students.qr-access');
 Route::get('/access/students', QrAccess::class)->name('access.students');
+// Importación de estudiantes
+Route::get('/students/import', StudentsImport::class)->name('students.import');
 
 
 // Sesiones activas
@@ -126,6 +130,7 @@ Route::prefix('monitoreo')->as('monitoreo.')->group(function () {
 Route::get('/programas', ProgramasIndex::class)->name('programas.index');
 Route::get('/programas/crear', ProgramasCreate::class)->name('programas.create');
 Route::get('/programas/{programa}/editar', ProgramasEdit::class)->name('programas.edit');
+Route::get('/programas/{programa}', ProgramasShow::class)->name('programas.show');
 
 // Conceptos de Pago
 Route::get('/conceptos-pago', ConceptosPagoIndex::class)->name('conceptos-pago.index');
@@ -143,6 +148,7 @@ Route::get('/pagos', \App\Livewire\Admin\Pagos\Index::class)->name('pagos.index'
 Route::get('/pagos/crear', \App\Livewire\Admin\Pagos\Create::class)->name('pagos.create');
 Route::get('/pagos/{pago}/editar', \App\Livewire\Admin\Pagos\Edit::class)->name('pagos.edit');
 Route::get('/pagos/{pago}', \App\Livewire\Admin\Pagos\Show::class)->name('pagos.show');
+Route::get('/pagos/comprobante/{comprobante}', \App\Livewire\Admin\Pagos\Comprobantes::class)->name('pagos.comprobante');
 
 // Reportes
 Route::prefix('reportes')->as('reportes.')->group(function () {

@@ -80,6 +80,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit students',
                 'delete students',
                 'access student control',
+                'export students',
             ],
             'active_sessions' => [
                 'view active sessions',
@@ -180,7 +181,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Asignar permisos al Recepcionista (solo de estudiantes, matrículas, pagos y dashboard)
         $recepcionistaPermissions = Permission::whereIn('module', [
-            'students', 
+            'students',
             'dashboard',
             'matriculas',
             'pagos'

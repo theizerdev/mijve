@@ -230,4 +230,36 @@ class Student extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+    
+    /**
+     * Scope a query to only include active students.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+    
+    /**
+     * Scope a query to only include students by educational level.
+     */
+    public function scopeByEducationalLevel($query, $levelId)
+    {
+        return $query->where('nivel_educativo_id', $levelId);
+    }
+    
+    /**
+     * Scope a query to only include students by grade.
+     */
+    public function scopeByGrade($query, $grade)
+    {
+        return $query->where('grado', $grade);
+    }
+    
+    /**
+     * Scope a query to only include students by section.
+     */
+    public function scopeBySection($query, $section)
+    {
+        return $query->where('seccion', $section);
+    }
 }

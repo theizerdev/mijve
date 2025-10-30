@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->foreignId('nivel_educativo_id')->constrained('niveles_educativos');
-            $table->decimal('costo_matricula', 10, 2);
-            $table->decimal('costo_mensualidad', 10, 2);
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });

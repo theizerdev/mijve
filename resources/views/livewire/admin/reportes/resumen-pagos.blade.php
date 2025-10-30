@@ -11,7 +11,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-            
+
             <button wire:click="exportarExcel" class="btn btn-success me-2" @if(count($pagos) == 0) disabled @endif>
                 <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
             </button>
@@ -32,9 +32,9 @@
                         <label for="periodo_id" class="form-label">Período Escolar</label>
                         <select wire:model.live="periodo_id" class="form-select" id="periodo_id">
                             <option value="">Seleccione un período</option>
-                            @foreach($periodos as $periodo)
+                           @foreach($periodos as $periodo)
                                 <option value="{{ $periodo->id }}">
-                                    {{ $periodo->nombre }} ({{ $periodo->fecha_inicio?->format('d/m/Y') ?? 'N/A' }} - {{ $periodo->fecha_fin?->format('d/m/Y') ?? 'N/A' }})
+                                    {{ $periodo->name }} ({{ $periodo->start_date?->format('d/m/Y') ?? 'N/A' }} - {{ $periodo->end_date?->format('d/m/Y') ?? 'N/A' }})
                                 </option>
                             @endforeach
                         </select>
@@ -53,10 +53,24 @@
                     </div>
                 </div>
             </div>
-            
-            <button wire:click="cargarReporte" class="btn btn-primary">
-                <i class="ri ri-search-line me-1"></i> Generar Reporte
+
+            <button 
+                wire:click="cargarReporte" 
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50"
+                class="btn btn-primary"
+            >
+                <span wire:loading.remove>
+                    <i class="ri ri-search-line me-1"></i> Generar Reporte
+                </span>
+                <span wire:loading>
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Procesando...
+                </span>
             </button>
+            @error('error')
+                <div class="text-danger mt-2">{{ $message }}</div>
+            @enderror
         </div>
     </div>
 
@@ -98,7 +112,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -122,8 +136,22 @@
                                 <div class="border rounded p-3 text-center">
                                     <p class="mb-1 text-muted">Período</p>
                                     <h6 class="mb-0">
-                                        {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} - 
-                                        {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
+                                        @if($periodo_id)
+                                            @php
+                                                $periodo = \App\Models\SchoolPeriod::find($periodo_id);
+                                            @endphp
+                                            @if($periodo && $periodo->fecha_inicio && $periodo->fecha_fin)
+                                                {{ $periodo->fecha_inicio->format('d/m/Y') }} - {{ $periodo->fecha_fin->format('d/m/Y') }}
+                                            @elseif($periodo)
+                                                {{ $periodo->nombre }}
+                                            @else
+                                                {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} -
+                                                {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
+                                            @endif
+                                        @else
+                                            {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} -
+                                            {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
+                                        @endif
                                     </h6>
                                 </div>
                             </div>

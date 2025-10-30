@@ -10,6 +10,8 @@ use App\Models\Turno;
 use App\Models\SchoolPeriod;
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use App\Models\Matricula;
+use App\Models\PaymentSchedule;
 use App\Traits\Exportable;
 use App\Mail\StudentWelcomeMail;
 use App\Mail\RepresentativeWelcomeMail;
@@ -19,6 +21,7 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Carbon\Carbon;
 
 class Index extends Component
 {
@@ -32,11 +35,13 @@ class Index extends Component
     public $turnoId = '';
     public $schoolPeriodId = '';
     public $grado = '';
+    public $seccion = '';
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
     public $perPage = 10;
     public $showQrModal = false;
     public $selectedStudent = null;
+    public $exportFormat = 'excel'; // Nuevo: formato de exportación
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -47,6 +52,7 @@ class Index extends Component
         'turnoId' => ['except' => ''],
         'schoolPeriodId' => ['except' => ''],
         'grado' => ['except' => ''],
+        'seccion' => ['except' => ''],
         'sortBy' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
@@ -81,6 +87,16 @@ class Index extends Component
     }
 
     public function updatingSchoolPeriodId()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingGrado()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSeccion()
     {
         $this->resetPage();
     }
@@ -127,6 +143,9 @@ class Index extends Component
             ->when($this->grado, function ($query) {
                 $query->where('grado', $this->grado);
             })
+            ->when($this->seccion, function ($query) {
+                $query->where('seccion', $this->seccion);
+            })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
@@ -136,6 +155,7 @@ class Index extends Component
         $turnos = Turno::query()->get();
         $schoolPeriods = SchoolPeriod::query()->get();
         $grados = Student::query()->select('grado')->distinct()->pluck('grado');
+        $secciones = Student::query()->select('seccion')->distinct()->pluck('seccion');
 
         // Calcular estadísticas
         $totalStudents = Student::query()->count();
@@ -150,6 +170,7 @@ class Index extends Component
             'turnos',
             'schoolPeriods',
             'grados',
+            'secciones',
             'totalStudents',
             'activeStudents',
             'inactiveStudents'
@@ -182,10 +203,23 @@ class Index extends Component
         $this->turnoId = '';
         $this->schoolPeriodId = '';
         $this->grado = '';
+        $this->seccion = '';
         $this->sortBy = 'created_at';
         $this->sortDirection = 'desc';
         $this->perPage = 10;
         $this->resetPage();
+    }
+
+    // Nueva función para exportación avanzada
+    public function exportAdvanced()
+    {
+        if (!Auth::user()->can('export students')) {
+            session()->flash('error', 'No tienes permiso para exportar estudiantes.');
+            return;
+        }
+
+        // Usar el método export del trait Exportable directamente
+        return $this->export();
     }
 
     protected function getExportQuery()
@@ -199,28 +233,126 @@ class Index extends Component
             ->when($this->sucursal_id, fn($q) => $q->where('sucursal_id', $this->sucursal_id))
             ->when($this->nivelEducativoId, fn($q) => $q->where('nivel_educativo_id', $this->nivelEducativoId))
             ->when($this->turnoId, fn($q) => $q->where('turno_id', $this->turnoId))
-            ->when($this->grado, fn($q) => $q->where('grado', $this->grado));
+            ->when($this->grado, fn($q) => $q->where('grado', $this->grado))
+            ->when($this->seccion, fn($q) => $q->where('seccion', $this->seccion));
     }
 
     protected function getExportHeaders()
     {
-        return ['Código', 'Nombres', 'Apellidos', 'Documento', 'Grado', 'Sección', 'Nivel', 'Turno', 'Empresa', 'Sucursal', 'Estado'];
+        return [
+            'Código', 
+            'Nombres', 
+            'Apellidos', 
+            'Documento', 
+            'Fecha Nacimiento',
+            'Edad',
+            'Grado', 
+            'Sección', 
+            'Nivel Educativo', 
+            'Turno', 
+            'Período Escolar',
+            'Empresa', 
+            'Sucursal', 
+            'Estado',
+            'Correo Electrónico',
+            'Representante',
+            'Teléfonos Representante',
+            'Correo Representante',
+            'Monto Total Matrícula',
+            'Monto Pagado',
+            'Monto Pendiente',
+            'Próxima Fecha de Vencimiento',
+            'Días de Retraso'
+        ];
     }
 
     protected function formatExportRow($student)
     {
+        // Obtener información de morosidad
+        $debtInfo = $this->getStudentDebtInfo($student);
+        
+        // Formatear teléfonos del representante
+        $telefonos = '';
+        if ($student->representante_telefonos) {
+            if (is_array($student->representante_telefonos)) {
+                $telefonos = implode(', ', $student->representante_telefonos);
+            } else {
+                $telefonos = $student->representante_telefonos;
+            }
+        }
+        
         return [
             $student->codigo,
             $student->nombres,
             $student->apellidos,
             $student->documento_identidad,
+            $student->fecha_nacimiento ? $student->fecha_nacimiento->format('d/m/Y') : '',
+            $student->edad ?? '',
             $student->grado,
             $student->seccion,
             $student->nivelEducativo->nombre ?? '',
             $student->turno->nombre ?? '',
+            $student->schoolPeriod->nombre ?? '',
             $student->empresa->razon_social ?? '',
             $student->sucursal->nombre ?? '',
-            $student->status ? 'Activo' : 'Inactivo'
+            $student->status ? 'Activo' : 'Inactivo',
+            $student->correo_electronico ?? '',
+            $student->representante_nombres ? $student->representante_nombres . ' ' . $student->representante_apellidos : '',
+            $telefonos,
+            $student->representante_correo ?? '',
+            $debtInfo['total_amount'],
+            $debtInfo['paid_amount'],
+            $debtInfo['pending_amount'],
+            $debtInfo['next_due_date'],
+            $debtInfo['days_overdue']
+        ];
+    }
+
+    // Función para obtener información de morosidad del estudiante
+    private function getStudentDebtInfo($student)
+    {
+        // Obtener la matrícula activa del estudiante
+        $matricula = Matricula::where('estudiante_id', $student->id)
+            ->where('estado', 'activo')
+            ->with('paymentSchedules') // Esta relación ya ha sido corregida en el modelo
+            ->first();
+
+        if (!$matricula) {
+            return [
+                'total_amount' => 0,
+                'paid_amount' => 0,
+                'pending_amount' => 0,
+                'next_due_date' => '',
+                'days_overdue' => 0
+            ];
+        }
+
+        // Calcular totales
+        $totalAmount = $matricula->paymentSchedules->sum('monto');
+        $paidAmount = $matricula->paymentSchedules->sum('monto_pagado');
+        $pendingAmount = $totalAmount - $paidAmount;
+
+        // Obtener próxima fecha de vencimiento
+        $nextDueDate = $matricula->paymentSchedules
+            ->where('estado', '!=', 'pagado')
+            ->where('fecha_vencimiento', '!=', null)
+            ->min('fecha_vencimiento');
+
+        // Calcular días de retraso
+        $daysOverdue = 0;
+        if ($nextDueDate) {
+            $nextDueDate = Carbon::parse($nextDueDate);
+            if ($nextDueDate->isPast()) {
+                $daysOverdue = $nextDueDate->diffInDays(Carbon::now());
+            }
+        }
+
+        return [
+            'total_amount' => $totalAmount,
+            'paid_amount' => $paidAmount ?? 0,
+            'pending_amount' => $pendingAmount,
+            'next_due_date' => $nextDueDate ? $nextDueDate->format('d/m/Y') : '',
+            'days_overdue' => $daysOverdue
         ];
     }
 

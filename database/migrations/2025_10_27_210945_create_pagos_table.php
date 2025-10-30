@@ -15,13 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('matricula_id')->constrained('matriculas');
             $table->foreignId('concepto_pago_id')->constrained('conceptos_pago');
+            $table->foreignId('user_id')->constrained('users');
             $table->decimal('monto', 10, 2);
             $table->decimal('monto_pagado', 10, 2)->default(0);
             $table->date('fecha_pago');
-            $table->string('metodo_pago')->nullable(); // efectivo, tarjeta, transferencia, etc.
-            $table->string('referencia')->nullable(); // número de recibo, referencia bancaria, etc.
-            $table->string('estado')->default('pendiente'); // pendiente, parcial, completo
+            $table->string('metodo_pago')->nullable();
+            $table->string('referencia')->nullable();
+            $table->string('estado')->default('pendiente');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

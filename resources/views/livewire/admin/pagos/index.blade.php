@@ -112,16 +112,26 @@
                                 <div>{{ $pago->conceptoPago->nombre ?? '' }}</div>
                                 <small class="text-muted">{{ $pago->referencia }}</small>
                             </td>
-                            <td>${{ number_format($pago->monto, 2) }}</td>
-                            <td>{{ $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y') : 'N/A' }}</td>
                             <td>
-                                @if($pago->estado === 'pendiente')
-                                    <span class="badge bg-warning">Pendiente</span>
-                                @elseif($pago->estado === 'pagado')
-                                    <span class="badge bg-success">Pagado</span>
-                                @elseif($pago->estado === 'cancelado')
-                                    <span class="badge bg-danger">Cancelado</span>
+                                <div>${{ number_format($pago->monto_pagado, 2) }}</div>
+                                @if($pago->estado == 'pendiente')
+                                    <div class="text-success small">Pagado: ${{ number_format($pago->monto_pagado, 2) }}</div>
+                                    <div class="text-danger small">Pendiente: ${{ number_format($pago->monto - $pago->monto_pagado, 2) }}</div>
                                 @endif
+                            </td>
+                            <td>
+                                {{ $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y') : 'N/A' }}
+                                <div class="text-muted small">Registrado por: {{ $pago->user->name ?? 'N/A' }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ [
+                                    'pendiente' => 'warning',
+                                    'completado' => 'success',
+                                    'cancelado' => 'danger',
+                                    'reembolsado' => 'info'
+                                ][$pago->estado] ?? 'secondary' }}">
+                                    {{ \App\Models\Pago::getEstados()[$pago->estado] ?? $pago->estado }}
+                                </span>
                             </td>
                             <td>
                                 <div class="dropdown">
@@ -134,14 +144,19 @@
                                             <i class="ri ri-eye-line me-1"></i> Ver
                                         </a>
                                         @endcan
+                                        @if($pago->comprobante)
+                                        <a class="dropdown-item" href="{{ route('admin.pagos.comprobante', $pago->comprobante) }}">
+                                            <i class="ri ri-file-text-line me-1"></i> Comprobante
+                                        </a>
+                                        @endif
                                         @can('edit pagos')
                                         <a class="dropdown-item" href="{{ route('admin.pagos.edit', $pago) }}">
                                             <i class="ri ri-edit-line me-1"></i> Editar
                                         </a>
                                         @endcan
                                         @can('delete pagos')
-                                        <button 
-                                            class="dropdown-item text-danger" 
+                                        <button
+                                            class="dropdown-item text-danger"
                                             wire:click="delete({{ $pago }})"
                                             wire:confirm="¿Estás seguro de eliminar este pago?">
                                             <i class="ri ri-delete-bin-line me-1"></i> Eliminar
@@ -159,7 +174,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
                 <div>

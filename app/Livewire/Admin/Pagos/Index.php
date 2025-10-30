@@ -76,13 +76,17 @@ class Index extends Component
 
     public function render()
     {
-        $pagos = Pago::with(['matricula.student', 'concepto'])
+        $pagos = Pago::with(['matricula.student', 'concepto', 'user', 'comprobante'])
             ->when($this->search, function ($query) {
                 $query->whereHas('matricula.student', function ($subQuery) {
-                    $subQuery->where('nombre', 'like', '%' . $this->search . '%')
-                        ->orWhere('apellido', 'like', '%' . $this->search . '%')
-                        ->orWhere('dni', 'like', '%' . $this->search . '%');
-                });
+                    $subQuery->where('nombres', 'like', '%' . $this->search . '%')
+                        ->orWhere('apellidos', 'like', '%' . $this->search . '%')
+                        ->orWhere('documento_identidad', 'like', '%' . $this->search . '%');
+                })
+                ->orWhereHas('concepto', function($subQuery) {
+                    $subQuery->where('nombre', 'like', '%' . $this->search . '%');
+                })
+                ->orWhere('referencia', 'like', '%' . $this->search . '%');
             })
             ->when($this->status !== '', function ($query) {
                 $query->where('estado', $this->status);

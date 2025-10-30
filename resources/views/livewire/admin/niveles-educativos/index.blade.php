@@ -38,12 +38,12 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">${{ number_format(\App\Models\NivelEducativo::avg('costo') ?? 0, 2) }}</h4>
-                            <p class="mb-0">Costo Promedio</p>
+                            <h4 class="mb-1">{{ \App\Models\NivelEducativo::where('status', 1)->count() }}</h4>
+                            <p class="mb-0">Niveles Activos</p>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-success">
-                                <i class="ri ri-money-dollar-circle-line ri-24px"></i>
+                                <i class="ri ri-check-double-line ri-24px"></i>
                             </span>
                         </div>
                     </div>
@@ -56,12 +56,12 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">${{ number_format(\App\Models\NivelEducativo::avg('costo_matricula') ?? 0, 2) }}</h4>
-                            <p class="mb-0">Matrícula Promedio</p>
+                            <h4 class="mb-1">{{ \App\Models\Programa::count() }}</h4>
+                            <p class="mb-0">Total Programas</p>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-info">
-                                <i class="ri ri-bank-card-line ri-24px"></i>
+                                <i class="ri ri-book-line ri-24px"></i>
                             </span>
                         </div>
                     </div>
@@ -74,12 +74,12 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">${{ number_format(\App\Models\NivelEducativo::avg('costo_mensualidad') ?? 0, 2) }}</h4>
-                            <p class="mb-0">Mensualidad Promedio</p>
+                            <h4 class="mb-1">{{ \App\Models\Student::count() }}</h4>
+                            <p class="mb-0">Total Estudiantes</p>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-warning">
-                                <i class="ri ri-calendar-line ri-24px"></i>
+                                <i class="ri ri-user-line ri-24px"></i>
                             </span>
                         </div>
                     </div>
@@ -88,153 +88,107 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header border-bottom">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-1">Lista de Niveles Educativos</h5>
-                            <p class="mb-0">Administra los niveles educativos registrados en el sistema</p>
-                        </div>
-                        @can('create niveles educativos')
-                        <div>
-                            <a href="{{ route('admin.niveles-educativos.create') }}" class="btn btn-primary">
-                                <i class="ri ri-add-line"></i> Nuevo Nivel
-                            </a>
-                        </div>
-                        @endcan
-                    </div>
+    <div class="card">
+        <div class="card-header border-bottom">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-1">Lista de Niveles Educativos</h5>
+                <div>
+                    @can('create', \App\Models\NivelEducativo::class)
+                    <a href="{{ route('admin.niveles-educativos.create') }}" class="btn btn-primary">
+                        <i class="ri ri-add-line ri-16px me-1"></i>Crear Nivel Educativo
+                    </a>
+                    @endcan
                 </div>
+            </div>
+        </div>
 
-                <!-- Filtros -->
-                <div class="card-header border-bottom">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Buscar</label>
-                            <input type="text" class="form-control" placeholder="Nombre..."
-                                   wire:model.live.debounce.300ms="search">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Mostrar</label>
-                            <select class="form-select" wire:model.live="perPage">
-                                <option value="10">10 por página</option>
-                                <option value="25">25 por página</option>
-                                <option value="50">50 por página</option>
-                                <option value="100">100 por página</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-label-secondary" wire:click="$refresh">
-                                <i class="ri ri-refresh-line"></i> Actualizar
-                            </button>
-                        </div>
-                    </div>
+        <div class="card-body pt-3">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Buscar</label>
+                    <input wire:model.live.debounce.300ms="search" type="text" class="form-control" placeholder="Buscar por nombre...">
                 </div>
-
-                <div class="card-datatable table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th wire:click="sortBy('nombre')" style="cursor: pointer;">
-                                    Nombre @if($sortField === 'nombre') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('descripcion')" style="cursor: pointer;">
-                                    Descripción @if($sortField === 'descripcion') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('costo')" style="cursor: pointer;">
-                                    Costo @if($sortField === 'costo') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('costo_matricula')" style="cursor: pointer;">
-                                    Matrícula @if($sortField === 'costo_matricula') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('costo_mensualidad')" style="cursor: pointer;">
-                                    Mensualidad @if($sortField === 'costo_mensualidad') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('cuotas')" style="cursor: pointer;">
-                                    Cuotas @if($sortField === 'cuotas') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('cuota_inicial')" style="cursor: pointer;">
-                                    Cuota Inicial @if($sortField === 'cuota_inicial') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('status')" style="cursor: pointer;">
-                                    Estado @if($sortField === 'status') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($niveles as $nivel)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar avatar-sm me-2">
-                                                <span class="avatar-initial rounded bg-label-primary">{{ substr($nivel->nombre, 0, 1) }}</span>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0">{{ $nivel->nombre }}</h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ $nivel->descripcion }}</td>
-                                    <td>${{ number_format($nivel->costo, 2) }}</td>
-                                    <td>${{ number_format($nivel->costo_matricula, 2) }}</td>
-                                    <td>${{ number_format($nivel->costo_mensualidad, 2) }}</td>
-                                    <td>{{ $nivel->numero_cuotas }}</td>
-                                    <td>${{ number_format($nivel->cuota_inicial, 2) }}</td>
-                                    <td>
-                                        @if($nivel->status)
-                                            <span class="badge bg-success">Activo</span>
-                                        @else
-                                            <span class="badge bg-danger">Inactivo</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $nivel->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $nivel->id }}">
-                                                @can('view niveles educativos')
-                                                <a class="dropdown-item" href="{{ route('admin.niveles-educativos.show', $nivel) }}">
-                                                    <i class="ri ri-eye-line me-1"></i> Ver
-                                                </a>
-                                                @endcan
-                                                @can('edit niveles educativos')
-                                                <a class="dropdown-item" href="{{ route('admin.niveles-educativos.edit', $nivel) }}">
-                                                    <i class="ri ri-pencil-line me-1"></i> Editar
-                                                </a>
-                                                @endcan
-                                                @can('delete niveles educativos')
-                                                <button class="dropdown-item text-danger" wire:click="confirmDelete({{ $nivel->id }})" wire:confirm="¿Estás seguro de eliminar este nivel educativo?">
-                                                    <i class="ri ri-delete-bin-line me-1"></i> Eliminar
-                                                </button>
-                                                @endcan
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">No se encontraron niveles educativos</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Estado</label>
+                    <select wire:model.live="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="1">Activo</option>
+                        <option value="0">Inactivo</option>
+                    </select>
                 </div>
-
-                <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $niveles->firstItem() }} a {{ $niveles->lastItem() }} de {{ $niveles->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $niveles->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+                
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Mostrar</label>
+                    <select wire:model.live="perPage" class="form-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th wire:click="sortBy('nombre')" style="cursor: pointer;">
+                                Nombre @if($sortField == 'nombre') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th>Descripción</th>
+                            <th wire:click="sortBy('status')" style="cursor: pointer;">
+                                Estado @if($sortField == 'status') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($niveles as $nivel)
+                        <tr>
+                            <td>{{ $nivel->nombre }}</td>
+                            <td>{{ $nivel->descripcion ?? '-' }}</td>
+                            <td>
+                                @if($nivel->status)
+                                    <span class="badge bg-success">Activo</span>
+                                @else
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @can('view', $nivel)
+                                    <a href="{{ route('admin.niveles-educativos.show', $nivel) }}" class="btn btn-sm btn-icon btn-text-secondary waves-effect">
+                                        <i class="ri ri-eye-line ri-20px"></i>
+                                    </a>
+                                    @endcan
+                                    
+                                    @can('update', $nivel)
+                                    <a href="{{ route('admin.niveles-educativos.edit', $nivel) }}" class="btn btn-sm btn-icon btn-text-secondary waves-effect">
+                                        <i class="ri ri-edit-line ri-20px"></i>
+                                    </a>
+                                    @endcan
+                                    
+                                    @can('delete', $nivel)
+                                    <button type="button" class="btn btn-sm btn-icon btn-text-secondary waves-effect" 
+                                            wire:click="delete({{ $nivel->id }})"
+                                            wire:confirm="¿Estás seguro de eliminar este nivel educativo?">
+                                        <i class="ri ri-delete-bin-line ri-20px text-danger"></i>
+                                    </button>
+                                    @endcan
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="text-center">No se encontraron niveles educativos</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                {{ $niveles->links() }}
             </div>
         </div>
     </div>

@@ -49,44 +49,76 @@ class Index extends Component
 
     protected function getExportQuery()
     {
-        return $this->getBaseQuery();
+        return NivelEducativo::query()
+            ->when($this->search, function ($query) {
+                $query->where('nombre', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->status !== '', function ($query) {
+                $query->where('status', $this->status);
+            })
+            ->orderBy($this->sortField, $this->sortDirection);
     }
 
-    protected function getExportHeaders(): array
-    {
-        return ['ID', 'Nombre', 'Descripción', 'Status'];
-    }
-
-    protected function formatExportRow($nivel): array
+    protected function getExportHeaders()
     {
         return [
-            $nivel->id,
-            $nivel->nombre,
-            $nivel->descripcion ?? 'N/A',
-            $nivel->status ? 'Activo' : 'Inactivo'
+            'ID',
+            'Nombre',
+            'Descripción',
+            'Estado',
+            'Fecha de Creación',
+            'Fecha de Actualización'
         ];
     }
 
-    private function getBaseQuery()
+    protected function formatExportRow($row)
     {
-        return NivelEducativo::query()
-            ->when($this->search, fn($query) =>
-                $query->where('nombre', 'like', '%'.$this->search.'%')
-                    ->orWhere('descripcion', 'like', '%'.$this->search.'%')
-            )
-            ->when($this->status !== '', fn($query) =>
-                $query->where('status', $this->status)
-            );
+        return [
+            $row->id,
+            $row->nombre,
+            $row->descripcion ?? '-',
+            $row->status ? 'Activo' : 'Inactivo',
+            $row->created_at->format('Y-m-d H:i:s'),
+            $row->updated_at->format('Y-m-d H:i:s')
+        ];
+    }
+
+    public function delete(NivelEducativo $nivel)
+    {
+        if (!auth()->user()->can('delete', $nivel)) {
+            session()->flash('error', 'No tienes permiso para eliminar este nivel educativo.');
+            return;
+        }
+
+        // Verificar si hay programas asociados
+        if ($nivel->programas()->count() > 0) {
+            session()->flash('error', 'No se puede eliminar este nivel educativo porque tiene programas asociados.');
+            return;
+        }
+
+        $nivel->delete();
+        session()->flash('message', 'Nivel Educativo eliminado exitosamente.');
     }
 
     public function render()
     {
-        Gate::authorize('access niveles educativos', NivelEducativo::class);
+        $niveles = NivelEducativo::query()
+            ->when($this->search, function ($query) {
+                $query->where('nombre', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->status !== '', function ($query) {
+                $query->where('status', $this->status);
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage);
 
-        return view('livewire.admin.niveles-educativos.index', [
-            'niveles' => $this->getBaseQuery()
-                ->orderBy($this->sortField, $this->sortDirection)
-                ->paginate($this->perPage)
-        ])->layout('components.layouts.admin');
+        return view('livewire.admin.niveles-educativos.index', compact('niveles'))
+            ->layout('components.layouts.admin', [
+                'title' => 'Niveles Educativos',
+                'breadcrumb' => [
+                    'admin.dashboard' => 'Dashboard',
+                    'admin.niveles-educativos.index' => 'Niveles Educativos'
+                ]
+            ]);
     }
 }

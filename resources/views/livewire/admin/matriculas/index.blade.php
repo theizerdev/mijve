@@ -154,8 +154,8 @@
                                         </a>
                                         @endcan
                                         @can('delete matriculas')
-                                        <button 
-                                            class="dropdown-item text-danger" 
+                                        <button
+                                            class="dropdown-item text-danger"
                                             wire:click="delete({{ $matricula }})"
                                             wire:confirm="¿Estás seguro de eliminar esta matrícula?">
                                             <i class="ri ri-delete-bin-line me-1"></i> Eliminar
@@ -173,7 +173,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
                 <div>

@@ -5,8 +5,12 @@ namespace App\Livewire\Admin\Pagos;
 use Livewire\Component;
 use App\Models\Pago;
 use App\Models\Matricula;
+use App\Models\Comprobante;
 use App\Models\ConceptoPago;
 use App\Models\EducationalLevel;
+use App\Models\PaymentSchedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Create extends Component
 {
@@ -22,6 +26,11 @@ class Create extends Component
     public $conceptos = [];
     public $carrito = [];
     public $total = 0;
+    
+    // Para la tabla de amortización
+    public $paymentSchedule = [];
+    public $selectedCuotas = [];
+    public $selectAll = false;
 
     protected $rules = [
         'matricula_id' => 'required|exists:matriculas,id',
@@ -48,6 +57,30 @@ class Create extends Component
         // Limpiar el carrito cuando se cambia la matrícula
         $this->carrito = [];
         $this->calcularTotal();
+        $this->selectedCuotas = [];
+        $this->selectAll = false;
+        
+        // Cargar la tabla de amortización
+        if ($this->matricula_id) {
+            $this->loadPaymentSchedule();
+        }
+    }
+    
+    public function updatedSelectAll()
+    {
+        if ($this->selectAll) {
+            $this->selectedCuotas = $this->paymentSchedule->pluck('id')->toArray();
+        } else {
+            $this->selectedCuotas = [];
+        }
+    }
+    
+    public function loadPaymentSchedule()
+    {
+        $this->paymentSchedule = PaymentSchedule::where('matricula_id', $this->matricula_id)
+            ->where('estado', '!=', 'pagado') // Mostrar también las parcialmente pagadas
+            ->orderBy('numero_cuota')
+            ->get();
     }
 
     public function updatedConceptoId()
@@ -63,7 +96,7 @@ class Create extends Component
                     $matricula = Matricula::with('programa.nivelEducativo')->find($this->matricula_id);
                     if ($matricula && $matricula->programa && $matricula->programa->nivelEducativo) {
                         $nivel = $matricula->programa->nivelEducativo;
-                        
+
                         // Asignar montos según el nombre del concepto
                         if (stripos($concepto->nombre, 'matrícula') !== false && $nivel->costo_matricula > 0) {
                             $this->monto = $nivel->costo_matricula;
@@ -94,7 +127,7 @@ class Create extends Component
 
         // Verificar si el concepto ya está en el carrito
         foreach ($this->carrito as $item) {
-            if ($item['concepto_id'] == $this->concepto_id) {
+            if ($item['concepto_id'] == $this->concepto_id && !isset($item['cuota_id'])) {
                 session()->flash('error', 'Este concepto ya ha sido agregado al carrito.');
                 return;
             }
@@ -105,21 +138,86 @@ class Create extends Component
             'concepto_id' => $this->concepto_id,
             'concepto_nombre' => $concepto->nombre,
             'monto' => $this->monto ?? $concepto->monto ?? 0,
+            'monto_pagado' => 0, // Inicialmente no se ha pagado nada
+            'es_parcial' => false // Por defecto no es pago parcial
         ];
 
         $this->calcularTotal();
-        
+
         // Limpiar selección
         $this->concepto_id = null;
         $this->monto = null;
+    }
+    
+    public function agregarCuotasSeleccionadas()
+    {
+        if (empty($this->selectedCuotas)) {
+            session()->flash('error', 'Debe seleccionar al menos una cuota.');
+            return;
+        }
+        
+        foreach ($this->selectedCuotas as $cuotaId) {
+            $cuota = $this->paymentSchedule->firstWhere('id', $cuotaId);
+            if ($cuota) {
+                // Verificar si la cuota ya está en el carrito
+                $existeEnCarrito = false;
+                foreach ($this->carrito as $item) {
+                    if (isset($item['cuota_id']) && $item['cuota_id'] == $cuotaId) {
+                        $existeEnCarrito = true;
+                        break;
+                    }
+                }
+                
+                if (!$existeEnCarrito) {
+                    $descripcion = $cuota->numero_cuota == 0 ? 'Cuota inicial' : 'Cuota ' . $cuota->numero_cuota;
+                    
+                    $this->carrito[] = [
+                        'concepto_id' => null, // No hay concepto específico para cuotas
+                        'concepto_nombre' => $descripcion,
+                        'monto' => $cuota->monto,
+                        'monto_pagado' => $cuota->monto_pagado ?? 0, // Usar el monto ya pagado
+                        'es_parcial' => false,
+                        'cuota_id' => $cuota->id, // Identificador de la cuota
+                        'numero_cuota' => $cuota->numero_cuota
+                    ];
+                }
+            }
+        }
+        
+        $this->calcularTotal();
+        $this->selectedCuotas = []; // Limpiar selección
+        $this->selectAll = false; // Desmarcar selección completa
+    }
+
+    public function togglePagoParcial($index)
+    {
+        $this->carrito[$index]['es_parcial'] = !$this->carrito[$index]['es_parcial'];
+
+        // Si se marca como completo, establecer monto_pagado igual al monto restante
+        if (!$this->carrito[$index]['es_parcial']) {
+            $montoRestante = $this->carrito[$index]['monto'] - ($this->carrito[$index]['monto_pagado'] ?? 0);
+            $this->carrito[$index]['monto_pagado'] += $montoRestante;
+        } else {
+            // Si se marca como parcial, permitir que el usuario ingrese el monto
+            // No hacemos nada aquí, dejamos que el usuario ingrese el monto
+        }
     }
 
     public function calcularTotal()
     {
         $this->total = 0;
+        $totalPagado = 0;
+        
         foreach ($this->carrito as $item) {
             $this->total += $item['monto'];
+            $totalPagado += $item['monto_pagado'] ?? 0;
         }
+
+        $this->dispatch('update-payment-totals', 
+            total: $this->total,
+            totalPagado: $totalPagado,
+            saldoPendiente: $this->total - $totalPagado
+        );
     }
 
     public function removerItem($index)
@@ -170,25 +268,18 @@ class Create extends Component
             $existeEnBase = Pago::where('matricula_id', $this->matricula_id)
                 ->whereHas('conceptoPago', function ($query) {
                     $query->where('nombre', 'Matrícula');
-                })->exists();
+                })
+                ->where('estado', 'completado')
+                ->exists();
 
             if (!$existeEnCarrito && !$existeEnBase) {
-                // Crear un concepto de pago temporal para matrícula
-                $conceptoMatricula = ConceptoPago::firstOrCreate(
-                    ['nombre' => 'Matrícula'],
-                    [
-                        'descripcion' => 'Pago de matrícula',
-                        'monto' => $nivel->costo_matricula,
-                        'activo' => true
-                    ]
-                );
-
                 $this->carrito[] = [
-                    'concepto_id' => $conceptoMatricula->id,
+                    'concepto_id' => null,
                     'concepto_nombre' => 'Matrícula',
                     'monto' => $nivel->costo_matricula,
+                    'monto_pagado' => 0,
+                    'es_parcial' => false
                 ];
-                
                 $costosAgregados++;
             }
         }
@@ -205,109 +296,129 @@ class Create extends Component
             }
 
             // Verificar si ya se pagó en la base de datos
-            $existeEnBase = Pago::where('matricula_id', $this->matricula_id)
+            $pagosMensuales = Pago::where('matricula_id', $this->matricula_id)
                 ->whereHas('conceptoPago', function ($query) {
-                    $query->where('nombre', 'Mensualidad');
-                })->exists();
+                    $query->where('nombre', 'like', '%Mensualidad%');
+                })
+                ->where('estado', 'completado')
+                ->count();
 
-            if (!$existeEnCarrito && !$existeEnBase) {
-                // Crear un concepto de pago temporal para mensualidad
-                $conceptoMensualidad = ConceptoPago::firstOrCreate(
-                    ['nombre' => 'Mensualidad'],
-                    [
-                        'descripcion' => 'Pago de mensualidad',
-                        'monto' => $nivel->costo_mensualidad,
-                        'activo' => true
-                    ]
-                );
-
+            if (!$existeEnCarrito && $pagosMensuales < 10) { // Máximo 10 mensualidades
                 $this->carrito[] = [
-                    'concepto_id' => $conceptoMensualidad->id,
+                    'concepto_id' => null,
                     'concepto_nombre' => 'Mensualidad',
                     'monto' => $nivel->costo_mensualidad,
+                    'monto_pagado' => 0,
+                    'es_parcial' => false
                 ];
-                
                 $costosAgregados++;
             }
         }
 
-        // Agregar cuota inicial si existe
-        if ($matricula->cuota_inicial > 0) {
-            // Verificar si ya está en el carrito
-            $existeEnCarrito = false;
-            foreach ($this->carrito as $item) {
-                if (stripos($item['concepto_nombre'], 'inicial') !== false) {
-                    $existeEnCarrito = true;
-                    break;
-                }
-            }
-
-            // Verificar si ya se pagó en la base de datos
-            $existeEnBase = Pago::where('matricula_id', $this->matricula_id)
-                ->whereHas('conceptoPago', function ($query) {
-                    $query->where('nombre', 'Cuota Inicial');
-                })->exists();
-
-            if (!$existeEnCarrito && !$existeEnBase) {
-                // Crear un concepto de pago temporal para cuota inicial
-                $conceptoInicial = ConceptoPago::firstOrCreate(
-                    ['nombre' => 'Cuota Inicial'],
-                    [
-                        'descripcion' => 'Pago de cuota inicial',
-                        'monto' => $matricula->cuota_inicial,
-                        'activo' => true
-                    ]
-                );
-
-                $this->carrito[] = [
-                    'concepto_id' => $conceptoInicial->id,
-                    'concepto_nombre' => 'Cuota Inicial',
-                    'monto' => $matricula->cuota_inicial,
-                ];
-                
-                $costosAgregados++;
-            }
-        }
-
-        $this->calcularTotal();
-        
-        // Mostrar mensaje de éxito
         if ($costosAgregados > 0) {
-            session()->flash('message', 'Se agregaron ' . $costosAgregados . ' costos automáticos al carrito.');
+            $this->calcularTotal();
+            session()->flash('message', "Se agregaron $costosAgregados conceptos automáticamente.");
         } else {
-            session()->flash('message', 'No se agregaron costos automáticos. Pueden estar ya en el carrito o ya haber sido pagados.');
+            session()->flash('message', 'No se encontraron costos pendientes para agregar.');
         }
     }
 
     public function store()
     {
-        // Verificar permiso para crear pagos
-        if (!auth()->user()->can('create pagos')) {
-            session()->flash('error', 'No tienes permiso para registrar pagos.');
+        $this->validate();
+
+        if (empty($this->carrito)) {
+            session()->flash('error', 'El carrito está vacío. Agregue al menos un concepto de pago.');
             return;
         }
 
-        $this->validate();
-
         try {
-            // Registrar todos los pagos del carrito
+            DB::beginTransaction();
+
+            $pagosCreados = [];
+            $comprobantes = [];
+
             foreach ($this->carrito as $item) {
-                Pago::create([
+                $pago = new Pago();
+                $pago->matricula_id = $this->matricula_id;
+                $pago->monto = $item['monto'];
+                $pago->monto_pagado = $item['monto_pagado'] ?? 0;
+                $pago->fecha_pago = $this->fecha_pago ?? now();
+                $pago->metodo_pago = $this->metodo_pago;
+                $pago->referencia = $this->referencia;
+                
+                // Determinar el estado del pago
+                if ($item['es_parcial'] || ($item['monto_pagado'] ?? 0) < $item['monto']) {
+                    $pago->estado = 'parcial';
+                } else {
+                    $pago->estado = 'completado';
+                }
+                $pago->empresa_id = auth()->user()->empresa_id;
+                $pago->sucursal_id = auth()->user()->sucursal_id;
+                $pago->user_id = auth()->user()->id;
+                
+                // Solo establecer concepto_pago_id si no es una cuota (cuota_id no está definido)
+                if (!isset($item['cuota_id'])) {
+                    $pago->concepto_pago_id = $item['concepto_id'];
+                }
+                
+                $pago->save();
+
+                // Si es una cuota, actualizar su estado
+                if (isset($item['cuota_id'])) {
+                    $cuota = PaymentSchedule::find($item['cuota_id']);
+                    if ($cuota) {
+                        // Actualizar el monto pagado en la cuota
+                        $cuota->monto_pagado = ($cuota->monto_pagado ?? 0) + $pago->monto_pagado;
+                        
+                        // Determinar el estado de la cuota
+                        if ($cuota->monto_pagado >= $cuota->monto) {
+                            $cuota->estado = 'pagado';
+                        } else {
+                            $cuota->estado = 'parcial';
+                        }
+                        
+                        $cuota->save();
+                    }
+                }
+
+                $pagosCreados[] = $pago;
+
+                // Generar comprobante para cada pago usando la relación polimórfica
+                $comprobante = new Comprobante();
+                $comprobante->numero = 'CMP-' . now()->format('Ymd') . '-' . str_pad($pago->id, 6, '0', STR_PAD_LEFT);
+                $comprobante->fecha_emision = now();
+                $comprobante->serie = 'CMP';
+                $comprobante->tipo = 'comprobante_pago';
+                $comprobante->contenido = [
                     'matricula_id' => $this->matricula_id,
-                    'concepto_pago_id' => $item['concepto_id'],
+                    'concepto_nombre' => $item['concepto_nombre'],
                     'monto' => $item['monto'],
-                    'monto_pagado' => $item['monto'], // En este caso se paga el total
-                    'fecha_pago' => $this->fecha_pago,
+                    'monto_pagado' => $item['monto_pagado'] ?? $item['monto'],
+                    'fecha_pago' => $this->fecha_pago ?? now(),
                     'metodo_pago' => $this->metodo_pago,
                     'referencia' => $this->referencia,
-                    'estado' => 'pagado', // Marcar como pagado ya que se está registrando el pago
-                ]);
+                ];
+                $pago->comprobante()->save($comprobante);
+
+                $comprobantes[] = $comprobante;
             }
 
-            session()->flash('message', 'Pagos registrados correctamente (' . count($this->carrito) . ' conceptos).');
+            DB::commit();
+
+            // Limpiar formulario
+            $this->reset(['concepto_id', 'monto', 'carrito', 'total', 'selectedCuotas', 'selectAll']);
+            $this->paymentSchedule = collect(); // Limpiar tabla de amortización
+            
+            session()->flash('message', 'Pagos registrados exitosamente. Se generaron ' . count($comprobantes) . ' comprobantes.');
+            
+            // Redirigir a la lista de pagos
             return redirect()->route('admin.pagos.index');
+
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al registrar los pagos: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error al registrar pagos: ' . $e->getMessage());
+            session()->flash('error', 'Ocurrió un error al registrar los pagos: ' . $e->getMessage());
         }
     }
 
@@ -315,7 +426,7 @@ class Create extends Component
     {
         return view('livewire.admin.pagos.create')
             ->layout('components.layouts.admin', [
-                'title' => 'Registrar Pago',
+                'title' => 'Crear Pago',
                 'description' => 'Registrar nuevos pagos en estilo de carrito de compras'
             ]);
     }

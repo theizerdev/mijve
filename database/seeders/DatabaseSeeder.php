@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             ProgramaSeeder::class,
             ConceptoPagoSeeder::class,
             MatriculaSeeder::class,
-            PagoSeeder::class,
+           //PagoSeeder::class,
         ]);
     }
 }

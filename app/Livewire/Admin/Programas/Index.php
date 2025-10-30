@@ -6,10 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Programa;
 use App\Models\NivelEducativo;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $nivel_educativo_id = '';
@@ -62,14 +63,14 @@ class Index extends Component
             return;
         }
 
-        try {
-            $programa->delete();
-            session()->flash('message', 'Programa eliminado correctamente.');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error al eliminar el programa: ' . $e->getMessage());
+        // Verificar si el programa tiene matrículas asociadas
+        if ($programa->matriculas()->count() > 0) {
+            session()->flash('error', 'No se puede eliminar el programa porque tiene matrículas asociadas.');
+            return;
         }
 
-        $this->resetPage();
+        $programa->delete();
+        session()->flash('success', 'Programa eliminado exitosamente.');
     }
 
     public function toggleStatus(Programa $programa)
@@ -100,28 +101,72 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    protected function getExportQuery()
     {
-        $programas = Programa::with('nivelEducativo')
-            ->when($this->search, function ($query) {
+        return Programa::query()
+            ->with(['nivelEducativo'])
+            ->when($this->search, function($query) {
                 $query->where('nombre', 'like', '%' . $this->search . '%')
                     ->orWhere('descripcion', 'like', '%' . $this->search . '%');
             })
-            ->when($this->nivel_educativo_id, function ($query) {
+            ->when($this->nivel_educativo_id, function($query) {
                 $query->where('nivel_educativo_id', $this->nivel_educativo_id);
             })
-            ->when($this->status !== '', function ($query) {
+            ->when($this->status !== '', function($query) {
+                $query->where('activo', $this->status);
+            })
+            ->orderBy($this->sortBy, $this->sortDirection);
+    }
+
+    protected function getExportHeaders(): array
+    {
+        return [
+            'ID',
+            'Nombre',
+            'Descripción',
+            'Nivel Educativo',
+            'Estado',
+            'Fecha de Creación'
+        ];
+    }
+
+    protected function formatExportRow($programa): array
+    {
+        return [
+            $programa->id,
+            $programa->nombre,
+            $programa->descripcion ?? '',
+            $programa->nivelEducativo->nombre ?? '',
+            $programa->activo ? 'Activo' : 'Inactivo',
+            $programa->created_at->format('d/m/Y H:i:s')
+        ];
+    }
+
+    public function render()
+    {
+        $nivelesEducativos = NivelEducativo::where('status', true)->get();
+
+        $programas = Programa::query()
+            ->with(['nivelEducativo'])
+            ->when($this->search, function($query) {
+                $query->where('nombre', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->nivel_educativo_id, function($query) {
+                $query->where('nivel_educativo_id', $this->nivel_educativo_id);
+            })
+            ->when($this->status !== '', function($query) {
                 $query->where('activo', $this->status);
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $nivelesEducativos = NivelEducativo::where('status', true)->get();
-
         return view('livewire.admin.programas.index', compact('programas', 'nivelesEducativos'))
             ->layout('components.layouts.admin', [
-                'title' => 'Lista de Programas',
-                'description' => 'Gestión de programas académicos'
+                'title' => 'Programas',
+                'breadcrumb' => [
+                    'admin.dashboard' => 'Dashboard',
+                    'admin.programas.index' => 'Programas'
+                ]
             ]);
     }
 }

@@ -78,12 +78,21 @@ class Morosidad extends Component
         // Calcular morosidad para cada matrícula
         $this->morosos = [];
         foreach ($matriculas as $matricula) {
-            $totalPagado = $matricula->total_pagado ?? 0;
+            // Obtener el total pagado de forma más precisa
+            $pagos = Pago::where("matricula_id", $matricula->id)->get();
+            $totalPagado = $pagos->sum("monto_pagado");
             $costoTotal = $matricula->costo ?? 0;
             $saldoPendiente = $costoTotal - $totalPagado;
 
-            // Considerar moroso si tiene saldo pendiente mayor a 10% del costo total
-            if ($saldoPendiente > ($costoTotal * 0.1)) {
+            // Verificar si el estudiante tiene pagos completos
+            $tienePagosCompletos = $pagos->where("estado", Pago::ESTADO_COMPLETADO)->count() > 0;
+            $esPagoCompleto = $totalPagado >= ($costoTotal * 0.9); // Considerar completo si pagó al menos el 90%
+
+            // Considerar moroso si:
+            // 1. Tiene saldo pendiente mayor a 10% del costo total
+            // 2. No tiene pagos completos registrados
+            // 3. No ha pagado al menos el 90% del costo total
+            if ($saldoPendiente > ($costoTotal * 0.1) && !$tienePagosCompletos && !$esPagoCompleto) {
                 $this->morosos[] = [
                     'matricula' => $matricula,
                     'total_pagado' => $totalPagado,

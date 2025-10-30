@@ -5,26 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Multitenantable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Programa extends Model
 {
-    use HasFactory, Multitenantable;
+    use HasFactory, Multitenantable, LogsActivity;
 
     protected $fillable = [
         'nombre',
         'descripcion',
         'nivel_educativo_id',
-        'costo_matricula',
-        'costo_mensualidad',
         'activo',
         'empresa_id',
-        'sucursal_id'
+        'sucursal_id',
     ];
 
     protected $casts = [
-        'costo_matricula' => 'decimal:2',
-        'costo_mensualidad' => 'decimal:2',
-        'activo' => 'boolean'
+        'activo' => 'boolean',
     ];
 
     public function nivelEducativo()
@@ -34,7 +32,7 @@ class Programa extends Model
 
     public function matriculas()
     {
-        return $this->hasMany(Matricula::class);
+        return $this->hasMany(Matricula::class, 'programa_id');
     }
 
     public function empresa()
@@ -45,5 +43,18 @@ class Programa extends Model
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'nombre',
+                'descripcion',
+                'nivel_educativo_id',
+                'activo'
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

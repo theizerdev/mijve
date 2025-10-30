@@ -12,8 +12,6 @@ class Edit extends Component
     public $nombre;
     public $descripcion;
     public $nivel_educativo_id;
-    public $costo_matricula;
-    public $costo_mensualidad;
     public $activo;
 
     public function mount(Programa $programa)
@@ -28,8 +26,6 @@ class Edit extends Component
         $this->nombre = $programa->nombre;
         $this->descripcion = $programa->descripcion;
         $this->nivel_educativo_id = $programa->nivel_educativo_id;
-        $this->costo_matricula = $programa->costo_matricula;
-        $this->costo_mensualidad = $programa->costo_mensualidad;
         $this->activo = $programa->activo;
     }
 
@@ -39,8 +35,6 @@ class Edit extends Component
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
-            'costo_matricula' => 'required|numeric|min:0',
-            'costo_mensualidad' => 'required|numeric|min:0',
             'activo' => 'boolean'
         ];
     }
@@ -60,8 +54,6 @@ class Edit extends Component
                 'nombre' => $this->nombre,
                 'descripcion' => $this->descripcion,
                 'nivel_educativo_id' => $this->nivel_educativo_id,
-                'costo_matricula' => $this->costo_matricula,
-                'costo_mensualidad' => $this->costo_mensualidad,
                 'activo' => $this->activo
             ]);
 

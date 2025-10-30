@@ -124,8 +124,8 @@
                                         </a>
                                         @endcan
                                         @can('delete conceptos_pago')
-                                        <button 
-                                            class="dropdown-item text-danger" 
+                                        <button
+                                            class="dropdown-item text-danger"
                                             wire:click="delete({{ $concepto }})"
                                             wire:confirm="¿Estás seguro de eliminar este concepto de pago?">
                                             <i class="ri ri-delete-bin-line me-1"></i> Eliminar
@@ -143,14 +143,14 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     Mostrando {{ $conceptos->firstItem() }} a {{ $conceptos->lastItem() }} de {{ $conceptos->total() }} conceptos
                 </div>
                 <div>
-                    {{ $conceptos->links('vendor.pagination.materialize') }}
+                   {{ $conceptos->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>
