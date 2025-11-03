@@ -15,7 +15,7 @@ class TurnoSeeder extends Seeder
     {
         // Delete all records from the turnos table to avoid duplicates
         DB::table('turnos')->delete();
-        
+
         $turnos = [
             [
                 'nombre' => 'Mañana',
@@ -23,6 +23,8 @@ class TurnoSeeder extends Seeder
                 'hora_inicio' => '07:00:00',
                 'hora_fin' => '12:00:00',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Tarde',
@@ -30,6 +32,8 @@ class TurnoSeeder extends Seeder
                 'hora_inicio' => '12:00:00',
                 'hora_fin' => '17:00:00',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Noche',
@@ -37,6 +41,8 @@ class TurnoSeeder extends Seeder
                 'hora_inicio' => '17:00:00',
                 'hora_fin' => '22:00:00',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
         ];
 

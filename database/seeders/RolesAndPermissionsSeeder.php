@@ -89,6 +89,11 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
             'dashboard' => [
                 'access dashboard',
+                'dashboard.alerts',
+                'dashboard.financial',
+                'dashboard.academic',
+                'dashboard.access',
+                'dashboard.charts',
             ],
             'niveles_educativos' => [
                 'access niveles educativos',
@@ -174,6 +179,21 @@ class RolesAndPermissionsSeeder extends Seeder
                 'share biblioteca',
                 'manage biblioteca categories',
             ],
+            // Módulo de series de documentos
+            'series' => [
+                'access series',
+                'create series',
+                'edit series',
+                'delete series',
+            ],
+            // Módulo de cajas
+            'cajas' => [
+                'access cajas',
+                'create cajas',
+                'edit cajas',
+                'delete cajas',
+                'view cajas',
+            ],
         ];
 
         // Crear permisos organizados por módulos
@@ -201,22 +221,28 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Asignar permisos al Recepcionista (solo de estudiantes, matrículas, pagos y dashboard)
+        // Asignar permisos al Recepcionista (solo de estudiantes, matrículas, pagos y dashboard básico)
         $recepcionistaPermissions = Permission::whereIn('module', [
             'students',
-            'dashboard',
             'matriculas',
             'pagos'
+        ])->orWhereIn('name', [
+            'access dashboard',
+            'dashboard.alerts',
+            'dashboard.academic',
+            'dashboard.access'
         ])->get();
         $recepcionistaRole->syncPermissions($recepcionistaPermissions);
 
-        // Asignar permisos de mensajería y biblioteca a Administradores y Super Administradores
-        $mensajeriaBibliotecaPermissions = Permission::whereIn('module', [
+        // Asignar permisos de mensajería, biblioteca, series y cajas a Administradores y Super Administradores
+        $mensajeriaBibliotecaSeriesCajasPermissions = Permission::whereIn('module', [
             'mensajeria',
-            'biblioteca'
+            'biblioteca',
+            'series',
+            'cajas'
         ])->get();
         
-        $superAdminRole->givePermissionTo($mensajeriaBibliotecaPermissions);
-        $adminRole->givePermissionTo($mensajeriaBibliotecaPermissions);
+        $superAdminRole->givePermissionTo($mensajeriaBibliotecaSeriesCajasPermissions);
+        $adminRole->givePermissionTo($mensajeriaBibliotecaSeriesCajasPermissions);
     }
 }

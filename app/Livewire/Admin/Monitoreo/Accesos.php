@@ -5,17 +5,26 @@ namespace App\Livewire\Admin\Monitoreo;
 use Livewire\Component;
 use App\Models\StudentAccessLog;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
 
 class Accesos extends Component
 {
     public $startDate;
     public $endDate;
+    public $lastUpdate;
     
     public function mount()
     {
         abort_unless(auth()->user()->can('view monitoreo accesos'), 403);
         $this->startDate = now()->startOfMonth()->format('Y-m-d');
         $this->endDate = now()->format('Y-m-d');
+        $this->lastUpdate = now()->format('H:i:s');
+    }
+    
+    #[On('refresh-accesos')]
+    public function refreshData()
+    {
+        $this->lastUpdate = now()->format('H:i:s');
     }
     
     public function exportExcel()

@@ -1,27 +1,50 @@
 <div>
     <div>
+    <!-- Alertas -->
+    @if(session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="ri ri-error-warning-line me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ri ri-check-line me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('message'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="ri ri-information-line me-2"></i>
+            {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-0">Reporte de Morosidad</h4>
             <p class="text-muted mb-0">Morosidad por nivel/programa</p>
         </div>
         <div>
-            @if(session()->has('error'))
-                <div class="alert alert-danger alert-dismissible fade show me-2" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session()->has('message'))
-                <div class="alert alert-success alert-dismissible fade show me-2" role="alert">
-                    {{ session('message') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <button wire:click="exportarExcel" class="btn btn-success me-2" @if(count($morosos) == 0) disabled @endif>
-                <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+            <button 
+                wire:click="exportarExcel" 
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50"
+                class="btn btn-success me-2" 
+                @if(count($morosos) == 0) disabled @endif
+            >
+                <span wire:loading.remove wire:target="exportarExcel">
+                    <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+                </span>
+                <span wire:loading wire:target="exportarExcel">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Exportando...
+                </span>
             </button>
             <button wire:click="exportarPDF" class="btn btn-danger me-2" @if(count($morosos) == 0) disabled @endif>
                 <i class="ri ri-file-pdf-line me-1"></i> Exportar PDF
@@ -210,14 +233,14 @@
                         <div class="col-md-4">
                             <div class="border rounded p-3 text-center">
                                 <p class="mb-1 text-muted">Total Pagado</p>
-                                <h4 class="mb-0 text-success">${{ number_format($estudianteSeleccionado->pagos->sum('monto_pagado'), 2) }}</h4>
+                                <h4 class="mb-0 text-success">${{ number_format($estudianteSeleccionado->pagos->sum('total'), 2) }}</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="border rounded p-3 text-center bg-warning bg-opacity-10">
                                 <p class="mb-1 text-muted">Saldo Pendiente</p>
                                 <h4 class="mb-0 text-warning">
-                                    ${{ number_format(($estudianteSeleccionado->costo ?? 0) - $estudianteSeleccionado->pagos->sum('monto_pagado'), 2) }}
+                                    ${{ number_format(($estudianteSeleccionado->costo ?? 0) - $estudianteSeleccionado->pagos->sum('total'), 2) }}
                                 </h4>
                             </div>
                         </div>
@@ -243,22 +266,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($detalleDeuda as $pago)
+                                    @foreach($detalleDeuda as $cuota)
                                         <tr>
-                                            <td>{{ $pago->fecha_pago?->format('d/m/Y') ?? 'N/A' }}</td>
-                                            <td>{{ $pago->conceptoPago->nombre ?? 'N/A' }}</td>
-                                            <td class="text-end">${{ number_format($pago->monto, 2) }}</td>
-                                            <td class="text-end">${{ number_format($pago->monto_pagado, 2) }}</td>
+                                            <td>{{ $cuota->fecha_vencimiento?->format('d/m/Y') ?? 'N/A' }}</td>
+                                            <td>Cuota {{ $cuota->numero_cuota ?? 'N/A' }}</td>
+                                            <td class="text-end">${{ number_format($cuota->monto, 2) }}</td>
+                                            <td class="text-end">${{ number_format($cuota->monto_pagado ?? 0, 2) }}</td>
                                             <td>
-                                                @if($pago->estado == \App\Models\Pago::ESTADO_COMPLETADO)
-                                                    <span class="badge bg-success">Pagado</span>
-                                                @elseif($pago->estado == \App\Models\Pago::ESTADO_PENDIENTE)
-                                                    <span class="badge bg-warning">Pendiente</span>
-                                                @elseif($pago->estado == \App\Models\Pago::ESTADO_CANCELADO)
-                                                    <span class="badge bg-danger">Cancelado</span>
-                                                @else
-                                                    <span class="badge bg-info">Reembolsado</span>
-                                                @endif
+                                                <span class="badge bg-danger">Pendiente</span>
                                             </td>
                                         </tr>
                                     @endforeach

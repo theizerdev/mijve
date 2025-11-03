@@ -206,22 +206,19 @@
                                     </td>
                                     <td>
                                         <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $permission->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="ri ri-more-2-line"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $permission->id }}">
-                                                @can('view permissions')
-                                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); alert('Función de ver permiso no implementada');">
-                                                    <i class="ri ri-eye-line me-1"></i> Ver
-                                                </a>
-                                                @endcan
+                                            <div class="dropdown-menu">
                                                 @can('edit permissions')
                                                 <a class="dropdown-item" href="{{ route('admin.permissions.edit', $permission) }}">
                                                     <i class="ri ri-pencil-line me-1"></i> Editar
                                                 </a>
                                                 @endcan
                                                 @can('delete permissions')
-                                                <button class="dropdown-item text-danger" wire:click="deletePermission({{ $permission->id }})" wire:confirm="¿Estás seguro de eliminar este permiso?">
+                                                <button type="button" class="dropdown-item text-danger"
+                                                        wire:click="deletePermission({{ $permission->id }})"
+                                                        wire:confirm="¿Estás seguro de eliminar este permiso?">
                                                     <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                                 </button>
                                                 @endcan
@@ -242,14 +239,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $permissions->firstItem() }} a {{ $permissions->lastItem() }} de {{ $permissions->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $permissions->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+                   {{ $permissions->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

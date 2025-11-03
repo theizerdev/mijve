@@ -1,86 +1,76 @@
 <div>
+    <!-- Alertas -->
     @if (session()->has('message'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('message') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="ri-check-line me-2"></i>{{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     @if (session()->has('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="ri-error-warning-line me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <div class="row">
-        <!-- Estadísticas -->
-        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\NivelEducativo::count() }}</h4>
-                            <p class="mb-0">Total Niveles</p>
+                            <h6 class="text-muted mb-2">Total Niveles</h6>
+                            <h2 class="mb-0">{{ \App\Models\NivelEducativo::count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-primary">
-                                <i class="ri ri-graduation-cap-line ri-24px"></i>
-                            </span>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="ri-graduation-cap-line text-primary" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+        <div class="col-md-3">
+            <div class="card border-start border-success border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\NivelEducativo::where('status', 1)->count() }}</h4>
-                            <p class="mb-0">Niveles Activos</p>
+                            <h6 class="text-muted mb-2">Activos</h6>
+                            <h2 class="mb-0">{{ \App\Models\NivelEducativo::where('status', 1)->count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-success">
-                                <i class="ri ri-check-double-line ri-24px"></i>
-                            </span>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="ri-check-double-line text-success" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+        <div class="col-md-3">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\Programa::count() }}</h4>
-                            <p class="mb-0">Total Programas</p>
+                            <h6 class="text-muted mb-2">Programas</h6>
+                            <h2 class="mb-0">{{ \App\Models\Programa::count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-info">
-                                <i class="ri ri-book-line ri-24px"></i>
-                            </span>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="ri-book-line text-info" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+        <div class="col-md-3">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\Student::count() }}</h4>
-                            <p class="mb-0">Total Estudiantes</p>
+                            <h6 class="text-muted mb-2">Estudiantes</h6>
+                            <h2 class="mb-0">{{ \App\Models\Student::count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-warning">
-                                <i class="ri ri-user-line ri-24px"></i>
-                            </span>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="ri-user-3-line text-warning" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -88,91 +78,114 @@
         </div>
     </div>
 
+    <!-- Card Principal -->
     <div class="card">
-        <div class="card-header border-bottom">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="mb-1">Lista de Niveles Educativos</h5>
-                <div>
-                    @can('create', \App\Models\NivelEducativo::class)
-                    <a href="{{ route('admin.niveles-educativos.create') }}" class="btn btn-primary">
-                        <i class="ri ri-add-line ri-16px me-1"></i>Crear Nivel Educativo
-                    </a>
-                    @endcan
-                </div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Niveles Educativos</h5>
+                <small class="text-muted">Gestión de niveles académicos</small>
             </div>
+            @can('create niveles educativos')
+            <a href="{{ route('admin.niveles-educativos.create') }}" class="btn btn-primary">
+                <i class="ri-add-line me-1"></i> Nuevo Nivel
+            </a>
+            @endcan
         </div>
 
-        <div class="card-body pt-3">
+        <div class="card-body">
+            <!-- Filtros -->
             <div class="row mb-4">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Buscar</label>
-                    <input wire:model.live.debounce.300ms="search" type="text" class="form-control" placeholder="Buscar por nombre...">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="ri-search-line"></i></span>
+                        <input type="text" wire:model.live="search" class="form-control" placeholder="Buscar niveles...">
+                    </div>
                 </div>
-
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">Estado</label>
+                <div class="col-md-3">
                     <select wire:model.live="status" class="form-select">
                         <option value="">Todos</option>
                         <option value="1">Activo</option>
                         <option value="0">Inactivo</option>
                     </select>
                 </div>
-
-                <div class="col-md-2 mb-3">
-                    <label class="form-label">Mostrar</label>
+                <div class="col-md-2">
                     <select wire:model.live="perPage" class="form-select">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                     </select>
                 </div>
+                <div class="col-md-3 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <span class="badge bg-label-primary">Total: {{ $niveles->total() }}</span>
+                        <button wire:click="clearFilters" class="btn btn-outline-secondary">
+                            <i class="ri-eraser-line me-1"></i> Limpiar
+                        </button>
+                        <button wire:click="export" class="btn btn-outline-success">
+                            <i class="ri-file-excel-line me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
             </div>
 
+            <!-- Tabla -->
             <div class="table-responsive">
-                <table class="table table-striped table-bordered">
+                <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
                             <th wire:click="sortBy('nombre')" style="cursor: pointer;">
-                                Nombre @if($sortField == 'nombre') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                <i class="ri-graduation-cap-line me-1"></i>Nombre
+                                @if($sortField == 'nombre') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
                             </th>
-                            <th>Descripción</th>
+                            <th><i class="ri-file-text-line me-1"></i>Descripción</th>
                             <th wire:click="sortBy('status')" style="cursor: pointer;">
-                                Estado @if($sortField == 'status') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                <i class="ri-toggle-line me-1"></i>Estado
+                                @if($sortField == 'status') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
                             </th>
-                            <th>Acciones</th>
+                            <th width="120">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($niveles as $nivel)
                         <tr>
-                            <td>{{ $nivel->nombre }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-sm me-2">
+                                        <span class="avatar-initial rounded bg-label-primary">{{ substr($nivel->nombre, 0, 1) }}</span>
+                                    </div>
+                                    <span class="fw-medium">{{ $nivel->nombre }}</span>
+                                </div>
+                            </td>
                             <td>{{ $nivel->descripcion ?? '-' }}</td>
                             <td>
-                                @if($nivel->status)
-                                    <span class="badge bg-success">Activo</span>
-                                @else
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                @endif
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           wire:click="toggleStatus({{ $nivel->id }})" 
+                                           {{ $nivel->status ? 'checked' : '' }}
+                                           id="switch{{ $nivel->id }}">
+                                    <label class="form-check-label" for="switch{{ $nivel->id }}">
+                                        <span class="badge bg-label-{{ $nivel->status ? 'success' : 'secondary' }}">
+                                            {{ $nivel->status ? 'Activo' : 'Inactivo' }}
+                                        </span>
+                                    </label>
+                                </div>
                             </td>
                             <td>
-                                <div class="d-flex gap-2">
-                                    @can('view', $nivel)
-                                    <a href="{{ route('admin.niveles-educativos.show', $nivel) }}" class="btn btn-sm btn-icon btn-text-secondary waves-effect">
-                                        <i class="ri ri-eye-line ri-20px"></i>
+                                <div class="d-flex gap-1">
+                                    @can('edit niveles educativos')
+                                    <a href="{{ route('admin.niveles-educativos.edit', $nivel) }}" 
+                                       class="btn btn-sm btn-icon btn-text-secondary rounded-pill" 
+                                       title="Editar">
+                                        <i class="ri-edit-line ri-20px"></i>
                                     </a>
                                     @endcan
-
-                                    @can('update', $nivel)
-                                    <a href="{{ route('admin.niveles-educativos.edit', $nivel) }}" class="btn btn-sm btn-icon btn-text-secondary waves-effect">
-                                        <i class="ri ri-edit-line ri-20px"></i>
-                                    </a>
-                                    @endcan
-
-                                    @can('delete', $nivel)
-                                    <button type="button" class="btn btn-sm btn-icon btn-text-secondary waves-effect"
-                                            wire:click="delete({{ $nivel->id }})"
-                                            wire:confirm="¿Estás seguro de eliminar este nivel educativo?">
-                                        <i class="ri ri-delete-bin-line ri-20px text-danger"></i>
+                                    @can('delete niveles educativos')
+                                    <button wire:click="delete({{ $nivel->id }})" 
+                                            wire:confirm="¿Eliminar el nivel {{ $nivel->nombre }}?" 
+                                            class="btn btn-sm btn-icon btn-text-danger rounded-pill" 
+                                            title="Eliminar">
+                                        <i class="ri-delete-bin-7-line ri-20px"></i>
                                     </button>
                                     @endcan
                                 </div>
@@ -180,16 +193,30 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center">No se encontraron niveles educativos</td>
+                            <td colspan="4" class="text-center py-4">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="ri-graduation-cap-line ri-48px text-muted mb-2"></i>
+                                    <h6 class="text-muted">No hay niveles educativos</h6>
+                                    <p class="text-muted mb-0">Crea el primer nivel educativo</p>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="mt-4">
-                {{ $niveles->links() }}
+            <!-- Paginación -->
+            @if($niveles->hasPages())
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    Mostrando {{ $niveles->firstItem() }} a {{ $niveles->lastItem() }} de {{ $niveles->total() }} resultados
+                </div>
+                <div>
+                    {{ $niveles->links() }}
+                </div>
             </div>
+            @endif
         </div>
     </div>
 </div>

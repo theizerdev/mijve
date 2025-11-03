@@ -37,6 +37,21 @@ class PaymentSchedule extends Model
         return $this->belongsTo(Matricula::class);
     }
 
+    public function pagoDetalles()
+    {
+        return $this->hasMany(PagoDetalle::class);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
+    }
+
     public function scopePendientes($query)
     {
         return $query->where('estado', 'pendiente');
@@ -45,5 +60,33 @@ class PaymentSchedule extends Model
     public function scopePagados($query)
     {
         return $query->where('estado', 'pagado');
+    }
+
+    public function scopeVencidos($query)
+    {
+        return $query->where('estado', 'pendiente')
+            ->where('fecha_vencimiento', '<', now());
+    }
+
+    public function getSaldoPendienteAttribute()
+    {
+        return $this->monto - $this->monto_pagado;
+    }
+
+    public function getEstaPagadoAttribute()
+    {
+        return $this->monto_pagado >= $this->monto;
+    }
+
+    public function registrarPago($monto)
+    {
+        $this->monto_pagado += $monto;
+        
+        if ($this->monto_pagado >= $this->monto) {
+            $this->estado = 'pagado';
+            $this->fecha_pago = now();
+        }
+        
+        $this->save();
     }
 }

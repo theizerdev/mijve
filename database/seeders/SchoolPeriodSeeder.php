@@ -21,6 +21,8 @@ class SchoolPeriodSeeder extends Seeder
                 'description' => 'Periodo escolar 2025-2026',
                 'is_active' => true,
                 'is_current' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
         ];
 

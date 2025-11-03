@@ -11,7 +11,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-            
+
             <button wire:click="exportarExcel" class="btn btn-success me-2" @if(!$matriculaSeleccionada) disabled @endif>
                 <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
             </button>
@@ -47,7 +47,7 @@
                                 <option value="">Seleccione una matrícula</option>
                                 @foreach($estudianteSeleccionado->matriculas as $matricula)
                                     <option value="{{ $matricula->id }}">
-                                        {{ $matricula->programa->nombre ?? 'Programa no definido' }} - 
+                                        {{ $matricula->programa->nombre ?? 'Programa no definido' }} -
                                         {{ $matricula->fecha_matricula?->format('d/m/Y') ?? 'Fecha no definida' }}
                                     </option>
                                 @endforeach
@@ -105,13 +105,16 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="border rounded p-3 text-center 
+                                <div class="border rounded p-3 text-center
                                     @if($saldoPendiente > 0) bg-warning bg-opacity-10 @else bg-success bg-opacity-10 @endif">
                                     <p class="mb-1 text-muted">Saldo Pendiente</p>
-                                    <h4 class="mb-0 
+                                    <h4 class="mb-0
                                         @if($saldoPendiente > 0) text-warning @else text-success @endif">
                                         ${{ number_format($saldoPendiente, 2) }}
                                     </h4>
+                                    @if($saldoPendiente <= 0)
+                                        <small class="text-success">¡Pagado completamente!</small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -132,17 +135,26 @@
                                     <tbody>
                                         @foreach($pagos as $pago)
                                             <tr>
-                                                <td>{{ $pago->fecha_pago?->format('d/m/Y') ?? 'N/A' }}</td>
-                                                <td>{{ $pago->conceptoPago->nombre ?? 'N/A' }}</td>
-                                                <td>${{ number_format($pago->monto, 2) }}</td>
-                                                <td>${{ number_format($pago->monto_pagado, 2) }}</td>
+                                                <td>{{ $pago->fecha->format('d/m/Y') }}</td>
                                                 <td>
-                                                    @if($pago->estado == 'pagado')
-                                                        <span class="badge bg-success">Pagado</span>
-                                                    @elseif($pago->estado == 'parcial')
-                                                        <span class="badge bg-warning">Parcial</span>
+                                                    @if($pago->detalles->count() > 0)
+                                                        @foreach($pago->detalles as $detalle)
+                                                            {{ $detalle->conceptoPago->nombre ?? 'N/A' }}
+                                                            @if(!$loop->last), @endif
+                                                        @endforeach
                                                     @else
-                                                        <span class="badge bg-danger">Pendiente</span>
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td>${{ number_format($pago->total, 2) }}</td>
+                                                <td>${{ number_format($pago->total, 2) }}</td>
+                                                <td>
+                                                    @if($pago->estado == 'aprobado')
+                                                        <span class="badge bg-success">Pagado</span>
+                                                    @elseif($pago->estado == 'pendiente')
+                                                        <span class="badge bg-warning">Pendiente</span>
+                                                    @else
+                                                        <span class="badge bg-danger">Cancelado</span>
                                                     @endif
                                                 </td>
                                             </tr>

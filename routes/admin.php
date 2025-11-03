@@ -137,6 +137,11 @@ Route::get('/conceptos-pago', ConceptosPagoIndex::class)->name('conceptos-pago.i
 Route::get('/conceptos-pago/crear', ConceptosPagoCreate::class)->name('conceptos-pago.create');
 Route::get('/conceptos-pago/{concepto}/editar', ConceptosPagoEdit::class)->name('conceptos-pago.edit');
 
+// Series de Documentos
+Route::get('/series', \App\Livewire\Admin\Series\Index::class)->name('series.index');
+Route::get('/series/crear', \App\Livewire\Admin\Series\Create::class)->name('series.create');
+Route::get('/series/{serie}/editar', \App\Livewire\Admin\Series\Edit::class)->name('series.edit');
+
 // Matrículas
 Route::get('/matriculas', \App\Livewire\Admin\Matriculas\Index::class)->name('matriculas.index');
 Route::get('/matriculas/crear', \App\Livewire\Admin\Matriculas\Create::class)->name('matriculas.create');
@@ -167,3 +172,8 @@ Route::get('/mensajeria', \App\Livewire\Admin\Mensajeria\ChatIndex::class)->name
 
 // Biblioteca Digital
 Route::get('/biblioteca', \App\Livewire\Admin\Biblioteca\BibliotecaIndex::class)->name('biblioteca.index');
+
+// Cajas
+Route::get('/cajas', \App\Livewire\Admin\Cajas\Index::class)->name('cajas.index');
+Route::get('/cajas/crear', \App\Livewire\Admin\Cajas\Create::class)->name('cajas.create');
+Route::get('/cajas/{caja}', \App\Livewire\Admin\Cajas\Show::class)->name('cajas.show');

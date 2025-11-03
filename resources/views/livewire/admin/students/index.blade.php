@@ -13,127 +13,7 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h5 class="card-title mb-1">Lista de Estudiantes</h5>
-            <p class="mb-0">Administra los estudiantes del sistema</p>
-        </div>
-        <div class="d-flex gap-2">
-            @can('create students')
-            <a href="{{ route('admin.students.create') }}" class="btn btn-primary">
-                <i class="ri ri-add-line"></i> Nuevo Estudiante
-            </a>
-            @endcan
-            
-            @can('export students')
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="ri ri-download-line"></i> Exportar
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
-                    <li>
-                        <button class="dropdown-item" wire:click="export">
-                            <i class="ri ri-file-excel-line me-2"></i> Exportar a Excel
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item" wire:click="exportAdvanced">
-                            <i class="ri ri-file-chart-line me-2"></i> Exportación Avanzada
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            @endcan
-            
-            @can('import students')
-            <a href="{{ route('admin.students.import') }}" class="btn btn-outline-secondary">
-                <i class="ri ri-upload-line"></i> Importar
-            </a>
-            @endcan
-        </div>
-    </div>
 
-    <!-- Filtros -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="mb-0">Filtros</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label for="search" class="form-label">Buscar</label>
-                    <input type="text" class="form-control" id="search" placeholder="Nombre, código, documento..." wire:model.live.debounce.300ms="search">
-                </div>
-                <div class="col-md-3">
-                    <label for="status" class="form-label">Estado</label>
-                    <select class="form-select" id="status" wire:model.live="status">
-                        <option value="">Todos</option>
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="nivelEducativoId" class="form-label">Nivel Educativo</label>
-                    <select class="form-select" id="nivelEducativoId" wire:model.live="nivelEducativoId">
-                        <option value="">Todos</option>
-                        @foreach($nivelesEducativos as $nivel)
-                            <option value="{{ $nivel->id }}">{{ $nivel->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="turnoId" class="form-label">Turno</label>
-                    <select class="form-select" id="turnoId" wire:model.live="turnoId">
-                        <option value="">Todos</option>
-                        @foreach($turnos as $turno)
-                            <option value="{{ $turno->id }}">{{ $turno->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="grado" class="form-label">Grado</label>
-                    <select class="form-select" id="grado" wire:model.live="grado">
-                        <option value="">Todos</option>
-                        @foreach($grados as $g)
-                            <option value="{{ $g }}">{{ $g }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="seccion" class="form-label">Sección</label>
-                    <select class="form-select" id="seccion" wire:model.live="seccion">
-                        <option value="">Todas</option>
-                        @foreach($secciones as $s)
-                            <option value="{{ $s }}">{{ $s }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="schoolPeriodId" class="form-label">Período Escolar</label>
-                    <select class="form-select" id="schoolPeriodId" wire:model.live="schoolPeriodId">
-                        <option value="">Todos</option>
-                        @foreach($schoolPeriods as $period)
-                            <option value="{{ $period->id }}">{{ $period->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="perPage" class="form-label">Mostrar</label>
-                    <select class="form-select" id="perPage" wire:model.live="perPage">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button class="btn btn-outline-secondary" wire:click="clearFilters">
-                    <i class="ri ri-delete-bin-line"></i> Limpiar Filtros
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Estadísticas -->
     <div class="row mb-4">
@@ -196,9 +76,132 @@
         </div>
     </div>
 
-    <!-- Tabla de estudiantes -->
-    <div class="card">
-        <div class="card-datatable table-responsive">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">Lista de Estudiantes</h5>
+                            <p class="mb-0">Administra los estudiantes del sistema</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            @can('create students')
+                            <a href="{{ route('admin.students.create') }}" class="btn btn-primary">
+                                <i class="ri ri-add-line"></i> Nuevo Estudiante
+                            </a>
+                            @endcan
+                            
+                            @can('export students')
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="ri ri-download-line"></i> Exportar
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                    <li>
+                                        <button class="dropdown-item" wire:click="export">
+                                            <i class="ri ri-file-excel-line me-2"></i> Exportar a Excel
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" wire:click="exportAdvanced">
+                                            <i class="ri ri-file-chart-line me-2"></i> Exportación Avanzada
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            @endcan
+                            
+                            @can('import students')
+                            <a href="{{ route('admin.students.import') }}" class="btn btn-outline-secondary">
+                                <i class="ri ri-upload-line"></i> Importar
+                            </a>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-header border-bottom">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" class="form-control" placeholder="Nombre, código, documento..." wire:model.live.debounce.300ms="search">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" wire:model.live="status">
+                                <option value="">Todos</option>
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Nivel Educativo</label>
+                            <select class="form-select" wire:model.live="nivelEducativoId">
+                                <option value="">Todos</option>
+                                @foreach($nivelesEducativos as $nivel)
+                                    <option value="{{ $nivel->id }}">{{ $nivel->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Turno</label>
+                            <select class="form-select" wire:model.live="turnoId">
+                                <option value="">Todos</option>
+                                @foreach($turnos as $turno)
+                                    <option value="{{ $turno->id }}">{{ $turno->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Grado</label>
+                            <select class="form-select" wire:model.live="grado">
+                                <option value="">Todos</option>
+                                @foreach($grados as $g)
+                                    <option value="{{ $g }}">{{ $g }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sección</label>
+                            <select class="form-select" wire:model.live="seccion">
+                                <option value="">Todas</option>
+                                @foreach($secciones as $s)
+                                    <option value="{{ $s }}">{{ $s }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Período Escolar</label>
+                            <select class="form-select" wire:model.live="schoolPeriodId">
+                                <option value="">Todos</option>
+                                @foreach($schoolPeriods as $period)
+                                    <option value="{{ $period->id }}">{{ $period->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Mostrar</label>
+                            <select class="form-select" wire:model.live="perPage">
+                                <option value="10">10 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                                <option value="100">100 por página</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
+                                <i class="ri ri-eraser-line"></i> Limpiar
+                            </button>
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-datatable table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -307,18 +310,22 @@
                                 @endif
                             </td>
                             <td>
-                                @if($student->status)
-                                    <span class="badge bg-success">Activo</span>
-                                @else
-                                    <span class="badge bg-danger">Inactivo</span>
-                                @endif
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox"
+                                           id="statusSwitch{{ $student->id }}"
+                                           {{ $student->status ? 'checked' : '' }}
+                                           @can('edit students') wire:click="toggleStatus({{ $student->id }})" @endcan>
+                                    <label class="form-check-label" for="statusSwitch{{ $student->id }}">
+                                        {{ $student->status ? 'Activo' : 'Inactivo' }}
+                                    </label>
+                                </div>
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $student->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="ri ri-more-2-fill ri-24px"></i>
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        <i class="ri ri-more-2-line"></i>
                                     </button>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $student->id }}">
+                                    <div class="dropdown-menu">
                                         @can('view students')
                                         <a class="dropdown-item" href="{{ route('admin.students.show', $student) }}">
                                             <i class="ri ri-eye-line me-1"></i> Ver
@@ -328,14 +335,15 @@
                                         <a class="dropdown-item" href="{{ route('admin.students.edit', $student) }}">
                                             <i class="ri ri-pencil-line me-1"></i> Editar
                                         </a>
-                                        {{-- Opción para enviar correo de bienvenida --}}
                                         <button class="dropdown-item" wire:click="sendWelcomeEmail({{ $student->id }})"
                                                 wire:confirm="¿Estás seguro de enviar el correo de bienvenida a {{ $student->esMenorDeEdad ? 'su representante' : 'este estudiante' }}?">
                                             <i class="ri ri-mail-line me-1"></i> Correo de Bienvenida
                                         </button>
                                         @endcan
                                         @can('delete students')
-                                        <button class="dropdown-item text-danger" wire:click="delete({{ $student->id }})" wire:confirm="¿Estás seguro de eliminar este estudiante?">
+                                        <button type="button" class="dropdown-item text-danger"
+                                                wire:click="delete({{ $student->id }})"
+                                                wire:confirm="¿Estás seguro de eliminar este estudiante?">
                                             <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                         </button>
                                         @endcan
@@ -352,13 +360,8 @@
             </table>
         </div>
 
-        <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    Mostrando {{ $students->firstItem() }} a {{ $students->lastItem() }} de {{ $students->total() }} estudiantes
-                </div>
-                <div>
-                    {{ $students->links('vendor.pagination.materialize') }}
+                <div class="card-footer">
+                   {{ $students->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

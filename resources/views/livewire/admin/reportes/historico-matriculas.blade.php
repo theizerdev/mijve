@@ -1,12 +1,49 @@
 <div>
+    <!-- Alertas -->
+    @if(session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="ri ri-error-warning-line me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ri ri-check-line me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('message'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="ri ri-information-line me-2"></i>
+            {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-0">Histórico de Matrículas</h4>
             <p class="text-muted mb-0">Historial de matrículas por estudiante</p>
         </div>
         <div>
-            <button wire:click="exportarExcel" class="btn btn-success me-2" @if(count($matriculas) == 0) disabled @endif>
-                <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+            <button 
+                wire:click="exportarExcel" 
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50"
+                class="btn btn-success me-2" 
+                @if(count($matriculas) == 0) disabled @endif
+            >
+                <span wire:loading.remove wire:target="exportarExcel">
+                    <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+                </span>
+                <span wire:loading wire:target="exportarExcel">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Exportando...
+                </span>
             </button>
             <button wire:click="exportarPDF" class="btn btn-danger" @if(count($matriculas) == 0) disabled @endif>
                 <i class="ri ri-file-pdf-line me-1"></i> Exportar PDF
@@ -69,8 +106,19 @@
                 </div>
             </div>
             
-            <button wire:click="cargarReporte" class="btn btn-primary">
-                <i class="ri ri-search-line me-1"></i> Generar Reporte
+            <button 
+                wire:click="cargarReporte" 
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50"
+                class="btn btn-primary"
+            >
+                <span wire:loading.remove wire:target="cargarReporte">
+                    <i class="ri ri-search-line me-1"></i> Generar Reporte
+                </span>
+                <span wire:loading wire:target="cargarReporte">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Procesando...
+                </span>
             </button>
         </div>
     </div>
@@ -78,34 +126,38 @@
     @if(count($matriculas) > 0)
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card">
+                <div class="card border-primary">
                     <div class="card-body text-center">
+                        <i class="ri ri-graduation-cap-line ri-2x text-primary mb-2"></i>
                         <p class="mb-1 text-muted">Total Matrículas</p>
-                        <h3 class="mb-0">{{ $estadisticas['total'] }}</h3>
+                        <h3 class="mb-0 text-primary">{{ $estadisticas['total'] }}</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card border-success">
                     <div class="card-body text-center">
+                        <i class="ri ri-stack-line ri-2x text-success mb-2"></i>
                         <p class="mb-1 text-muted">Niveles</p>
-                        <h3 class="mb-0">{{ $estadisticas['por_nivel']->count() }}</h3>
+                        <h3 class="mb-0 text-success">{{ $estadisticas['por_nivel']->count() }}</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card border-info">
                     <div class="card-body text-center">
+                        <i class="ri ri-book-line ri-2x text-info mb-2"></i>
                         <p class="mb-1 text-muted">Programas</p>
-                        <h3 class="mb-0">{{ $estadisticas['por_programa']->count() }}</h3>
+                        <h3 class="mb-0 text-info">{{ $estadisticas['por_programa']->count() }}</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card border-warning">
                     <div class="card-body text-center">
+                        <i class="ri ri-calendar-line ri-2x text-warning mb-2"></i>
                         <p class="mb-1 text-muted">Períodos</p>
-                        <h3 class="mb-0">{{ $estadisticas['por_periodo']->count() }}</h3>
+                        <h3 class="mb-0 text-warning">{{ $estadisticas['por_periodo']->count() }}</h3>
                     </div>
                 </div>
             </div>
@@ -197,22 +249,41 @@
                         <tbody>
                             @foreach($matriculas as $matricula)
                                 <tr>
-                                    <td>{{ $matricula->fecha_matricula?->format('d/m/Y') ?? 'N/A' }}</td>
-                                    <td>{{ $matricula->student->nombres ?? '' }} {{ $matricula->student->apellidos ?? '' }}</td>
+                                    <td>
+                                        <i class="ri ri-calendar-check-line text-muted me-1"></i>
+                                        {{ $matricula->fecha_matricula?->format('d/m/Y') ?? 'N/A' }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="ri ri-user-line text-primary me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">{{ $matricula->student->nombres ?? '' }} {{ $matricula->student->apellidos ?? '' }}</div>
+                                                <small class="text-muted">{{ $matricula->student->documento_identidad ?? '' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>{{ $matricula->student->documento_identidad ?? '' }}</td>
-                                    <td>{{ $matricula->programa->nombre ?? '' }}</td>
-                                    <td>{{ $matricula->programa->nivelEducativo->nombre ?? '' }}</td>
-                                    <td>{{ $matricula->periodo->nombre ?? '' }}</td>
+                                    <td>
+                                        <i class="ri ri-book-line text-info me-1"></i>
+                                        {{ $matricula->programa->nombre ?? '' }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ $matricula->programa->nivelEducativo->nombre ?? '' }}</span>
+                                    </td>
+                                    <td>
+                                        <i class="ri ri-time-line text-warning me-1"></i>
+                                        {{ $matricula->periodo->nombre ?? '' }}
+                                    </td>
                                     <td>
                                         @if($matricula->estado == 'activo')
-                                            <span class="badge bg-success">Activo</span>
+                                            <span class="badge bg-success"><i class="ri ri-check-line me-1"></i>Activo</span>
                                         @elseif($matricula->estado == 'inactivo')
-                                            <span class="badge bg-danger">Inactivo</span>
+                                            <span class="badge bg-danger"><i class="ri ri-close-line me-1"></i>Inactivo</span>
                                         @else
                                             <span class="badge bg-secondary">{{ ucfirst($matricula->estado) }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-end">${{ number_format($matricula->costo ?? 0, 2) }}</td>
+                                    <td class="text-end fw-bold text-success">${{ number_format($matricula->costo ?? 0, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

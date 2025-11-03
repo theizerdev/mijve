@@ -1,19 +1,49 @@
 <div>
+    <!-- Alertas -->
+    @if(session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="ri ri-error-warning-line me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ri ri-check-line me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session()->has('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="ri ri-information-line me-2"></i>
+            {{ session('info') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-0">Resumen de Pagos</h4>
             <p class="text-muted mb-0">Resumen de pagos por período</p>
         </div>
         <div>
-            @if(session()->has('error'))
-                <div class="alert alert-danger alert-dismissible fade show me-2" role="alert">
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <button wire:click="exportarExcel" class="btn btn-success me-2" @if(count($pagos) == 0) disabled @endif>
-                <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+            <button 
+                wire:click="exportarExcel" 
+                wire:loading.attr="disabled"
+                wire:loading.class="opacity-50"
+                class="btn btn-success me-2" 
+                @if(count($pagos) == 0) disabled @endif
+            >
+                <span wire:loading.remove wire:target="exportarExcel">
+                    <i class="ri ri-file-excel-line me-1"></i> Exportar Excel
+                </span>
+                <span wire:loading wire:target="exportarExcel">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Exportando...
+                </span>
             </button>
             <button wire:click="exportarPDF" class="btn btn-danger" @if(count($pagos) == 0) disabled @endif>
                 <i class="ri ri-file-pdf-line me-1"></i> Exportar PDF
@@ -34,7 +64,12 @@
                             <option value="">Seleccione un período</option>
                            @foreach($periodos as $periodo)
                                 <option value="{{ $periodo->id }}">
-                                    {{ $periodo->name }} ({{ $periodo->start_date?->format('d/m/Y') ?? 'N/A' }} - {{ $periodo->end_date?->format('d/m/Y') ?? 'N/A' }})
+                                    {{ $periodo->nombre ?? $periodo->name ?? 'Período sin nombre' }}
+                                    @if($periodo->fecha_inicio && $periodo->fecha_fin)
+                                        ({{ $periodo->fecha_inicio->format('d/m/Y') }} - {{ $periodo->fecha_fin->format('d/m/Y') }})
+                                    @elseif($periodo->start_date && $periodo->end_date)
+                                        ({{ $periodo->start_date->format('d/m/Y') }} - {{ $periodo->end_date->format('d/m/Y') }})
+                                    @endif
                                 </option>
                             @endforeach
                         </select>
@@ -94,17 +129,27 @@
                                 <tbody>
                                     @foreach($totales as $total)
                                         <tr>
-                                            <td>{{ $total->concepto }}</td>
-                                            <td class="text-end">{{ $total->cantidad }}</td>
-                                            <td class="text-end">${{ number_format($total->total, 2) }}</td>
+                                            <td>
+                                                <i class="ri ri-money-dollar-circle-line text-success me-2"></i>
+                                                {{ $total->concepto }}
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="badge bg-primary">{{ $total->cantidad }}</span>
+                                            </td>
+                                            <td class="text-end fw-bold text-success">${{ number_format($total->total, 2) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot>
-                                    <tr class="table-light">
-                                        <th>Total General</th>
-                                        <th class="text-end">{{ $totales->sum('cantidad') }}</th>
-                                        <th class="text-end">${{ number_format($totales->sum('total'), 2) }}</th>
+                                    <tr class="table-success">
+                                        <th>
+                                            <i class="ri ri-calculator-line me-2"></i>
+                                            Total General
+                                        </th>
+                                        <th class="text-end">
+                                            <span class="badge bg-success">{{ $totales->sum('cantidad') }}</span>
+                                        </th>
+                                        <th class="text-end fw-bold">${{ number_format($totales->sum('total'), 2) }}</th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -129,30 +174,24 @@
                             <div class="col-md-6 mb-3">
                                 <div class="border rounded p-3 text-center">
                                     <p class="mb-1 text-muted">Total Ingresos</p>
-                                    <h4 class="mb-0 text-success">${{ number_format($pagos->sum('monto_pagado'), 2) }}</h4>
+                                    <h4 class="mb-0 text-success">${{ number_format($pagos->sum('total'), 2) }}</h4>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="border rounded p-3 text-center">
                                     <p class="mb-1 text-muted">Período</p>
                                     <h6 class="mb-0">
-                                        @if($periodo_id)
-                                            @php
-                                                $periodo = \App\Models\SchoolPeriod::find($periodo_id);
-                                            @endphp
-                                            @if($periodo && $periodo->fecha_inicio && $periodo->fecha_fin)
-                                                {{ $periodo->fecha_inicio->format('d/m/Y') }} - {{ $periodo->fecha_fin->format('d/m/Y') }}
-                                            @elseif($periodo)
-                                                {{ $periodo->nombre }}
-                                            @else
-                                                {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} -
-                                                {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
-                                            @endif
-                                        @else
-                                            {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} -
-                                            {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
-                                        @endif
+                                        {{ $fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_inicio)->format('d/m/Y') : 'N/A' }} -
+                                        {{ $fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $fecha_fin)->format('d/m/Y') : 'N/A' }}
                                     </h6>
+                                    @if($periodo_id)
+                                        @php
+                                            $periodo = \App\Models\SchoolPeriod::find($periodo_id);
+                                        @endphp
+                                        @if($periodo)
+                                            <small class="text-muted">{{ $periodo->nombre ?? $periodo->name ?? 'Período académico' }}</small>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -187,11 +226,20 @@
                         <tbody>
                             @foreach($pagos as $pago)
                                 <tr>
-                                    <td>{{ $pago->fecha_pago?->format('d/m/Y') ?? 'N/A' }}</td>
+                                    <td>{{ $pago->fecha->format('d/m/Y') }}</td>
                                     <td>{{ $pago->matricula?->student?->nombres ?? '' }} {{ $pago->matricula?->student?->apellidos ?? '' }}</td>
-                                    <td>{{ $pago->conceptoPago?->nombre ?? 'N/A' }}</td>
-                                    <td class="text-end">${{ number_format($pago->monto, 2) }}</td>
-                                    <td class="text-end">${{ number_format($pago->monto_pagado, 2) }}</td>
+                                    <td>
+                                        @if($pago->detalles->count() > 0)
+                                            @foreach($pago->detalles as $detalle)
+                                                {{ $detalle->conceptoPago->nombre ?? 'N/A' }}
+                                                @if(!$loop->last), @endif
+                                            @endforeach
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td class="text-end">${{ number_format($pago->total, 2) }}</td>
+                                    <td class="text-end">${{ number_format($pago->total, 2) }}</td>
                                     <td>
                                         @if($pago->metodo_pago == 'efectivo')
                                             <span class="badge bg-success">Efectivo</span>

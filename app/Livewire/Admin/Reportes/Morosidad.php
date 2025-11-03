@@ -58,13 +58,7 @@ class Morosidad extends Component
     public function cargarReporte()
     {
         $query = Matricula::with(['student', 'programa.nivelEducativo'])
-            ->where('matriculas.estado', 'activo')
-            ->leftJoin('pagos', 'matriculas.id', '=', 'pagos.matricula_id')
-            ->select(
-                'matriculas.*',
-                DB::raw('COALESCE(SUM(pagos.monto_pagado), 0) as total_pagado')
-            )
-            ->groupBy('matriculas.id');
+            ->where('matriculas.estado', 'activo');
 
         if ($this->programa_id) {
             $query->where('matriculas.programa_id', $this->programa_id);
@@ -78,26 +72,21 @@ class Morosidad extends Component
         // Calcular morosidad para cada matrícula
         $this->morosos = [];
         foreach ($matriculas as $matricula) {
-            // Obtener el total pagado de forma más precisa
-            $pagos = Pago::where("matricula_id", $matricula->id)->get();
-            $totalPagado = $pagos->sum("monto_pagado");
+            // Obtener el total pagado usando la nueva estructura
+            $totalPagado = Pago::where('matricula_id', $matricula->id)
+                ->where('estado', 'aprobado')
+                ->sum('total');
+            
             $costoTotal = $matricula->costo ?? 0;
             $saldoPendiente = $costoTotal - $totalPagado;
 
-            // Verificar si el estudiante tiene pagos completos
-            $tienePagosCompletos = $pagos->where("estado", Pago::ESTADO_COMPLETADO)->count() > 0;
-            $esPagoCompleto = $totalPagado >= ($costoTotal * 0.9); // Considerar completo si pagó al menos el 90%
-
-            // Considerar moroso si:
-            // 1. Tiene saldo pendiente mayor a 10% del costo total
-            // 2. No tiene pagos completos registrados
-            // 3. No ha pagado al menos el 90% del costo total
-            if ($saldoPendiente > ($costoTotal * 0.1) && !$tienePagosCompletos && !$esPagoCompleto) {
+            // Considerar moroso si tiene saldo pendiente mayor a 0
+            if ($saldoPendiente > 0 && $costoTotal > 0) {
                 $this->morosos[] = [
                     'matricula' => $matricula,
                     'total_pagado' => $totalPagado,
                     'saldo_pendiente' => $saldoPendiente,
-                    'porcentaje_pagado' => $costoTotal > 0 ? ($totalPagado / $costoTotal) * 100 : 0
+                    'porcentaje_pagado' => ($totalPagado / $costoTotal) * 100
                 ];
             }
         }
@@ -116,16 +105,21 @@ class Morosidad extends Component
 
     public function mostrarDetalleDeuda($matriculaId)
     {
-        // Obtener la matrícula con sus pagos
-        $matricula = Matricula::with(['student', 'programa.nivelEducativo', 'pagos.conceptoPago'])
-            ->find($matriculaId);
+        // Obtener la matrícula con cronograma de pagos y pagos realizados
+        $matricula = Matricula::with([
+            'student', 
+            'programa.nivelEducativo', 
+            'cronogramaPagos',
+            'pagos.detalles.conceptoPago'
+        ])->find($matriculaId);
             
         if (!$matricula) {
             return;
         }
         
         $this->estudianteSeleccionado = $matricula;
-        $this->detalleDeuda = $matricula->pagos;
+        // Mostrar solo cuotas pendientes
+        $this->detalleDeuda = $matricula->cronogramaPagos->where('estado', 'pendiente');
         $this->mostrarModal = true;
         
         // Emitir evento para mostrar la modal
@@ -178,7 +172,7 @@ class Morosidad extends Component
         
         try {
             // Preparar datos para el correo
-            $pendingAmount = ($this->estudianteSeleccionado->costo ?? 0) - $this->estudianteSeleccionado->pagos->sum('monto_pagado');
+            $pendingAmount = ($this->estudianteSeleccionado->costo ?? 0) - $this->estudianteSeleccionado->pagos->sum('total');
             
             // Enviar correo real
             Mail::to($correoDestino)->send(new DebtNotification($estudiante, $this->detalleDeuda, $pendingAmount));
@@ -209,8 +203,107 @@ class Morosidad extends Component
 
     public function exportarExcel()
     {
-        // Lógica para exportar a Excel
-        session()->flash('message', 'Funcionalidad de exportación en desarrollo.');
+        if (count($this->morosos) == 0) {
+            session()->flash('error', 'No hay datos de morosidad para exportar.');
+            return;
+        }
+
+        try {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Reporte de Morosidad');
+
+            // Encabezado principal
+            $sheet->setCellValue('A1', 'REPORTE DE MOROSIDAD');
+            $sheet->mergeCells('A1:H1');
+            $sheet->getStyle('A1')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => 'DC3545']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+            ]);
+
+            // Información del reporte
+            $sheet->setCellValue('A3', 'Fecha de generación:');
+            $sheet->setCellValue('B3', now()->format('d/m/Y H:i:s'));
+            $sheet->setCellValue('A4', 'Total estudiantes:');
+            $sheet->setCellValue('B4', $this->totales['total_estudiantes']);
+            $sheet->setCellValue('D3', 'Total morosos:');
+            $sheet->setCellValue('E3', $this->totales['total_morosos']);
+            $sheet->setCellValue('D4', 'Porcentaje morosidad:');
+            $sheet->setCellValue('E4', number_format($this->totales['porcentaje_morosidad'], 2) . '%');
+
+            $sheet->getStyle('A3:A4')->getFont()->setBold(true);
+            $sheet->getStyle('D3:D4')->getFont()->setBold(true);
+            $sheet->getStyle('E3:E4')->getFont()->setBold(true)->getColor()->setRGB('DC3545');
+
+            // Encabezados de la tabla
+            $headers = ['Estudiante', 'Documento', 'Programa', 'Nivel', 'Costo Total', 'Total Pagado', 'Saldo Pendiente', '% Pagado'];
+            foreach ($headers as $index => $header) {
+                $column = chr(65 + $index);
+                $sheet->setCellValue($column . '6', $header);
+            }
+            
+            $sheet->getStyle('A6:H6')->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'DC3545']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+            ]);
+
+            // Datos de morosos
+            $row = 7;
+            foreach ($this->morosos as $moroso) {
+                $matricula = $moroso['matricula'];
+                $estudiante = $matricula->student;
+                
+                $sheet->setCellValue('A' . $row, ($estudiante->nombres ?? '') . ' ' . ($estudiante->apellidos ?? ''));
+                $sheet->setCellValue('B' . $row, $estudiante->documento_identidad ?? 'N/A');
+                $sheet->setCellValue('C' . $row, $matricula->programa->nombre ?? 'N/A');
+                $sheet->setCellValue('D' . $row, $matricula->programa->nivelEducativo->nombre ?? 'N/A');
+                $sheet->setCellValue('E' . $row, $matricula->costo ?? 0);
+                $sheet->setCellValue('F' . $row, $moroso['total_pagado']);
+                $sheet->setCellValue('G' . $row, $moroso['saldo_pendiente']);
+                $sheet->setCellValue('H' . $row, $moroso['porcentaje_pagado'] / 100);
+                $row++;
+            }
+
+            // Formato de la tabla
+            $rangeData = 'A7:H' . ($row - 1);
+            $sheet->getStyle($rangeData)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $sheet->getStyle('E7:G' . ($row - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
+            $sheet->getStyle('H7:H' . ($row - 1))->getNumberFormat()->setFormatCode('0.00%');
+
+            // Configuración de columnas
+            $sheet->getColumnDimension('A')->setWidth(30);
+            $sheet->getColumnDimension('B')->setWidth(15);
+            $sheet->getColumnDimension('C')->setWidth(25);
+            $sheet->getColumnDimension('D')->setWidth(20);
+            $sheet->getColumnDimension('E')->setWidth(15);
+            $sheet->getColumnDimension('F')->setWidth(15);
+            $sheet->getColumnDimension('G')->setWidth(15);
+            $sheet->getColumnDimension('H')->setWidth(12);
+
+            $filename = 'reporte_morosidad_' . now()->format('Y-m-d') . '.xlsx';
+
+            session()->flash('success', 'Archivo Excel generado correctamente.');
+
+            return new \Symfony\Component\HttpFoundation\StreamedResponse(
+                function () use ($spreadsheet) {
+                    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                    $writer->save('php://output');
+                },
+                200,
+                [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition' => 'attachment; filename="' . urlencode($filename) . '"',
+                    'Cache-Control' => 'max-age=0',
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error exportando Excel morosidad: ' . $e->getMessage());
+            session()->flash('error', 'Error al generar el archivo Excel: ' . $e->getMessage());
+            return;
+        }
     }
 
     public function exportarPDF()
@@ -221,8 +314,71 @@ class Morosidad extends Component
 
     public function enviarNotificaciones()
     {
-        // Lógica para enviar notificaciones a morosos
-        session()->flash('message', 'Funcionalidad de notificaciones en desarrollo. Se enviarían notificaciones a ' . count($this->morosos) . ' estudiantes.');
+        if (count($this->morosos) == 0) {
+            session()->flash('error', 'No hay estudiantes morosos para notificar.');
+            return;
+        }
+
+        $notificacionesEnviadas = 0;
+        $errores = [];
+
+        foreach ($this->morosos as $moroso) {
+            $estudiante = $moroso['matricula']->student;
+            
+            // Verificar si el estudiante es mayor de edad
+            $esMayorDeEdad = $estudiante->fecha_nacimiento && 
+                             $estudiante->fecha_nacimiento->age >= 18;
+            
+            $correoDestino = null;
+            $nombreDestino = null;
+            
+            if ($esMayorDeEdad && $estudiante->correo_electronico) {
+                // Enviar al correo del estudiante si es mayor de edad
+                $correoDestino = $estudiante->correo_electronico;
+                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
+            } elseif (!$esMayorDeEdad && $estudiante->representante_correo) {
+                // Enviar al correo del representante si es menor de edad
+                $correoDestino = $estudiante->representante_correo;
+                $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
+            }
+            
+            if ($correoDestino) {
+                try {
+                    // Preparar datos para el correo
+                    $pendingAmount = $moroso['saldo_pendiente'];
+                    
+                    // Obtener cronograma de pagos pendientes
+                    $cronogramaPendiente = $moroso['matricula']->cronogramaPagos
+                        ->where('estado', 'pendiente');
+                    
+                    // Enviar correo real
+                    \Mail::to($correoDestino)->send(new \App\Mail\DebtNotification($estudiante, $cronogramaPendiente, $pendingAmount));
+                    $notificacionesEnviadas++;
+                    
+                    \Log::info('Notificación de morosidad enviada', [
+                        'destinatario' => $correoDestino,
+                        'estudiante' => $estudiante->nombres . ' ' . $estudiante->apellidos,
+                        'saldo_pendiente' => $pendingAmount
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Error enviando notificación de morosidad', [
+                        'error' => $e->getMessage(),
+                        'estudiante' => $estudiante->nombres . ' ' . $estudiante->apellidos
+                    ]);
+                    $errores[] = $estudiante->nombres . ' ' . $estudiante->apellidos;
+                }
+            } else {
+                $errores[] = $estudiante->nombres . ' ' . $estudiante->apellidos . ' (sin correo válido)';
+            }
+        }
+
+        if ($notificacionesEnviadas > 0) {
+            session()->flash('success', "Se enviaron {$notificacionesEnviadas} notificaciones correctamente (mayores de edad al estudiante, menores al representante).");
+        }
+        
+        if (count($errores) > 0) {
+            session()->flash('error', 'No se pueden notificar a: ' . implode(', ', array_slice($errores, 0, 3)) . (count($errores) > 3 ? ' y ' . (count($errores) - 3) . ' más.' : '.'));
+        }
     }
 
     public function render()

@@ -1,4 +1,29 @@
 <div>
+    @if (session()->has('message'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-0">Nueva Matrícula</h4>
@@ -48,7 +73,7 @@
 
                     <div class="col-md-6">
                         <label for="periodo_id" class="form-label">Período Escolar *</label>
-                        <select wire:model="periodo_id" class="form-select" id="periodo_id" required>
+                        <select wire:model.change="periodo_id" class="form-select" id="periodo_id" required>
                             <option value="">Seleccione un período</option>
                             @foreach($periodos as $periodo)
                                 <option value="{{ $periodo->id }}">{{ $periodo->name }}</option>
@@ -79,19 +104,19 @@
 
                     <div class="col-md-4">
                         <label for="costo" class="form-label">Costo Total *</label>
-                        <input type="number" step="0.01" wire:model.live="costo" class="form-control" id="costo" required>
+                        <input type="number" step="0.01" wire:model.blur="costo" class="form-control" id="costo" required>
                         @error('costo') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label for="cuota_inicial" class="form-label">Cuota Inicial *</label>
-                        <input type="number" step="0.01" wire:model.live="cuota_inicial" class="form-control" id="cuota_inicial" required>
+                        <input type="number" step="0.01" wire:model.blur="cuota_inicial" class="form-control" id="cuota_inicial" required>
                         @error('cuota_inicial') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
                         <label for="numero_cuotas" class="form-label">Número de Cuotas *</label>
-                        <input type="number" wire:model.live="numero_cuotas" class="form-control" id="numero_cuotas" required>
+                        <input type="number" wire:model.blur="numero_cuotas" class="form-control" id="numero_cuotas" required>
                         @error('numero_cuotas') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
                 </div>

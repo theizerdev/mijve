@@ -2,33 +2,32 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header pb-0">
+                <div class="card-header border-bottom">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5>Seguimiento de Actividades</h5>
-                            <p class="text-muted">Registro de todas las actividades realizadas en el sistema</p>
+                            <h5 class="card-title mb-1">Seguimiento de Actividades</h5>
+                            <p class="mb-0">Registro de todas las actividades realizadas en el sistema</p>
                         </div>
                         <div>
                             @can('export activity log')
-                            <button class="btn btn-label-primary" wire:click="export">
-                                <i class="ti ti-download me-1"></i>Exportar
+                            <button class="btn btn-primary" wire:click="export">
+                                <i class="ri ri-download-line"></i> Exportar
                             </button>
                             @endcan
                         </div>
                     </div>
                 </div>
-                
-                <div class="card-body">
-                    <!-- Filtros -->
-                    <div class="row mb-4">
-                        <div class="col-md-3 mb-2">
-                            <input type="text" 
-                                   class="form-control" 
-                                   placeholder="Buscar por descripción o usuario..." 
+
+                <!-- Filtros -->
+                <div class="card-header border-bottom">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" class="form-control" placeholder="Buscar por descripción o usuario..."
                                    wire:model.live.debounce.300ms="search">
                         </div>
-                        
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Usuario</label>
                             <select class="form-select" wire:model.live="userFilter">
                                 <option value="">Todos los usuarios</option>
                                 @foreach($users as $user)
@@ -36,8 +35,8 @@
                                 @endforeach
                             </select>
                         </div>
-                        
-                        <div class="col-md-3 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Fecha</label>
                             <select class="form-select" wire:model.live="dateRange">
                                 <option value="">Todas las fechas</option>
                                 <option value="today">Hoy</option>
@@ -46,16 +45,18 @@
                                 <option value="month">Este mes</option>
                             </select>
                         </div>
-                        
-                        <div class="col-md-3 mb-2">
-                            <button class="btn btn-label-secondary" wire:click="clearFilters">
-                                <i class="ti ti-x me-1"></i>Limpiar filtros
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
+                                <i class="ri ri-eraser-line"></i> Limpiar
+                            </button>
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
                             </button>
                         </div>
                     </div>
-                    
-                    <!-- Tabla de actividades -->
-                    <div class="table-responsive">
+                </div>
+
+                <div class="card-datatable table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -214,15 +215,10 @@
                         </table>
                     </div>
                     
-                    <!-- Paginación -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $activities->firstItem() }} a {{ $activities->lastItem() }} de {{ $activities->total() }} resultados
-                        </div>
-                        <div>
-                             {{ $activities->links('vendor.pagination.materialize-livewire') }}
-                        </div>
-                    </div>
+                </div>
+
+                <div class="card-footer">
+                   {{ $activities->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

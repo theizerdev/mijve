@@ -169,19 +169,25 @@
                                         <span class="badge bg-light text-dark">{{ $empresa->telefono }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-{{ $empresa->status === true ? 'success' : 'danger' }}">
-                                            {{ ucfirst($empresa->status === true ? 'activo' : 'inactivo') }}
-                                        </span>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="statusSwitch{{ $empresa->id }}"
+                                                   {{ $empresa->status ? 'checked' : '' }}
+                                                   @can('edit empresas') wire:click="toggleStatus({{ $empresa->id }})" @endcan>
+                                            <label class="form-check-label" for="statusSwitch{{ $empresa->id }}">
+                                                {{ $empresa->status ? 'Activo' : 'Inactivo' }}
+                                            </label>
+                                        </div>
                                     </td>
                                     <td>
                                         {{ $empresa->created_at->format('d/m/Y H:i') }}
                                     </td>
                                     <td>
                                         <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $empresa->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="ri ri-more-2-line"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $empresa->id }}">
+                                            <div class="dropdown-menu">
                                                 @can('view empresas')
                                                 <a class="dropdown-item" href="{{ route('admin.empresas.show', $empresa) }}">
                                                     <i class="ri ri-eye-line me-1"></i> Ver
@@ -191,13 +197,11 @@
                                                 <a class="dropdown-item" href="{{ route('admin.empresas.edit', $empresa) }}">
                                                     <i class="ri ri-pencil-line me-1"></i> Editar
                                                 </a>
-                                                <button class="dropdown-item" wire:click="toggleStatus({{ $empresa->id }})" wire:confirm="¿Estás seguro de cambiar el estado?">
-                                                    <i class="ri ri-toggle-{{ $empresa->estado === 'activo' ? 'off' : 'on' }}-line me-1"></i>
-                                                    {{ $empresa->estado === 'activo' ? 'Desactivar' : 'Activar' }}
-                                                </button>
                                                 @endcan
                                                 @can('delete empresas')
-                                                <button class="dropdown-item text-danger" wire:click="deleteEmpresa({{ $empresa->id }})" wire:confirm="¿Estás seguro de eliminar esta empresa?">
+                                                <button type="button" class="dropdown-item text-danger"
+                                                        wire:click="deleteEmpresa({{ $empresa->id }})"
+                                                        wire:confirm="¿Estás seguro de eliminar esta empresa?">
                                                     <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                                 </button>
                                                 @endcan
@@ -218,14 +222,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $empresas->firstItem() }} a {{ $empresas->lastItem() }} de {{ $empresas->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $empresas->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+                   {{ $empresas->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

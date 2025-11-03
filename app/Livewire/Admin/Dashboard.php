@@ -19,8 +19,28 @@ class Dashboard extends Component
     public $showAlerts = true;
     public $showFinancial = true;
     public $showAcademic = true;
+    public $showAccess = true;
+    public $showCharts = true;
+    public $vencidas =0;
 
     protected $queryString = ['dateRange'];
+
+    public function mount()
+    {
+        // Verificar permisos para cada sección del dashboard
+        $this->showAlerts = auth()->user()->can('dashboard.alerts');
+        $this->showFinancial = auth()->user()->can('dashboard.financial');
+        $this->showAcademic = auth()->user()->can('dashboard.academic');
+        $this->showAccess = auth()->user()->can('dashboard.access');
+        $this->showCharts = auth()->user()->can('dashboard.charts');
+        // Contar pagos vencidos
+        $this->vencidas = PaymentSchedule::where('estado', 'pendiente')
+            ->where('fecha_vencimiento', '<', today())
+            ->count();
+
+        // Limpiar cache para forzar recarga de datos
+        Cache::forget('dashboard_stats_' . auth()->id() . '_' . $this->dateRange);
+    }
 
     public function updatedDateRange()
     {
@@ -35,19 +55,188 @@ class Dashboard extends Component
 
     public function exportDashboard()
     {
-        $data = $this->getExportData();
-        $filename = 'dashboard-admin-' . now()->format('Y-m-d-His') . '.xlsx';
+        try {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Dashboard Admin');
 
-        return response()->streamDownload(function() use ($data) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Métrica', 'Valor', 'Período']);
-            foreach ($data as $row) {
-                fputcsv($file, $row);
+            // Obtener datos actuales directamente
+            $pendingPayments = \App\Models\PaymentSchedule::where('estado', 'pendiente')
+                ->where('fecha_vencimiento', '<', now())
+                ->count();
+            
+            $alerts = [
+                'pendingPayments' => $pendingPayments,
+                'expiringEnrollments' => 0, // Simplificado por ahora
+                'lowAttendanceStudents' => 0, // Simplificado por ahora
+                'totalAlerts' => $pendingPayments
+            ];
+            
+            $financialStats = $this->getFinancialStats();
+            $academicStats = $this->getAcademicStats();
+            $currentPeriod = \App\Models\SchoolPeriod::where('is_active', true)->first();
+
+            // Encabezado principal
+            $sheet->setCellValue('A1', 'DASHBOARD ADMINISTRATIVO');
+            $sheet->mergeCells('A1:F1');
+            $sheet->getStyle('A1')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '0D6EFD']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+            ]);
+
+            // Información del reporte
+            $sheet->setCellValue('A3', 'Fecha de generación:');
+            $sheet->setCellValue('B3', now()->format('d/m/Y H:i:s'));
+            $sheet->setCellValue('A4', 'Período de análisis:');
+            $sheet->setCellValue('B4', ucfirst($this->dateRange));
+            $sheet->setCellValue('A5', 'Usuario:');
+            $sheet->setCellValue('B5', auth()->user()->name);
+
+            $sheet->getStyle('A3:A5')->getFont()->setBold(true);
+
+            // === MÉTRICAS PRINCIPALES ===
+            $sheet->setCellValue('A7', 'MÉTRICAS PRINCIPALES');
+            $sheet->mergeCells('A7:C7');
+            $sheet->getStyle('A7')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'E9ECEF']]
+            ]);
+
+            $row = 9;
+            $metrics = [
+                ['Estudiantes Activos', \App\Models\Student::where('status', 1)->count(), 'estudiantes'],
+                ['Entradas Hoy', \App\Models\StudentAccessLog::whereDate('access_time', today())->where('type', 'entrada')->count(), 'registros'],
+                ['Salidas Hoy', \App\Models\StudentAccessLog::whereDate('access_time', today())->where('type', 'salida')->count(), 'registros'],
+                ['Estudiantes Dentro', max(0, \App\Models\StudentAccessLog::whereDate('access_time', today())->where('type', 'entrada')->count() - \App\Models\StudentAccessLog::whereDate('access_time', today())->where('type', 'salida')->count()), 'estudiantes']
+            ];
+
+            foreach ($metrics as $metric) {
+                $sheet->setCellValue('A' . $row, $metric[0]);
+                $sheet->setCellValue('B' . $row, $metric[1]);
+                $sheet->setCellValue('C' . $row, $metric[2]);
+                $row++;
             }
-            fclose($file);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-        ]);
+
+            // === MÉTRICAS FINANCIERAS ===
+            $row += 2;
+            $sheet->setCellValue('A' . $row, 'MÉTRICAS FINANCIERAS');
+            $sheet->mergeCells('A' . $row . ':C' . $row);
+            $sheet->getStyle('A' . $row)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'D4EDDA']]
+            ]);
+            $row += 2;
+
+            $financialMetrics = [
+                ['Ingresos Totales', $financialStats['totalIncome'], '$'],
+                ['Ingresos Hoy', $financialStats['todayIncome'], '$'],
+                ['Monto por Cobrar', $financialStats['pendingIncome'], '$'],
+                ['Cambio vs Anterior', $financialStats['incomeChange'] . '%', 'porcentaje']
+            ];
+
+            foreach ($financialMetrics as $metric) {
+                $sheet->setCellValue('A' . $row, $metric[0]);
+                $sheet->setCellValue('B' . $row, $metric[1]);
+                $sheet->setCellValue('C' . $row, $metric[2]);
+                $row++;
+            }
+
+            // === MÉTRICAS ACADÉMICAS ===
+            $row += 2;
+            $sheet->setCellValue('A' . $row, 'MÉTRICAS ACADÉMICAS');
+            $sheet->mergeCells('A' . $row . ':C' . $row);
+            $sheet->getStyle('A' . $row)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'CCE5FF']]
+            ]);
+            $row += 2;
+
+            $academicMetrics = [
+                ['Matrículas Activas', (int)$academicStats['activeEnrollments'], 'matrículas'],
+                ['Total Matrículas', (int)$academicStats['totalEnrollments'], 'matrículas'],
+                ['Período Actual', $currentPeriod ? $currentPeriod->nombre : 'N/A', 'período']
+            ];
+
+            foreach ($academicMetrics as $metric) {
+                $sheet->setCellValue('A' . $row, $metric[0]);
+                $sheet->setCellValue('B' . $row, $metric[1]);
+                $sheet->setCellValue('C' . $row, $metric[2]);
+                $row++;
+            }
+
+            // === ALERTAS ===
+            $row += 2;
+            $sheet->setCellValue('A' . $row, 'ALERTAS Y NOTIFICACIONES');
+            $sheet->mergeCells('A' . $row . ':C' . $row);
+            $sheet->getStyle('A' . $row)->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'FFE6E6']]
+            ]);
+            $row += 2;
+
+            $alertMetrics = [
+                ['Cuotas Vencidas', (int)$alerts['pendingPayments'], 'cuotas'],
+                ['Matrículas por Vencer', (int)$alerts['expiringEnrollments'], 'matrículas'],
+                ['Baja Asistencia', (int)$alerts['lowAttendanceStudents'], 'estudiantes'],
+                ['Total Alertas', (int)$alerts['totalAlerts'], 'alertas']
+            ];
+
+            foreach ($alertMetrics as $metric) {
+                $sheet->setCellValue('A' . $row, $metric[0]);
+                $sheet->setCellValue('B' . $row, $metric[1]);
+                $sheet->setCellValue('C' . $row, $metric[2]);
+                $row++;
+            }
+
+            // Encabezados de columnas
+            $sheet->setCellValue('A8', 'Métrica');
+            $sheet->setCellValue('B8', 'Valor');
+            $sheet->setCellValue('C8', 'Unidad');
+            $sheet->getStyle('A8:C8')->applyFromArray([
+                'font' => ['bold' => true],
+                'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+            ]);
+
+            // Formato de moneda solo para métricas financieras (filas específicas)
+            $financialStartRow = 15; // Ajustar según la posición real de métricas financieras
+            $financialEndRow = 18;
+            $sheet->getStyle('B' . $financialStartRow . ':B' . $financialEndRow)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+            // Configuración de columnas
+            $sheet->getColumnDimension('A')->setWidth(25);
+            $sheet->getColumnDimension('B')->setWidth(15);
+            $sheet->getColumnDimension('C')->setWidth(15);
+
+            // Pie de página
+            $footerRow = $row + 2;
+            $sheet->setCellValue('A' . $footerRow, 'Reporte generado por Sistema de Gestión Académica');
+            $sheet->mergeCells('A' . $footerRow . ':C' . $footerRow);
+            $sheet->getStyle('A' . $footerRow)->applyFromArray([
+                'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '6C757D']],
+                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+            ]);
+
+            $filename = 'dashboard_admin_' . now()->format('Y-m-d_His') . '.xlsx';
+
+            return new \Symfony\Component\HttpFoundation\StreamedResponse(
+                function () use ($spreadsheet) {
+                    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                    $writer->save('php://output');
+                },
+                200,
+                [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                    'Cache-Control' => 'max-age=0',
+                    'Pragma' => 'public',
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error exportando dashboard: ' . $e->getMessage());
+            session()->flash('error', 'Error al generar el archivo Excel: ' . $e->getMessage());
+            return;
+        }
     }
 
     public function render()
@@ -194,9 +383,9 @@ class Dashboard extends Component
         ];
 
         try {
-            // Alertas de cuotas de pago pendientes por vencer (en los próximos 7 días)
+            // Alertas de cuotas de pago vencidas (ya pasó la fecha)
             $pendingPayments = PaymentSchedule::where('estado', 'pendiente')
-                ->where('fecha_vencimiento', '<=', now()->addDays(7))
+                ->where('fecha_vencimiento', '<', now())
                 ->count();
 
             // Alertas de matrículas por vencer (basadas en la fecha de fin del período escolar)
@@ -231,53 +420,65 @@ class Dashboard extends Component
         $dateInfo = $this->getDateRangeConditions();
         $startDate = $dateInfo['startDate'];
 
-        // Ingresos del período actual
-        $totalIncome = Pago::where('estado', 'completado')
-            ->where('fecha_pago', '>=', $startDate)
-            ->sum('monto');
+        try {
+            // Ingresos del período actual - usando la nueva estructura
+            $totalIncome = Pago::where('estado', 'aprobado')
+                ->where('fecha', '>=', $startDate)
+                ->sum('total');
 
-        // Pagos pendientes de la tabla pagos (solo los que aún no han vencido)
-        $pendingIncomePagos = Pago::where('estado', 'pendiente')
-            ->where('fecha_pago', '>=', now())
-            ->sum('monto');
+            // Ingresos de hoy
+            $todayIncome = Pago::where('estado', 'aprobado')
+                ->whereDate('fecha', today())
+                ->sum('total');
 
-        // Pagos pendientes del cronograma de pagos (payment_schedules)
-        $pendingIncomeSchedule = \App\Models\PaymentSchedule::where('estado', 'pendiente')
-            ->where('fecha_vencimiento', '>=', now())
-            ->sum('monto');
+            // Pagos pendientes
+            $pendingIncome = Pago::where('estado', 'pendiente')
+                ->sum('total');
 
-        // Total de ingresos pendientes
-        $pendingIncome = $pendingIncomePagos + $pendingIncomeSchedule;
+            // Pagos pendientes del cronograma de pagos (todas las cuotas pendientes)
+            $pendingIncomeSchedule = PaymentSchedule::where('estado', 'pendiente')
+                ->sum('monto');
 
-        // Calcular período anterior para comparación
-        $now = now();
-        $currentPeriodDays = $startDate->diffInDays($now);
+            // Total de ingresos pendientes
+            $totalPendingIncome = $pendingIncome + $pendingIncomeSchedule;
 
-        // Período anterior del mismo tamaño
-        $previousPeriodStart = $startDate->copy()->subDays($currentPeriodDays);
-        $previousPeriodEnd = $startDate->copy();
+            // Período anterior para comparación
+            $now = now();
+            $currentPeriodDays = $startDate->diffInDays($now);
+            $previousPeriodStart = $startDate->copy()->subDays($currentPeriodDays);
+            $previousPeriodEnd = $startDate->copy();
 
-        // Ingresos del período anterior
-        $previousIncome = Pago::where('estado', 'completado')
-            ->where('fecha_pago', '>=', $previousPeriodStart)
-            ->where('fecha_pago', '<', $previousPeriodEnd)
-            ->sum('monto');
+            // Ingresos del período anterior
+            $previousIncome = Pago::where('estado', 'aprobado')
+                ->where('fecha', '>=', $previousPeriodStart)
+                ->where('fecha', '<', $previousPeriodEnd)
+                ->sum('total');
 
-        // Calcular porcentaje de cambio
-        $incomeChange = 0;
-        if ($previousIncome > 0) {
-            $incomeChange = round((($totalIncome - $previousIncome) / $previousIncome) * 100, 2);
-        } elseif ($totalIncome > 0 && $previousIncome == 0) {
-            // Si no había ingresos en el período anterior pero sí ahora, es un aumento del 100%
-            $incomeChange = 100;
+            // Calcular porcentaje de cambio
+            $incomeChange = 0;
+            if ($previousIncome > 0) {
+                $incomeChange = round((($totalIncome - $previousIncome) / $previousIncome) * 100, 2);
+            } elseif ($totalIncome > 0 && $previousIncome == 0) {
+                $incomeChange = 100;
+            }
+
+            return [
+                'totalIncome' => $totalIncome,
+                'pendingIncome' => $totalPendingIncome,
+                'incomeChange' => $incomeChange,
+                'totalReceivable' => $totalIncome + $totalPendingIncome,
+                'todayIncome' => $todayIncome,
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener estadísticas financieras: ' . $e->getMessage());
+            return [
+                'totalIncome' => 0,
+                'pendingIncome' => 0,
+                'incomeChange' => 0,
+                'totalReceivable' => 0,
+                'todayIncome' => 0,
+            ];
         }
-
-        return [
-            'totalIncome' => $totalIncome,
-            'pendingIncome' => $pendingIncome,
-            'incomeChange' => $incomeChange,
-            'totalReceivable' => $totalIncome + $pendingIncome,
-        ];
     }
 
     private function getAcademicStats()

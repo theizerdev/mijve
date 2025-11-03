@@ -8,6 +8,9 @@ use App\Models\SchoolPeriod;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResumenPagos extends Component
@@ -77,21 +80,22 @@ class ResumenPagos extends Component
             }
 
             \Log::debug('Obteniendo pagos');
-            $this->pagos = Pago::with(['matricula.student', 'conceptoPago'])
-                ->whereBetween('fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
-                ->where('estado', 'completado')
+            $this->pagos = Pago::with(['matricula.student', 'detalles.conceptoPago'])
+                ->whereBetween('fecha', [$this->fecha_inicio, $this->fecha_fin])
+                ->where('estado', 'aprobado')
                 ->get();
 
             \Log::debug('Calculando totales');
             $this->totales = DB::table('pagos')
-                ->join('conceptos_pago', 'pagos.concepto_pago_id', '=', 'conceptos_pago.id')
+                ->join('pago_detalles', 'pagos.id', '=', 'pago_detalles.pago_id')
+                ->join('conceptos_pago', 'pago_detalles.concepto_pago_id', '=', 'conceptos_pago.id')
                 ->select(
                     'conceptos_pago.nombre as concepto',
-                    DB::raw('SUM(pagos.monto_pagado) as total'),
-                    DB::raw('COUNT(pagos.id) as cantidad')
+                    DB::raw('SUM(pago_detalles.subtotal) as total'),
+                    DB::raw('COUNT(DISTINCT pagos.id) as cantidad')
                 )
-                ->whereBetween('pagos.fecha_pago', [$this->fecha_inicio, $this->fecha_fin])
-                ->where('pagos.estado', 'completado')
+                ->whereBetween('pagos.fecha', [$this->fecha_inicio, $this->fecha_fin])
+                ->where('pagos.estado', 'aprobado')
                 ->groupBy('conceptos_pago.nombre')
                 ->get();
 
@@ -113,120 +117,203 @@ class ResumenPagos extends Component
 
     public function exportarExcel()
     {
-        // Validar que haya datos para exportar
         if (count($this->pagos) == 0) {
             session()->flash('error', 'No hay datos para exportar.');
             return;
         }
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        try {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Resumen de Pagos');
 
-        // Título
-        $sheet->setCellValue('A1', 'Resumen de Pagos');
-        $sheet->mergeCells('A1:F1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+            // === ENCABEZADO PRINCIPAL ===
+            $sheet->setCellValue('A1', 'RESUMEN DE PAGOS POR PERÍODO');
+            $sheet->mergeCells('A1:G1');
+            $sheet->getStyle('A1')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 18, 'color' => ['rgb' => '2E86AB']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']]
+            ]);
 
-        // Fechas del reporte
-        $sheet->setCellValue('A3', 'Período:');
-        $sheet->setCellValue('B3', ($this->fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_inicio)->format('d/m/Y') : 'N/A') . ' - ' .
-                              ($this->fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_fin)->format('d/m/Y') : 'N/A'));
+            // === INFORMACIÓN DEL REPORTE ===
+            $sheet->setCellValue('A3', 'Período:');
+            $periodoTexto = ($this->fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_inicio)->format('d/m/Y') : 'N/A') . 
+                           ' al ' . 
+                           ($this->fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_fin)->format('d/m/Y') : 'N/A');
+            $sheet->setCellValue('B3', $periodoTexto);
+            
+            $sheet->setCellValue('A4', 'Fecha de generación:');
+            $sheet->setCellValue('B4', now()->format('d/m/Y H:i:s'));
+            
+            $sheet->setCellValue('A5', 'Total de pagos:');
+            $sheet->setCellValue('B5', count($this->pagos));
+            
+            $sheet->setCellValue('D3', 'Total ingresos:');
+            $sheet->setCellValue('E3', '$' . number_format($this->pagos->sum('total'), 2));
+            
+            $sheet->setCellValue('D4', 'Conceptos únicos:');
+            $sheet->setCellValue('E4', $this->totales->count());
 
-        // Encabezados de la tabla de pagos
-        $sheet->setCellValue('A5', 'Fecha');
-        $sheet->setCellValue('B5', 'Estudiante');
-        $sheet->setCellValue('C5', 'Concepto');
-        $sheet->setCellValue('D5', 'Monto');
-        $sheet->setCellValue('E5', 'Pagado');
-        $sheet->setCellValue('F5', 'Método');
+            // Formato información del reporte
+            $sheet->getStyle('A3:A5')->getFont()->setBold(true);
+            $sheet->getStyle('D3:D4')->getFont()->setBold(true);
+            $sheet->getStyle('E3')->getFont()->setBold(true)->getColor()->setRGB('28A745');
 
-        // Formato de encabezados
-        $sheet->getStyle('A5:F5')->getFont()->setBold(true);
+            // === RESUMEN POR CONCEPTOS ===
+            $sheet->setCellValue('A7', 'RESUMEN POR CONCEPTOS');
+            $sheet->mergeCells('A7:E7');
+            $sheet->getStyle('A7')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'E9ECEF']]
+            ]);
 
-        // Datos de pagos
-        $row = 6;
-        foreach ($this->pagos as $pago) {
-            $sheet->setCellValue('A' . $row, $pago->fecha_pago?->format('d/m/Y') ?? 'N/A');
-            $sheet->setCellValue('B' . $row, ($pago->matricula?->student?->nombres ?? '') . ' ' . ($pago->matricula?->student?->apellidos ?? ''));
-            $sheet->setCellValue('C' . $row, $pago->conceptoPago?->nombre ?? 'N/A');
-            $sheet->setCellValue('D' . $row, $pago->monto);
-            $sheet->setCellValue('E' . $row, $pago->monto_pagado);
-            $sheet->setCellValue('F' . $row, ucfirst($pago->metodo_pago ?? 'N/A'));
-            $row++;
+            // Encabezados resumen
+            $headers = ['Concepto', 'Cantidad', 'Total', 'Porcentaje', 'Promedio'];
+            foreach ($headers as $index => $header) {
+                $column = chr(65 + $index); // A, B, C, D, E
+                $sheet->setCellValue($column . '9', $header);
+            }
+            
+            $sheet->getStyle('A9:E9')->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '495057']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+
+            // Datos del resumen
+            $totalGeneral = $this->totales->sum('total');
+            $row = 10;
+            foreach ($this->totales as $total) {
+                $sheet->setCellValue('A' . $row, $total->concepto);
+                $sheet->setCellValue('B' . $row, $total->cantidad);
+                $sheet->setCellValue('C' . $row, $total->total);
+                $sheet->setCellValue('D' . $row, $totalGeneral > 0 ? ($total->total / $totalGeneral) : 0);
+                $sheet->setCellValue('E' . $row, $total->cantidad > 0 ? ($total->total / $total->cantidad) : 0);
+                $row++;
+            }
+
+            // Total del resumen
+            $sheet->setCellValue('A' . $row, 'TOTAL GENERAL');
+            $sheet->setCellValue('B' . $row, $this->totales->sum('cantidad'));
+            $sheet->setCellValue('C' . $row, $totalGeneral);
+            $sheet->setCellValue('D' . $row, 1); // 100%
+            $sheet->setCellValue('E' . $row, $this->totales->sum('cantidad') > 0 ? ($totalGeneral / $this->totales->sum('cantidad')) : 0);
+            
+            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F8F9FA']],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]]
+            ]);
+
+            // Formato del resumen
+            $rangeResumen = 'A10:E' . $row;
+            $sheet->getStyle($rangeResumen)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet->getStyle('C10:C' . $row)->getNumberFormat()->setFormatCode('$#,##0.00');
+            $sheet->getStyle('D10:D' . $row)->getNumberFormat()->setFormatCode('0.00%');
+            $sheet->getStyle('E10:E' . $row)->getNumberFormat()->setFormatCode('$#,##0.00');
+
+            // === DETALLE DE PAGOS ===
+            $startDetailRow = $row + 3;
+            $sheet->setCellValue('A' . ($startDetailRow - 1), 'DETALLE DE PAGOS');
+            $sheet->mergeCells('A' . ($startDetailRow - 1) . ':G' . ($startDetailRow - 1));
+            $sheet->getStyle('A' . ($startDetailRow - 1))->applyFromArray([
+                'font' => ['bold' => true, 'size' => 14],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'E9ECEF']]
+            ]);
+
+            // Encabezados detalle
+            $detailHeaders = ['Fecha', 'Estudiante', 'Documento', 'Concepto', 'Monto', 'Método', 'Estado'];
+            foreach ($detailHeaders as $index => $header) {
+                $column = chr(65 + $index);
+                $sheet->setCellValue($column . ($startDetailRow + 1), $header);
+            }
+            
+            $sheet->getStyle('A' . ($startDetailRow + 1) . ':G' . ($startDetailRow + 1))->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '495057']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            ]);
+
+            // Datos del detalle
+            $detailRow = $startDetailRow + 2;
+            foreach ($this->pagos as $pago) {
+                $conceptos = $pago->detalles->pluck('conceptoPago.nombre')->filter()->implode(', ');
+                $estudiante = ($pago->matricula?->student?->nombres ?? '') . ' ' . ($pago->matricula?->student?->apellidos ?? '');
+                
+                $sheet->setCellValue('A' . $detailRow, $pago->fecha->format('d/m/Y'));
+                $sheet->setCellValue('B' . $detailRow, trim($estudiante) ?: 'N/A');
+                $sheet->setCellValue('C' . $detailRow, $pago->matricula?->student?->documento_identidad ?? 'N/A');
+                $sheet->setCellValue('D' . $detailRow, $conceptos ?: 'N/A');
+                $sheet->setCellValue('E' . $detailRow, $pago->total);
+                $sheet->setCellValue('F' . $detailRow, ucfirst($pago->metodo_pago ?? 'N/A'));
+                $sheet->setCellValue('G' . $detailRow, ucfirst($pago->estado ?? 'N/A'));
+                $detailRow++;
+            }
+
+            // Formato del detalle
+            $rangeDetail = 'A' . ($startDetailRow + 2) . ':G' . ($detailRow - 1);
+            $sheet->getStyle($rangeDetail)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet->getStyle('E' . ($startDetailRow + 2) . ':E' . ($detailRow - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
+
+            // === CONFIGURACIÓN DE COLUMNAS ===
+            $sheet->getColumnDimension('A')->setWidth(12);
+            $sheet->getColumnDimension('B')->setWidth(35);
+            $sheet->getColumnDimension('C')->setWidth(15);
+            $sheet->getColumnDimension('D')->setWidth(30);
+            $sheet->getColumnDimension('E')->setWidth(15);
+            $sheet->getColumnDimension('F')->setWidth(15);
+            $sheet->getColumnDimension('G')->setWidth(12);
+
+            // === PIE DE PÁGINA ===
+            $footerRow = $detailRow + 2;
+            $sheet->setCellValue('A' . $footerRow, 'Reporte generado por Sistema de Gestión Académica');
+            $sheet->mergeCells('A' . $footerRow . ':G' . $footerRow);
+            $sheet->getStyle('A' . $footerRow)->applyFromArray([
+                'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '6C757D']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+
+            $filename = 'resumen_pagos_' . 
+                       ($this->fecha_inicio ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_inicio)->format('Y-m-d') : 'sin_fecha') . 
+                       '_al_' . 
+                       ($this->fecha_fin ? \Carbon\Carbon::createFromFormat('Y-m-d', $this->fecha_fin)->format('Y-m-d') : 'sin_fecha') . 
+                       '.xlsx';
+
+            // Mensaje de éxito antes de la descarga
+            session()->flash('success', 'Archivo Excel generado correctamente.');
+
+            return new StreamedResponse(
+                function () use ($spreadsheet) {
+                    $writer = new Xlsx($spreadsheet);
+                    $writer->save('php://output');
+                },
+                200,
+                [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition' => 'attachment; filename="' . urlencode($filename) . '"',
+                    'Cache-Control' => 'max-age=0',
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error('Error exportando Excel: ' . $e->getMessage());
+            session()->flash('error', 'Error al generar el archivo Excel: ' . $e->getMessage());
+            return;
         }
-
-        // Formato de moneda
-        $sheet->getStyle('D6:E' . ($row - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
-
-        // Ancho de columnas
-        $sheet->getColumnDimension('A')->setWidth(15);
-        $sheet->getColumnDimension('B')->setWidth(30);
-        $sheet->getColumnDimension('C')->setWidth(25);
-        $sheet->getColumnDimension('D')->setWidth(15);
-        $sheet->getColumnDimension('E')->setWidth(15);
-        $sheet->getColumnDimension('F')->setWidth(15);
-
-        // Segunda hoja con totales por concepto
-        $sheet2 = $spreadsheet->createSheet();
-        $sheet2->setTitle('Totales por Concepto');
-
-        // Título de la segunda hoja
-        $sheet2->setCellValue('A1', 'Totales por Concepto');
-        $sheet2->mergeCells('A1:D1');
-        $sheet2->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-
-        // Encabezados de la tabla de totales
-        $sheet2->setCellValue('A3', 'Concepto');
-        $sheet2->setCellValue('B3', 'Cantidad');
-        $sheet2->setCellValue('C3', 'Total');
-        $sheet2->setCellValue('D3', 'Porcentaje');
-
-        // Formato de encabezados
-        $sheet2->getStyle('A3:D3')->getFont()->setBold(true);
-
-        // Calcular total general para porcentajes
-        $totalGeneral = $this->totales->sum('total');
-
-        // Datos de totales
-        $row2 = 4;
-        foreach ($this->totales as $total) {
-            $sheet2->setCellValue('A' . $row2, $total->concepto);
-            $sheet2->setCellValue('B' . $row2, $total->cantidad);
-            $sheet2->setCellValue('C' . $row2, $total->total);
-            $sheet2->setCellValue('D' . $row2, $totalGeneral > 0 ? ($total->total / $totalGeneral) * 100 : 0);
-            $row2++;
-        }
-
-        // Formato de moneda y porcentaje
-        $sheet2->getStyle('C4:C' . ($row2 - 1))->getNumberFormat()->setFormatCode('$#,##0.00');
-        $sheet2->getStyle('D4:D' . ($row2 - 1))->getNumberFormat()->setFormatCode('0.00%');
-
-        // Ancho de columnas en la segunda hoja
-        $sheet2->getColumnDimension('A')->setWidth(30);
-        $sheet2->getColumnDimension('B')->setWidth(15);
-        $sheet2->getColumnDimension('C')->setWidth(15);
-        $sheet2->getColumnDimension('D')->setWidth(15);
-
-        // Crear respuesta de descarga
-        $filename = 'resumen_pagos_' . date('Y-m-d') . '.xlsx';
-
-        return new StreamedResponse(
-            function () use ($spreadsheet) {
-                $writer = new Xlsx($spreadsheet);
-                $writer->save('php://output');
-            },
-            200,
-            [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="' . urlencode($filename) . '"',
-            ]
-        );
     }
 
     public function exportarPDF()
     {
-        // Lógica para exportar a PDF
-        session()->flash('message', 'Funcionalidad de exportación en desarrollo.');
+        if (count($this->pagos) == 0) {
+            session()->flash('error', 'No hay datos para exportar.');
+            return;
+        }
+        
+        session()->flash('info', 'Funcionalidad de exportación a PDF en desarrollo.');
     }
 
     public function render()

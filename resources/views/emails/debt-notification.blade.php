@@ -84,11 +84,11 @@
                 <tbody>
                     @foreach($debtDetails as $detail)
                         <tr>
-                            <td>{{ $detail->fecha_pago?->format('d/m/Y') ?? 'N/A' }}</td>
-                            <td>{{ $detail->conceptoPago->nombre ?? 'N/A' }}</td>
+                            <td>{{ $detail->fecha_vencimiento?->format('d/m/Y') ?? 'N/A' }}</td>
+                            <td>Cuota {{ $detail->numero_cuota ?? 'N/A' }}</td>
                             <td class="text-right">${{ number_format($detail->monto, 2) }}</td>
-                            <td class="text-right">${{ number_format($detail->monto_pagado, 2) }}</td>
-                            <td class="text-right">${{ number_format($detail->monto - $detail->monto_pagado, 2) }}</td>
+                            <td class="text-right">${{ number_format($detail->monto_pagado ?? 0, 2) }}</td>
+                            <td class="text-right">${{ number_format($detail->monto - ($detail->monto_pagado ?? 0), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

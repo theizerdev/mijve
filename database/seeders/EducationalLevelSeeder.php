@@ -21,6 +21,8 @@ class EducationalLevelSeeder extends Seeder
                 //'numero_cuotas' => 12,
                 //'cuota_inicial' => 200.00,
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Primaria',
@@ -29,6 +31,8 @@ class EducationalLevelSeeder extends Seeder
                 //'numero_cuotas' => 12,
                 //'cuota_inicial' => 250.00,
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Secundaria',
@@ -37,6 +41,8 @@ class EducationalLevelSeeder extends Seeder
                 //'numero_cuotas' => 12,
                 //'cuota_inicial' => 300.00,
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
         ];
 

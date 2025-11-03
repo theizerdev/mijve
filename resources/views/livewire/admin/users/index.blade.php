@@ -224,20 +224,24 @@
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td class="text-center">
-                                        @if($user->status)
-                                            <span class="badge bg-success">Activo</span>
-                                        @else
-                                            <span class="badge bg-danger">Inactivo</span>
-                                        @endif
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="statusSwitch{{ $user->id }}"
+                                                   {{ $user->status ? 'checked' : '' }}
+                                                   @can('edit users') wire:click="toggleStatus({{ $user->id }})" @endcan>
+                                            <label class="form-check-label" for="statusSwitch{{ $user->id }}">
+                                                {{ $user->status ? 'Activo' : 'Inactivo' }}
+                                            </label>
+                                        </div>
                                     </td>
                                     <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $user->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="ri ri-more-2-line"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $user->id }}">
+                                            <div class="dropdown-menu">
                                                 @can('view users')
                                                 <a class="dropdown-item" href="{{ route('admin.users.show', $user) }}">
                                                     <i class="ri ri-eye-line me-1"></i> Ver
@@ -249,7 +253,9 @@
                                                 </a>
                                                 @endcan
                                                 @can('delete users')
-                                                <button class="dropdown-item text-danger" wire:click="delete({{ $user->id }})" wire:confirm="¿Estás seguro de eliminar este usuario?">
+                                                <button type="button" class="dropdown-item text-danger"
+                                                        wire:click="delete({{ $user->id }})"
+                                                        wire:confirm="¿Estás seguro de eliminar este usuario?">
                                                     <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                                 </button>
                                                 @endcan
@@ -267,14 +273,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $users->firstItem() }} a {{ $users->lastItem() }} de {{ $users->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $users->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+                   {{ $users->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

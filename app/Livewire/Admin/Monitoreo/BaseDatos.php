@@ -4,12 +4,22 @@ namespace App\Livewire\Admin\Monitoreo;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 
 class BaseDatos extends Component
 {
+    public $lastUpdate;
+    
     public function mount()
     {
         abort_unless(auth()->user()->can('view monitoreo base-datos'), 403);
+        $this->lastUpdate = now()->format('H:i:s');
+    }
+    
+    #[On('refresh-base-datos')]
+    public function refreshData()
+    {
+        $this->lastUpdate = now()->format('H:i:s');
     }
 
     public function render()
@@ -40,6 +50,8 @@ class BaseDatos extends Component
         
         $dbInfo['total_size'] = round($totalSize, 2);
         $dbInfo['total_tables'] = count($tables);
+        
+        $tableStats = collect($tableStats);
         
         return view('livewire.admin.monitoreo.base-datos', compact('dbInfo', 'tableStats'))
             ->layout('components.layouts.admin', ['title' => 'Monitoreo de Base de Datos']);

@@ -20,6 +20,8 @@ class ShiftSeeder extends Seeder
                 'hora_fin' => '12:00:00',
                 'descripcion' => 'Turno de la mañana',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Tarde',
@@ -27,6 +29,8 @@ class ShiftSeeder extends Seeder
                 'hora_fin' => '17:00:00',
                 'descripcion' => 'Turno de la tarde',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Noche',
@@ -34,6 +38,8 @@ class ShiftSeeder extends Seeder
                 'hora_fin' => '22:00:00',
                 'descripcion' => 'Turno de la noche',
                 'status' => 1,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
         ];
 

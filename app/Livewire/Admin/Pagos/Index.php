@@ -5,10 +5,11 @@ namespace App\Livewire\Admin\Pagos;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Pago;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
@@ -23,6 +24,23 @@ class Index extends Component
         'sortDirection' => ['except' => 'desc'],
         'perPage' => ['except' => 10]
     ];
+
+    public function getStatsProperty()
+    {
+        $baseQuery = Pago::query();
+        
+        if (!auth()->user()->hasRole('Super Administrador')) {
+            $baseQuery->where('empresa_id', auth()->user()->empresa_id)
+                      ->where('sucursal_id', auth()->user()->sucursal_id);
+        }
+
+        return [
+            'total' => (clone $baseQuery)->count(),
+            'aprobados' => (clone $baseQuery)->where('estado', 'aprobado')->count(),
+            'pendientes' => (clone $baseQuery)->where('estado', 'pendiente')->count(),
+            'ingresos_totales' => (clone $baseQuery)->where('estado', 'aprobado')->sum('total') ?: 0
+        ];
+    }
 
     public function updatedSearch()
     {
@@ -74,30 +92,81 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function toggleStatus($pagoId)
     {
-        $pagos = Pago::with(['matricula.student', 'concepto', 'user', 'comprobante'])
-            ->when($this->search, function ($query) {
+        if (!auth()->user()->can('edit pagos')) {
+            session()->flash('error', 'No tienes permiso para editar pagos.');
+            return;
+        }
+
+        $pago = Pago::find($pagoId);
+        if ($pago) {
+            $pago->estado = $pago->estado === 'aprobado' ? 'pendiente' : 'aprobado';
+            $pago->save();
+        }
+    }
+
+    public function getExportQuery()
+    {
+        return $this->getQuery();
+    }
+
+    public function getExportHeaders()
+    {
+        return [
+            'Documento', 'Estudiante', 'DNI', 'Total', 'Fecha', 'Estado', 'Método Pago'
+        ];
+    }
+
+    public function formatExportRow($pago)
+    {
+        return [
+            $pago->numero_completo,
+            ($pago->matricula->student->nombres ?? '') . ' ' . ($pago->matricula->student->apellidos ?? ''),
+            $pago->matricula->student->documento_identidad ?? '',
+            $pago->total,
+            $pago->fecha->format('d/m/Y'),
+            ucfirst($pago->estado),
+            $pago->metodo_pago ?? ''
+        ];
+    }
+
+    private function getQuery()
+    {
+        $query = Pago::with(['matricula.student', 'detalles.conceptoPago', 'user', 'serieModel']);
+        
+        if (!auth()->user()->hasRole('Super Administrador')) {
+            $query->where('empresa_id', auth()->user()->empresa_id)
+                  ->where('sucursal_id', auth()->user()->sucursal_id);
+        }
+
+        return $query->when($this->search, function ($query) {
                 $query->whereHas('matricula.student', function ($subQuery) {
                     $subQuery->where('nombres', 'like', '%' . $this->search . '%')
                         ->orWhere('apellidos', 'like', '%' . $this->search . '%')
                         ->orWhere('documento_identidad', 'like', '%' . $this->search . '%');
                 })
-                ->orWhereHas('concepto', function($subQuery) {
+                ->orWhereHas('detalles.conceptoPago', function($subQuery) {
                     $subQuery->where('nombre', 'like', '%' . $this->search . '%');
                 })
-                ->orWhere('referencia', 'like', '%' . $this->search . '%');
+                ->orWhere('referencia', 'like', '%' . $this->search . '%')
+                ->orWhere('serie', 'like', '%' . $this->search . '%')
+                ->orWhere('numero', 'like', '%' . $this->search . '%');
             })
             ->when($this->status !== '', function ($query) {
                 $query->where('estado', $this->status);
             })
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortBy, $this->sortDirection);
+    }
+
+    public function render()
+    {
+        $pagos = $this->getQuery()->paginate($this->perPage);
 
         return view('livewire.admin.pagos.index', compact('pagos'))
             ->layout('components.layouts.admin', [
-                'title' => 'Lista de Pagos',
-                'description' => 'Gestión de pagos de matrículas'
+                'title' => 'Pagos',
+                'description' => 'Gestión de pagos de estudiantes'
             ]);
     }
 }

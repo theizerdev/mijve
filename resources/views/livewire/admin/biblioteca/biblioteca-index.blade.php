@@ -5,31 +5,31 @@
             <h5 class="mb-4">Filtros</h5>
             <ul class="list-unstyled biblioteca-sidebar">
                 <li wire:click="filtrar('todos')" class="{{ $filtroActivo === 'todos' ? 'active' : '' }}">
-                    <i class="ri-folder-line me-2"></i>
+                    <i class="ri ri-folder-line me-2"></i>
                     <span>Todos los archivos</span>
                     <span class="badge bg-primary ms-auto">{{ $this->totalArchivos }}</span>
                 </li>
                 <li wire:click="filtrar('mis-archivos')" class="{{ $filtroActivo === 'mis-archivos' ? 'active' : '' }}">
-                    <i class="ri-file-user-line me-2"></i>
+                    <i class="ri ri-file-user-line me-2"></i>
                     <span>Mis archivos</span>
                 </li>
                 <li wire:click="filtrar('compartidos')" class="{{ $filtroActivo === 'compartidos' ? 'active' : '' }}">
-                    <i class="ri-share-line me-2"></i>
+                    <i class="ri ri-share-line me-2"></i>
                     <span>Compartidos conmigo</span>
                 </li>
                 <li wire:click="filtrar('recientes')" class="{{ $filtroActivo === 'recientes' ? 'active' : '' }}">
-                    <i class="ri-time-line me-2"></i>
+                    <i class="ri ri-time-line me-2"></i>
                     <span>Recientes</span>
                 </li>
             </ul>
-            
+
             <hr class="my-3">
-            
+
             <h6 class="mb-3">Categorías</h6>
             <ul class="list-unstyled biblioteca-sidebar">
                 @foreach($this->categorias as $cat)
                 <li wire:click="filtrarCategoria({{ $cat->id }})" class="{{ $categoriaSeleccionada == $cat->id ? 'active' : '' }}">
-                    <i class="ri-folder-2-line me-2"></i>
+                    <i class="ri ri-folder-2-line me-2"></i>
                     <span>{{ $cat->nombre }}</span>
                     <span class="badge bg-secondary ms-auto">{{ $cat->archivos_count }}</span>
                 </li>
@@ -44,7 +44,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Biblioteca Digital</h2>
                 <button wire:click="abrirFormulario" class="btn btn-primary">
-                    <i class="ri-upload-cloud-line me-2"></i>Subir archivo
+                    <i class="ri ri-upload-cloud-line me-2"></i>Subir archivo
                 </button>
             </div>
 
@@ -53,10 +53,10 @@
                 <input type="text" wire:model.live="search" class="form-control" placeholder="Buscar archivos..." />
                 <div class="btn-group">
                     <button wire:click="cambiarVista('grid')" class="btn {{ $vistaActiva === 'grid' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        <i class="ri-grid-line"></i>
+                        <i class="ri ri-grid-line"></i>
                     </button>
                     <button wire:click="cambiarVista('list')" class="btn {{ $vistaActiva === 'list' ? 'btn-primary' : 'btn-outline-secondary' }}">
-                        <i class="ri-list-check"></i>
+                        <i class="ri ri-list-check"></i>
                     </button>
                 </div>
             </div>
@@ -132,14 +132,14 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">
                                 <div class="bg-primary bg-opacity-10 rounded p-2">
-                                    <i class="ri-file-line text-primary" style="font-size: 24px;"></i>
+                                    <i class="ri ri-file-line text-primary" style="font-size: 24px;"></i>
                                 </div>
                                 @if($archivo->visibilidad === 'publico')
-                                <i class="ri-global-line text-success"></i>
+                                <i class="ri ri-global-line text-success"></i>
                                 @elseif($archivo->visibilidad === 'privado')
-                                <i class="ri-lock-line text-danger"></i>
+                                <i class="ri ri-lock-line text-danger"></i>
                                 @else
-                                <i class="ri-user-lock-line text-warning"></i>
+                                <i class="ri ri-user-lock-line text-warning"></i>
                                 @endif
                             </div>
                             <h6 class="card-title text-truncate" title="{{ $archivo->titulo }}">{{ $archivo->titulo }}</h6>
@@ -155,11 +155,11 @@
                             </div>
                             <div class="d-flex gap-1">
                                 <button wire:click="descargarArchivo({{ $archivo->id }})" class="btn btn-sm btn-primary flex-fill">
-                                    <i class="ri-download-line"></i>
+                                    <i class="ri ri-download-line"></i>
                                 </button>
                                 @if(auth()->id() === $archivo->usuario_subida_id)
                                 <button wire:click="eliminarArchivo({{ $archivo->id }})" onclick="confirm('¿Eliminar?') || event.stopImmediatePropagation()" class="btn btn-sm btn-danger">
-                                    <i class="ri-delete-bin-line"></i>
+                                    <i class="ri ri-delete-bin-line"></i>
                                 </button>
                                 @endif
                             </div>
@@ -171,7 +171,7 @@
                 </div>
                 @empty
                 <div class="col-12 text-center py-5">
-                    <i class="ri-file-line text-muted" style="font-size: 64px;"></i>
+                    <i class="ri ri-file-line text-muted" style="font-size: 64px;"></i>
                     <p class="text-muted mt-3">No hay archivos</p>
                 </div>
                 @endforelse
@@ -183,7 +183,7 @@
                 <div class="list-group-item">
                     <div class="d-flex align-items-center">
                         <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                            <i class="ri-file-line text-primary" style="font-size: 24px;"></i>
+                            <i class="ri ri-file-line text-primary" style="font-size: 24px;"></i>
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-1">{{ $archivo->titulo }}</h6>
@@ -194,18 +194,18 @@
                         </div>
                         <div class="d-flex gap-2">
                             @if($archivo->visibilidad === 'publico')
-                            <i class="ri-global-line text-success"></i>
+                            <i class="ri ri-global-line text-success"></i>
                             @elseif($archivo->visibilidad === 'privado')
-                            <i class="ri-lock-line text-danger"></i>
+                            <i class="ri ri-lock-line text-danger"></i>
                             @else
-                            <i class="ri-user-lock-line text-warning"></i>
+                            <i class="ri ri-user-lock-line text-warning"></i>
                             @endif
                             <button wire:click="descargarArchivo({{ $archivo->id }})" class="btn btn-sm btn-primary">
-                                <i class="ri-download-line"></i> Descargar
+                                <i class="ri ri-download-line"></i> Descargar
                             </button>
                             @if(auth()->id() === $archivo->usuario_subida_id)
                             <button wire:click="eliminarArchivo({{ $archivo->id }})" onclick="confirm('¿Eliminar?') || event.stopImmediatePropagation()" class="btn btn-sm btn-danger">
-                                <i class="ri-delete-bin-line"></i>
+                                <i class="ri ri-delete-bin-line"></i>
                             </button>
                             @endif
                         </div>
@@ -213,7 +213,7 @@
                 </div>
                 @empty
                 <div class="text-center py-5">
-                    <i class="ri-file-line text-muted" style="font-size: 64px;"></i>
+                    <i class="ri ri-file-line text-muted" style="font-size: 64px;"></i>
                     <p class="text-muted mt-3">No hay archivos</p>
                 </div>
                 @endforelse

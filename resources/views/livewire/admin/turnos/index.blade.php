@@ -1,68 +1,61 @@
 <div>
+    <!-- Alertas -->
     @if (session()->has('message'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('message') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="ri-check-line me-2"></i>{{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     @if (session()->has('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <i class="ri-error-warning-line me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <div class="row">
-        <!-- Estadísticas -->
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\Turno::count() }}</h4>
-                            <p class="mb-0">Total Turnos</p>
+                            <h6 class="text-muted mb-2">Total Turnos</h6>
+                            <h2 class="mb-0">{{ \App\Models\Turno::count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-primary">
-                                <i class="ri ri-time-line ri-24px"></i>
-                            </span>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="ri-time-line text-primary" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+        <div class="col-md-4">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\Turno::whereTime('hora_inicio', '<', '12:00:00')->count() }}</h4>
-                            <p class="mb-0">Turnos Mañana</p>
+                            <h6 class="text-muted mb-2">Turnos Mañana</h6>
+                            <h2 class="mb-0">{{ \App\Models\Turno::whereTime('hora_inicio', '<', '12:00:00')->count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-warning">
-                                <i class="ri ri-sun-line ri-24px"></i>
-                            </span>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="ri-sun-line text-warning" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div class="card">
+        <div class="col-md-4">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">{{ \App\Models\Turno::whereTime('hora_inicio', '>=', '12:00:00')->count() }}</h4>
-                            <p class="mb-0">Turnos Tarde</p>
+                            <h6 class="text-muted mb-2">Turnos Tarde</h6>
+                            <h2 class="mb-0">{{ \App\Models\Turno::whereTime('hora_inicio', '>=', '12:00:00')->count() }}</h2>
                         </div>
-                        <div class="avatar">
-                            <span class="avatar-initial rounded bg-label-info">
-                                <i class="ri ri-moon-line ri-24px"></i>
-                            </span>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="ri-moon-line text-info" style="font-size: 1.5rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -87,55 +80,63 @@
                     </div>
                 </div>
 
-                <!-- Filtros -->
-                <div class="card-header border-bottom">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Buscar</label>
-                            <input type="text" class="form-control" placeholder="Nombre, hora inicio, hora fin..."
-                                   wire:model.live.debounce.300ms="search">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Mostrar</label>
-                            <select class="form-select" wire:model.live="perPage">
-                                <option value="10">10 por página</option>
-                                <option value="25">25 por página</option>
-                                <option value="50">50 por página</option>
-                                <option value="100">100 por página</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="button" class="btn btn-label-secondary" wire:click="$refresh">
-                                <i class="ri ri-refresh-line"></i> Actualizar
-                            </button>
-                        </div>
+        <!-- Filtros -->
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="ri-search-line"></i></span>
+                        <input type="text" wire:model.live="search" class="form-control" placeholder="Buscar turnos...">
                     </div>
                 </div>
+                <div class="col-md-2">
+                    <select wire:model.live="perPage" class="form-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <span class="badge bg-label-primary">Total: {{ $turnos->total() }}</span>
+                        <button wire:click="clearFilters" class="btn btn-outline-secondary">
+                            <i class="ri-eraser-line me-1"></i> Limpiar
+                        </button>
+                        <button wire:click="export" class="btn btn-outline-success">
+                            <i class="ri-file-excel-line me-1"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                <div class="card-datatable table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th wire:click="sortBy('nombre')" style="cursor: pointer;">
-                                    Nombre @if($sortField == 'nombre') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('descripcion')" style="cursor: pointer;">
-                                    Descripción @if($sortField == 'descripcion') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('hora_inicio')" style="cursor: pointer;">
-                                    Hora Inicio @if($sortField == 'hora_inicio') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('hora_fin')" style="cursor: pointer;">
-                                    Hora Fin @if($sortField == 'hora_fin') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th wire:click="sortBy('status')" style="cursor: pointer;">
-                                    Estado @if($sortField == 'status') <i class="ri ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
-                                </th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
+            <!-- Tabla -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th wire:click="sortBy('nombre')" style="cursor: pointer;">
+                                <i class="ri-time-line me-1"></i>Nombre
+                                @if($sortField == 'nombre') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th wire:click="sortBy('descripcion')" style="cursor: pointer;">
+                                <i class="ri-file-text-line me-1"></i>Descripción
+                                @if($sortField == 'descripcion') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th wire:click="sortBy('hora_inicio')" style="cursor: pointer;">
+                                <i class="ri-sun-line me-1"></i>Hora Inicio
+                                @if($sortField == 'hora_inicio') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th wire:click="sortBy('hora_fin')" style="cursor: pointer;">
+                                <i class="ri-moon-line me-1"></i>Hora Fin
+                                @if($sortField == 'hora_fin') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th wire:click="sortBy('status')" style="cursor: pointer;">
+                                <i class="ri-toggle-line me-1"></i>Estado
+                                @if($sortField == 'status') <i class="ri-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                            </th>
+                            <th width="120">Acciones</th>
+                        </tr>
+                    </thead>
                         <tbody>
                             @forelse($turnos as $turno)
                                 <tr>
@@ -153,49 +154,65 @@
                                     <td>{{ $turno->hora_inicio->format('H:i') }}</td>
                                     <td>{{ $turno->hora_fin->format('H:i') }}</td>
                                     <td>
-                                        @if($turno->status)
-                                            <span class="badge bg-success">Activo</span>
-                                        @else
-                                            <span class="badge bg-danger">Inactivo</span>
-                                        @endif
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   wire:click="toggleStatus({{ $turno->id }})" 
+                                                   {{ $turno->status ? 'checked' : '' }}
+                                                   id="switch{{ $turno->id }}">
+                                            <label class="form-check-label" for="switch{{ $turno->id }}">
+                                                <span class="badge bg-label-{{ $turno->status ? 'success' : 'secondary' }}">
+                                                    {{ $turno->status ? 'Activo' : 'Inactivo' }}
+                                                </span>
+                                            </label>
+                                        </div>
                                     </td>
                                     <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $turno->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
+                                        <div class="d-flex gap-1">
+                                            @can('edit turnos')
+                                            <a href="{{ route('admin.turnos.edit', $turno) }}" 
+                                               class="btn btn-sm btn-icon btn-text-secondary rounded-pill" 
+                                               title="Editar">
+                                                <i class="ri-edit-line ri-20px"></i>
+                                            </a>
+                                            @endcan
+                                            @can('delete turnos')
+                                            <button wire:click="delete({{ $turno->id }})" 
+                                                    wire:confirm="¿Eliminar el turno {{ $turno->nombre }}?" 
+                                                    class="btn btn-sm btn-icon btn-text-danger rounded-pill" 
+                                                    title="Eliminar">
+                                                <i class="ri-delete-bin-7-line ri-20px"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $turno->id }}">
-
-                                                <a class="dropdown-item" href="{{ route('admin.turnos.edit', $turno) }}">
-                                                    <i class="ri ri-pencil-line me-1"></i> Editar
-                                                </a>
-                                                <button class="dropdown-item text-danger" wire:click="delete({{ $turno->id }})" wire:confirm="¿Estás seguro de eliminar este turno?">
-                                                    <i class="ri ri-delete-bin-line me-1"></i> Eliminar
-                                                </button>
-                                            </div>
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">No se encontraron turnos</td>
-                                </tr>
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="ri-time-line ri-48px text-muted mb-2"></i>
+                                        <h6 class="text-muted">No hay turnos registrados</h6>
+                                        <p class="text-muted mb-0">Crea el primer turno para comenzar</p>
+                                    </div>
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $turnos->firstItem() }} a {{ $turnos->lastItem() }} de {{ $turnos->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $turnos->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+            <!-- Paginación -->
+            @if($turnos->hasPages())
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    Mostrando {{ $turnos->firstItem() }} a {{ $turnos->lastItem() }} de {{ $turnos->total() }} resultados
+                </div>
+                <div>
+                    {{ $turnos->links() }}
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </div>

@@ -19,10 +19,10 @@ class StudentSeeder extends Seeder
 
         // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        
+
         // Delete all records from the students table to avoid duplicates
         DB::table('students')->delete();
-        
+
         // Re-enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
@@ -82,6 +82,8 @@ class StudentSeeder extends Seeder
                 'representante_documento_identidad' => $this->generateRepresentativeDocument(),
                 'representante_telefonos' => json_encode([$faker->phoneNumber]),
                 'representante_correo' => $faker->safeEmail,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ]);
         }
     }

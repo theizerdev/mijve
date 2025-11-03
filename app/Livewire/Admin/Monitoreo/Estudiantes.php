@@ -5,12 +5,22 @@ namespace App\Livewire\Admin\Monitoreo;
 use Livewire\Component;
 use App\Models\Student;
 use App\Models\NivelEducativo;
+use Livewire\Attributes\On;
 
 class Estudiantes extends Component
 {
+    public $lastUpdate;
+    
     public function mount()
     {
         abort_unless(auth()->user()->can('view monitoreo estudiantes'), 403);
+        $this->lastUpdate = now()->format('H:i:s');
+    }
+    
+    #[On('refresh-estudiantes')]
+    public function refreshData()
+    {
+        $this->lastUpdate = now()->format('H:i:s');
     }
 
     public function render()

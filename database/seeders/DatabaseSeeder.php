@@ -16,19 +16,20 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RolesAndPermissionsSeeder::class,
-            UsersTableSeeder::class,
             EmpresaSeeder::class,
             SucursalSeeder::class,
             ShiftSeeder::class,
             EducationalLevelSeeder::class,
             SchoolPeriodSeeder::class,
-            //StudentSeeder::class,
+            StudentSeeder::class,
             ProgramaSeeder::class,
-            ConceptoPagoSeeder::class,
+            ConceptoPagoMejoradoSeeder::class,
             BibliotecaCategoriasSeeder::class,
             BibliotecaArchivosSeeder::class,
             MensajeriaSeeder::class,
-            //MatriculaSeeder::class,
+            UsersTableSeeder::class,
+            SerieSeeder::class,
+            MatriculaSeeder::class,
            //PagoSeeder::class,
         ]);
     }

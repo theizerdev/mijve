@@ -5,10 +5,11 @@ namespace App\Livewire\Admin\Matriculas;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Matricula;
+use App\Traits\Exportable;
 
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, Exportable;
 
     public $search = '';
     public $status = '';
@@ -46,6 +47,20 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function toggleStatus($matriculaId)
+    {
+        if (!auth()->user()->can('edit matriculas')) {
+            session()->flash('error', 'No tienes permiso para cambiar el estado.');
+            return;
+        }
+
+        $matricula = Matricula::find($matriculaId);
+        if ($matricula) {
+            $matricula->estado = $matricula->estado === 'activo' ? 'inactivo' : 'activo';
+            $matricula->save();
+        }
+    }
+
     public function delete(Matricula $matricula)
     {
         // Verificar permiso para eliminar matrículas
@@ -74,6 +89,54 @@ class Index extends Component
         $this->resetPage();
     }
 
+    protected function getExportQuery()
+    {
+        return Matricula::with(['student', 'programa', 'periodo'])
+            ->when($this->search, function ($query) {
+                $query->whereHas('student', function ($subQuery) {
+                    $subQuery->where('nombres', 'like', '%' . $this->search . '%')
+                        ->orWhere('apellidos', 'like', '%' . $this->search . '%')
+                        ->orWhere('documento_identidad', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->status !== '', function ($query) {
+                $query->where('matriculas.estado', $this->status);
+            })
+            ->orderBy('matriculas.' . $this->sortBy, $this->sortDirection);
+    }
+
+    protected function getExportHeaders(): array
+    {
+        return [
+            'ID',
+            'Estudiante',
+            'Documento',
+            'Programa',
+            'Período',
+            'Fecha Matrícula',
+            'Costo',
+            'Cuota Inicial',
+            'Número Cuotas',
+            'Estado'
+        ];
+    }
+
+    protected function formatExportRow($matricula): array
+    {
+        return [
+            $matricula->id,
+            $matricula->student->nombres . ' ' . $matricula->student->apellidos,
+            $matricula->student->documento_identidad,
+            $matricula->programa->nombre ?? 'N/A',
+            $matricula->periodo->name ?? 'N/A',
+            $matricula->fecha_matricula->format('d/m/Y'),
+            $matricula->costo,
+            $matricula->cuota_inicial,
+            $matricula->numero_cuotas,
+            ucfirst($matricula->estado)
+        ];
+    }
+
     public function render()
     {
         $matriculas = Matricula::with(['student', 'programa', 'periodo'])
@@ -90,10 +153,23 @@ class Index extends Component
             ->orderBy('matriculas.' . $this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.admin.matriculas.index', compact('matriculas'))
-            ->layout('components.layouts.admin', [
-                'title' => 'Lista de Matrículas',
-                'description' => 'Gestión de matrículas de estudiantes'
-            ]);
+        // Estadísticas
+        $totalMatriculas = Matricula::count();
+        $matriculasActivas = Matricula::where('estado', 'activo')->count();
+        $matriculasInactivas = Matricula::where('estado', 'inactivo')->count();
+        $matriculasGraduadas = Matricula::where('estado', 'graduado')->count();
+        $ingresosTotales = Matricula::sum('costo');
+
+        return view('livewire.admin.matriculas.index', compact(
+            'matriculas',
+            'totalMatriculas',
+            'matriculasActivas', 
+            'matriculasInactivas',
+            'matriculasGraduadas',
+            'ingresosTotales'
+        ))->layout('components.layouts.admin', [
+            'title' => 'Lista de Matrículas',
+            'description' => 'Gestión de matrículas de estudiantes'
+        ]);
     }
 }

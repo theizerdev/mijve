@@ -188,10 +188,10 @@
                                     </td>
                                     <td>
                                         <div class="dropdown">
-                                            <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $role->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="ri ri-more-2-fill ri-24px"></i>
+                                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="ri ri-more-2-line"></i>
                                             </button>
-                                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $role->id }}">
+                                            <div class="dropdown-menu">
                                                 @can('view roles')
                                                 <a class="dropdown-item" href="{{ route('admin.roles.show', $role) }}">
                                                     <i class="ri ri-eye-line me-1"></i> Ver
@@ -203,7 +203,9 @@
                                                 </a>
                                                 @endcan
                                                 @can('delete roles')
-                                                <button class="dropdown-item text-danger" wire:click="deleteRole({{ $role->id }})" wire:confirm="¿Estás seguro de eliminar este rol?">
+                                                <button type="button" class="dropdown-item text-danger"
+                                                        wire:click="deleteRole({{ $role->id }})"
+                                                        wire:confirm="¿Estás seguro de eliminar este rol?">
                                                     <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                                 </button>
                                                 @endcan
@@ -224,14 +226,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            Mostrando {{ $roles->firstItem() }} a {{ $roles->lastItem() }} de {{ $roles->total() }} resultados
-                        </div>
-                        <div>
-                            {{ $roles->links('vendor.pagination.materialize') }}
-                        </div>
-                    </div>
+                   {{ $roles->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

@@ -3,12 +3,22 @@
 namespace App\Livewire\Admin\Monitoreo;
 
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class Servidor extends Component
 {
+    public $lastUpdate;
+    
     public function mount()
     {
         abort_unless(auth()->user()->can('view monitoreo servidor'), 403);
+        $this->lastUpdate = now()->format('H:i:s');
+    }
+    
+    #[On('refresh-servidor')]
+    public function refreshData()
+    {
+        $this->lastUpdate = now()->format('H:i:s');
     }
 
     public function render()

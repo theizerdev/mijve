@@ -13,61 +13,127 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h5 class="card-title mb-1">Lista de Matrículas</h5>
-            <p class="mb-0">Administra las matrículas de los estudiantes</p>
-        </div>
-        @can('create matriculas')
-        <div>
-            <a href="{{ route('admin.matriculas.create') }}" class="btn btn-primary">
-                <i class="ri ri-add-line"></i> Nueva Matrícula
-            </a>
-        </div>
-        @endcan
-    </div>
-
-    <!-- Filtros -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h6 class="mb-0">Filtros</h6>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Buscar</label>
-                    <input type="text" wire:model.live.debounce.300ms="search" class="form-control" id="search" placeholder="Nombre, apellido o DNI del estudiante...">
-                </div>
-                <div class="col-md-4">
-                    <label for="status" class="form-label">Estado</label>
-                    <select wire:model.live="status" class="form-select" id="status">
-                        <option value="">Todos</option>
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
-                        <option value="graduado">Graduado</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="perPage" class="form-label">Mostrar</label>
-                    <select class="form-select" id="perPage" wire:model.live="perPage">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Matrículas</h6>
+                            <h2 class="mb-0">{{ $totalMatriculas }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="ri ri-graduation-cap-line text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="mt-3">
-                <button wire:click="clearFilters" class="btn btn-outline-secondary">
-                    <i class="ri ri-delete-bin-line"></i> Limpiar Filtros
-                </button>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-success border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Activas</h6>
+                            <h2 class="mb-0">{{ $matriculasActivas }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="ri ri-check-circle-line text-success" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Inactivas</h6>
+                            <h2 class="mb-0">{{ $matriculasInactivas }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="ri ri-pause-circle-line text-warning" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Ingresos Totales</h6>
+                            <h2 class="mb-0">${{ number_format($ingresosTotales, 0) }}</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="ri ri-money-dollar-circle-line text-info" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Tabla de matrículas -->
-    <div class="card">
-        <div class="card-datatable table-responsive">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">Lista de Matrículas</h5>
+                            <p class="mb-0">Administra las matrículas de los estudiantes</p>
+                        </div>
+                        @can('create matriculas')
+                        <div>
+                            <a href="{{ route('admin.matriculas.create') }}" class="btn btn-primary">
+                                <i class="ri ri-add-line"></i> Nueva Matrícula
+                            </a>
+                        </div>
+                        @endcan
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="card-header border-bottom">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" class="form-control" placeholder="Nombre, apellido o DNI del estudiante..."
+                                   wire:model.live.debounce.300ms="search">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" wire:model.live="status">
+                                <option value="">Todos</option>
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                                <option value="graduado">Graduado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Mostrar</label>
+                            <select class="form-select" wire:model.live="perPage">
+                                <option value="10">10 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                                <option value="100">100 por página</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="button" class="btn btn-label-secondary" wire:click="clearFilters">
+                                <i class="ri ri-eraser-line"></i> Limpiar
+                            </button>
+                            <button type="button" class="btn btn-label-success" wire:click="export">
+                                <i class="mdi mdi-file-excel"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-datatable table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -129,20 +195,22 @@
                             <td>{{ $matricula->fecha_matricula->format('d/m/Y') }}</td>
                             <td>${{ number_format($matricula->costo, 2) }}</td>
                             <td>
-                                @if($matricula->estado === 'activo')
-                                    <span class="badge bg-success">Activo</span>
-                                @elseif($matricula->estado === 'inactivo')
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                @elseif($matricula->estado === 'graduado')
-                                    <span class="badge bg-primary">Graduado</span>
-                                @endif
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox"
+                                           id="statusSwitch{{ $matricula->id }}"
+                                           {{ $matricula->estado === 'activo' ? 'checked' : '' }}
+                                           @can('edit matriculas') wire:click="toggleStatus({{ $matricula->id }})" @endcan>
+                                    <label class="form-check-label" for="statusSwitch{{ $matricula->id }}">
+                                        {{ ucfirst($matricula->estado) }}
+                                    </label>
+                                </div>
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button class="btn btn-text-secondary rounded-pill text-body-secondary border-0 p-1" type="button" id="actionsDropdown{{ $matricula->id }}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="ri ri-more-2-fill ri-24px"></i>
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        <i class="ri ri-more-2-line"></i>
                                     </button>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ $matricula->id }}">
+                                    <div class="dropdown-menu">
                                         @can('view matriculas')
                                         <a class="dropdown-item" href="{{ route('admin.matriculas.show', $matricula) }}">
                                             <i class="ri ri-eye-line me-1"></i> Ver
@@ -150,14 +218,13 @@
                                         @endcan
                                         @can('edit matriculas')
                                         <a class="dropdown-item" href="{{ route('admin.matriculas.edit', $matricula) }}">
-                                            <i class="ri ri-edit-line me-1"></i> Editar
+                                            <i class="ri ri-pencil-line me-1"></i> Editar
                                         </a>
                                         @endcan
                                         @can('delete matriculas')
-                                        <button
-                                            class="dropdown-item text-danger"
-                                            wire:click="delete({{ $matricula }})"
-                                            wire:confirm="¿Estás seguro de eliminar esta matrícula?">
+                                        <button type="button" class="dropdown-item text-danger"
+                                                wire:click="delete({{ $matricula->id }})"
+                                                wire:confirm="¿Estás seguro de eliminar esta matrícula?">
                                             <i class="ri ri-delete-bin-line me-1"></i> Eliminar
                                         </button>
                                         @endcan
@@ -174,13 +241,8 @@
             </table>
         </div>
 
-        <div class="card-footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    Mostrando {{ $matriculas->firstItem() }} a {{ $matriculas->lastItem() }} de {{ $matriculas->total() }} matrículas
-                </div>
-                <div>
-                    {{ $matriculas->links('vendor.pagination.materialize') }}
+                <div class="card-footer">
+                   {{ $matriculas->links('vendor.pagination.materialize') }}
                 </div>
             </div>
         </div>

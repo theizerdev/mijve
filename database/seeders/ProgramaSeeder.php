@@ -17,15 +17,15 @@ class ProgramaSeeder extends Seeder
     {
         // Delete all records from the programas table to avoid duplicates
         DB::table('programas')->delete();
-        
+
         // Get educational levels
         $niveles = EducationalLevel::all();
-        
+
         if ($niveles->isEmpty()) {
             $this->command->warn('No hay niveles educativos disponibles. Ejecuta EducationalLevelSeeder primero.');
             return;
         }
-        
+
         // Get specific levels
         $nivelInicial = $niveles->where('nombre', 'Educación Inicial')->first();
         $nivelPrimaria = $niveles->where('nombre', 'Primaria')->first();
@@ -39,6 +39,8 @@ class ProgramaSeeder extends Seeder
                 //'costo_matricula' => 50.00,
                 //'costo_mensualidad' => 100.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Educación Inicial - Tarde',
@@ -47,6 +49,8 @@ class ProgramaSeeder extends Seeder
                 //'costo_matricula' => 50.00,
                 //'costo_mensualidad' => 100.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Primaria - Mañana',
@@ -55,6 +59,8 @@ class ProgramaSeeder extends Seeder
                 //'costo_matricula' => 50.00,
                 //'costo_mensualidad' => 125.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Primaria - Tarde',
@@ -63,6 +69,8 @@ class ProgramaSeeder extends Seeder
                 //'costo_matricula' => 50.00,
                 //'costo_mensualidad' => 125.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Secundaria - Mañana',
@@ -71,6 +79,8 @@ class ProgramaSeeder extends Seeder
                 //'costo_matricula' => 50.00,
                 //'costo_mensualidad' => 150.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
             [
                 'nombre' => 'Secundaria - Tarde',
@@ -79,6 +89,8 @@ class ProgramaSeeder extends Seeder
                //'costo_matricula' => 50.00,
                //'costo_mensualidad' => 150.00,
                 'activo' => true,
+                'empresa_id' => 1,
+                'sucursal_id' => 1,
             ],
         ];
 

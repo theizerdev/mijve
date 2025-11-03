@@ -90,6 +90,11 @@ class Create extends Component
     {
         $this->generatePaymentSchedule();
     }
+    
+    public function updatedPeriodoId()
+    {
+        $this->generatePaymentSchedule();
+    }
 
     public function generatePaymentSchedule()
     {
@@ -189,6 +194,8 @@ class Create extends Component
 
         try {
             $matricula = Matricula::create([
+                'empresa_id' => auth()->user()->empresa_id,
+                'sucursal_id' => auth()->user()->sucursal_id,
                 'estudiante_id' => $this->student_id,
                 'programa_id' => $this->programa_id,
                 'periodo_id' => $this->periodo_id,
@@ -199,28 +206,35 @@ class Create extends Component
                 'numero_cuotas' => $this->numero_cuotas
             ]);
 
-            // Generar cronograma de pagos
-            $this->createPaymentSchedule($matricula);
+            // Generar cronograma de pagos si existe la clase
+            if (class_exists('\App\Models\PaymentSchedule')) {
+                $this->createPaymentSchedule($matricula);
+            }
 
             session()->flash('message', 'Matrícula creada correctamente.');
             return redirect()->route('admin.matriculas.index');
         } catch (\Exception $e) {
             session()->flash('error', 'Error al crear la matrícula: ' . $e->getMessage());
+            \Log::error('Error creating matricula: ' . $e->getMessage());
         }
     }
     
     private function createPaymentSchedule($matricula)
     {
-        foreach ($this->paymentSchedule as $schedule) {
-            PaymentSchedule::create([
-                'matricula_id' => $matricula->id,
-                'numero_cuota' => $schedule['numero_cuota'],
-                'monto' => $schedule['monto'],
-                'fecha_vencimiento' => $schedule['fecha_vencimiento'],
-                'estado' => 'pendiente',
-                'empresa_id' => auth()->user()->empresa_id,
-                'sucursal_id' => auth()->user()->sucursal_id,
-            ]);
+        try {
+            foreach ($this->paymentSchedule as $schedule) {
+                PaymentSchedule::create([
+                    'matricula_id' => $matricula->id,
+                    'numero_cuota' => $schedule['numero_cuota'],
+                    'monto' => $schedule['monto'],
+                    'fecha_vencimiento' => $schedule['fecha_vencimiento'],
+                    'estado' => 'pendiente',
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'sucursal_id' => auth()->user()->sucursal_id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error creating payment schedule: ' . $e->getMessage());
         }
     }
 

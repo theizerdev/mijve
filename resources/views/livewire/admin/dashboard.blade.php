@@ -24,8 +24,19 @@
                                     <i class="ri ri-calendar-event-line me-1"></i>Año
                                 </button>
                             </div>
-                            <button wire:click="exportDashboard" class="btn btn-sm btn-success">
-                                <i class="ri ri-download-line me-1"></i>Exportar
+                            <button 
+                                wire:click="exportDashboard" 
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50"
+                                class="btn btn-sm btn-success"
+                            >
+                                <span wire:loading.remove wire:target="exportDashboard">
+                                    <i class="ri ri-file-excel-line me-1"></i>Exportar Excel
+                                </span>
+                                <span wire:loading wire:target="exportDashboard">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                    Exportando...
+                                </span>
                             </button>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -54,6 +65,7 @@
     </div>
 
     <!-- Alertas y Notificaciones -->
+    @can('dashboard.alerts')
     @if($showAlerts && $alerts['totalAlerts'] > 0)
     <div class="row mb-4">
         <div class="col-12">
@@ -89,6 +101,7 @@
         </div>
     </div>
     @endif
+    @endcan
 
     <!-- Tarjetas de Estadísticas Principales -->
     <div class="row g-4 mb-4">
@@ -186,6 +199,7 @@
     </div>
 
     <!-- Métricas Financieras -->
+    @can('dashboard.financial')
     @if($showFinancial)
     <div class="row g-4 mb-4">
         <div class="col-lg-4">
@@ -205,16 +219,16 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card  text-white">
+            <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h6 class=" mb-1">Ingresos Pendientes</h6>
-                            <h3 class="mb-0">{{ number_format($financialStats['pendingIncome'], 2, ',', '.') }} $</h3>
-                            <small class="">Por cobrar</small>
+                            <h6 class="mb-1">Monto por Cobrar</h6>
+                            <h3 class="mb-0 text-warning">${{ number_format($financialStats['pendingIncome'], 0) }}</h3>
+                            <small class="text-muted">Cronograma pendiente</small>
                         </div>
                         <div class="avatar avatar-lg bg-warning">
-                            <i class="ri ri-time-line ri-24px text-white"></i>
+                            <i class="ri ri-money-cny-circle-line ri-24px text-white"></i>
                         </div>
                     </div>
                 </div>
@@ -244,59 +258,74 @@
         </div>
     </div>
     @endif
+    @endcan
 
     <!-- Métricas Académicas -->
     @if($showAcademic)
     <div class="row g-4 mb-4">
         <div class="col-lg-3">
-            <div class="card">
+            <div class="card border-primary">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="text-muted mb-1">Matrículas Activas</h6>
-                            <h3 class="mb-0">{{ $academicStats['activeEnrollments'] }}</h3>
+                            <h3 class="mb-0 text-primary">{{ $academicStats['activeEnrollments'] }}</h3>
                             <small class="text-muted">Total: {{ $academicStats['totalEnrollments'] }}</small>
                         </div>
-                        <div class="avatar avatar-lg bg-primary bg-opacity-10">
-                            <i class="ri ri-graduation-cap-line ri-24px text-primary"></i>
+                        <div class="avatar avatar-lg bg-primary">
+                            <i class="ri ri-graduation-cap-line ri-24px text-white"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3">
-            <div class="card">
+            <div class="card border-success">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h6 class="text-muted mb-1">Promedio General</h6>
-                            <h3 class="mb-0">{{ number_format($academicStats['averageGrade'], 1) }}</h3>
-                            <small class="text-muted">Sobre 20 puntos</small>
+                            <h6 class="text-muted mb-1">Ingresos Hoy</h6>
+                            <h3 class="mb-0 text-success">${{ number_format($financialStats['todayIncome'] ?? 0, 0) }}</h3>
+                            <small class="text-muted">Pagos del día</small>
                         </div>
-                        <div class="avatar avatar-lg bg-success bg-opacity-10">
-                            <i class="ri ri-award-line ri-24px text-success"></i>
+                        <div class="avatar avatar-lg bg-success">
+                            <i class="ri ri-money-dollar-circle-line ri-24px text-white"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
         <div class="col-lg-3">
-            <div class="card">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-1">Cuotas Vencidas</h6>
+                            <h3 class="mb-0 text-danger">{{ $vencidas }}</h3>
+                            <small class="text-muted">Requieren atención</small>
+                        </div>
+                        <div class="avatar avatar-lg bg-danger">
+                            <i class="ri ri-alarm-warning-line ri-24px text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card border-info">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="text-muted mb-1">Período Actual</h6>
-                            <h5 class="mb-0">{{ $currentPeriod ? $currentPeriod->nombre : 'N/A' }}</h5>
+                            <h6 class="mb-0 text-info">{{ $currentPeriod ? $currentPeriod->nombre : 'N/A' }}</h6>
                             <small class="text-muted">
-                                @if($currentPeriod)
-                                    {{ \Carbon\Carbon::parse($currentPeriod->fecha_inicio)->format('d/m') }} -
-                                    {{ \Carbon\Carbon::parse($currentPeriod->fecha_fin)->format('d/m') }}
+                                @if($currentPeriod && $currentPeriod->fecha_inicio && $currentPeriod->fecha_fin)
+                                    {{ $currentPeriod->fecha_inicio->format('d/m') }} - {{ $currentPeriod->fecha_fin->format('d/m') }}
                                 @endif
                             </small>
                         </div>
-                        <div class="avatar avatar-lg bg-info bg-opacity-10">
-                            <i class="ri ri-calendar-line ri-24px text-info"></i>
+                        <div class="avatar avatar-lg bg-info">
+                            <i class="ri ri-calendar-line ri-24px text-white"></i>
                         </div>
                     </div>
                 </div>
@@ -317,7 +346,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="javascript:void(0);" wire:click="exportDashboard">
-                                <i class="ri ri-download-line me-1"></i>Exportar CSV
+                                <i class="ri ri-file-excel-line me-1"></i>Exportar Excel
                             </a></li>
                             <li><a class="dropdown-item" href="javascript:void(0);">
                                 <i class="ri ri-file-pdf-line me-1"></i>Exportar PDF
