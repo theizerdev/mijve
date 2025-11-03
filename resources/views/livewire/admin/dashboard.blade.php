@@ -229,9 +229,9 @@
                             <h3 class="mb-0">{{ number_format($financialStats['incomeChange'], 1) }}%</h3>
                             <small class="">
                                 @if($financialStats['incomeChange'] >= 0)
-                                    <i class="ri ri-arrow-up-line"></i> Aumento
+                                    <span class="text-success"><i class="text-success ri ri-arrow-up-line"></i> Aumento</span>
                                 @else
-                                    <i class="ri ri-arrow-down-line"></i> Disminución
+                                    <span class="text-danger"><i class="text-danger ri ri-arrow-down-line"></i> Disminución</span>
                                 @endif
                             </small>
                         </div>
