@@ -15,6 +15,18 @@
         </div>
     @endif
 
+    @if(!empty($errors) && count($errors) > 0)
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="mdi mdi-alert-circle"></i>
+            <ul class="mb-0">
+                @foreach($errors as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">Importar Estudiantes</h5>
@@ -73,8 +85,20 @@
 
                 <div wire:loading wire:target="file" class="mt-3">
                     <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Procesando...</p>
+                    <p class="mt-2">Procesando archivo...</p>
                 </div>
+
+                @if(!empty($errors) && count($errors) > 0)
+                    <div class="alert alert-danger mt-3">
+                        <i class="mdi mdi-alert-circle"></i>
+                        @foreach(array_slice($errors, 0, 3) as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                        @if(count($errors) > 3)
+                            <div>... y {{ count($errors) - 3 }} errores más</div>
+                        @endif
+                    </div>
+                @endif
             </div>
         </div>
     @endif

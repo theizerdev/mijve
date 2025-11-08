@@ -1,0 +1,6 @@
+nombres,apellidos,documento_identidad,fecha_nacimiento,grado,seccion,correo_electronico,representante_nombres,representante_apellidos,representante_documento_identidad,representante_telefonos,representante_correo
+Juan,Pérez,12345678,2010-05-15,5,A,juan.perez@email.com,María,Pérez,87654321,0414-1234567,maria.perez@email.com
+María,González,87654321,2011-08-22,4,B,maria.gonzalez@email.com,Carlos,González,12345678,0414-7654321,carlos.gonzalez@email.com
+Pedro,Rodríguez,11223344,2009-12-10,6,A,pedro.rodriguez@email.com,Ana,Rodríguez,99887766,0414-9876543,ana.rodriguez@email.com
+Lucía,Fernández,55667788,2012-03-08,3,B,lucia.fernandez@email.com,José,Fernández,44332211,0414-5556666,jose.fernandez@email.com
+Carlos,López,99001122,2010-07-30,5,B,carlos.lopez@email.com,Laura,López,33445566,0414-7778888,laura.lopez@email.com
