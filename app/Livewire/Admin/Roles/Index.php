@@ -127,6 +127,6 @@ class Index extends Component
             'rolesWithPermissions' => $rolesWithPermissions,
             'rolesWithoutPermissions' => $rolesWithoutPermissions,
             'guards' => $guards
-        ])->layout('components.layouts.admin', ['title' => 'Roles']);
+        ])->layout($this->getLayout(), ['title' => 'Roles']);
     }
 }
