@@ -124,7 +124,56 @@
     </div>
 
     <!-- Tasa activa del día -->
-
+    @if($todayRate)
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary border-2">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="ri ri-exchange-dollar-line me-2"></i>Tasa del Día</h5>
+                        @can('edit exchange-rates')
+                        <button wire:click="editRate({{ $todayRate->id }})" class="btn btn-light btn-sm">
+                            <i class="ri ri-edit-line me-1"></i>Editar Tasa
+                        </button>
+                        @endcan
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 border-end">
+                            <h2 class="display-6 text-primary">{{ number_format($todayRate->usd_rate, 4) }}</h2>
+                            <p class="mb-0 text-muted">Bolívares por Dólar (USD)</p>
+                            <small class="text-muted">Fuente: {{ $todayRate->source }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h2 class="display-6 text-primary">{{ number_format($todayRate->eur_rate, 4) }}</h2>
+                            <p class="mb-0 text-muted">Bolívares por Euro (EUR)</p>
+                            <small class="text-muted">Actualizado: {{ $todayRate->fetch_time->format('H:i') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning border-2">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="ri ri-alert-line me-2"></i>No hay tasa registrada para hoy</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-3">Aún no se ha registrado una tasa de cambio para el día de hoy.</p>
+                    @can('edit exchange-rates')
+                    <button wire:click="editRate()" class="btn btn-primary">
+                        <i class="ri ri-add-line me-1"></i>Registrar Tasa Manual
+                    </button>
+                    @endcan
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Modal de Edición -->
     @if($showEditModal)

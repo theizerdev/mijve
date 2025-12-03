@@ -74,9 +74,9 @@
                 id="email"
                 name="email"
                 wire:model="email"
-                placeholder="{{ __('auth_ui.email') }}"
+                placeholder="{{ config('app.locale') == 'es' ? 'Ingresa tu nombre de usuario o email' : 'Enter your username or email' }}"
                 autofocus />
-              <label for="email">{{ __('auth_ui.email') }}</label>
+              <label for="email">@if(config('app.locale') == 'es')Nombre de usuario o Email @else Username or Email @endif</label>
               @if($hasError('email'))
                 <div class="invalid-feedback d-block">{{ $getError('email') }}</div>
               @endif

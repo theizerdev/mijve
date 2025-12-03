@@ -156,7 +156,7 @@ class Index extends Component
         $totalEstudiantes = \App\Models\Student::count();
 
         return view('livewire.admin.niveles-educativos.index', compact('niveles', 'totalNiveles', 'nivelesActivos', 'totalProgramas', 'totalEstudiantes'))
-            ->layout('components.layouts.admin', [
+            ->layout($this->getLayout(), [
                 'title' => 'Niveles Educativos',
                 'breadcrumb' => [
                     'admin.dashboard' => 'Dashboard',

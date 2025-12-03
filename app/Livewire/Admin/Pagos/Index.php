@@ -289,7 +289,7 @@ class Index extends Component
 
         // Línea divisoria
         //$pdf->Line(10, $pdf->GetY() + 2, 200, $pdf->GetY() + 2);
-        $pdf->Ln(4);
+        $pdf->Ln(22);
 
         // Obtener tasa de cambio
         $exchangeRate = ExchangeRate::getLatestRate('USD');

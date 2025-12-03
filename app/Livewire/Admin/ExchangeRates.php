@@ -87,17 +87,23 @@ class ExchangeRates extends Component
             $oldUsd = $this->editingRate->usd_rate;
             $oldEur = $this->editingRate->eur_rate;
             
-            $this->editingRate->update([
-                'usd_rate' => $this->usd_rate,
-                'eur_rate' => $this->eur_rate,
-                'source' => 'Modificado',
-                'raw_data' => [
+            // Merge with existing raw_data to preserve history
+            $newRawData = array_merge(
+                $this->editingRate->raw_data ?? [],
+                [
                     'edited_by' => auth()->user()->name,
                     'edit_reason' => $this->edit_reason,
                     'previous_usd' => $oldUsd,
                     'previous_eur' => $oldEur,
                     'edited_at' => now()->toISOString()
                 ]
+            );
+            
+            $this->editingRate->update([
+                'usd_rate' => $this->usd_rate,
+                'eur_rate' => $this->eur_rate,
+                'source' => 'Modificado',
+                'raw_data' => $newRawData
             ]);
         } else {
             // Create new rate for today

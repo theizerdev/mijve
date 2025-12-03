@@ -29,7 +29,7 @@ class Login extends Component
     public function rules()
     {
         return [
-            'email' => 'required|string|email',
+            'email' => 'required|string',
             'password' => 'required|string',
         ];
     }
@@ -62,8 +62,11 @@ class Login extends Component
             return;
         }
 
-        // Intentar autenticar al usuario
-        $credentials = ['email' => $this->email, 'password' => $this->password];
+        // Intentar autenticar al usuario con email o username
+        $credentials = filter_var($this->email, FILTER_VALIDATE_EMAIL) 
+            ? ['email' => $this->email, 'password' => $this->password]
+            : ['username' => $this->email, 'password' => $this->password];
+            
         if (!Auth::attempt($credentials, $this->remember)) {
             RateLimiter::hit($throttleKey);
 

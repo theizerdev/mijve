@@ -114,7 +114,7 @@ class Index extends Component
         $sucursalesInactivas = Sucursal::forUser()->where('status', 'inactive')->count();
 
         return view('livewire.admin.sucursales.index', compact('sucursales', 'empresas', 'totalSucursales', 'sucursalesActivas', 'sucursalesInactivas'))
-            ->layout('components.layouts.admin', [
+            ->layout($this->getLayout(), [
                 'title' => 'Lista de Sucursales'
             ]);
     }

@@ -61,9 +61,9 @@ class Create extends Component
         'metodo_pago' => 'nullable|string',
         'referencia' => 'nullable|string|unique:pagos,referencia',
         'descuento' => 'nullable|numeric|min:0',
-        'detalles.*.concepto_pago_id' => 'required|integer|exists:conceptos_pago,id',
-        'detalles.*.descripcion' => 'required|string',
-        'detalles.*.cantidad' => 'required|numeric|min:0.01',
+        'detalles.*.concepto_pago_id' => 'nullable|integer|exists:conceptos_pago,id',
+        'detalles.*.descripcion' => 'nullable|string',
+        'detalles.*.cantidad' => 'nullable|numeric|min:0.01',
         'detalles.*.precio_unitario' => 'nullable|numeric|min:0',
     ];
 
@@ -232,11 +232,7 @@ class Create extends Component
         $query = Serie::where('tipo_documento', $this->tipo_pago)
                      ->where('activo', true);
 
-        if (!auth()->user()->hasRole('Super Administrador')) {
-            $query->where('empresa_id', auth()->user()->empresa_id)
-                  ->where('sucursal_id', auth()->user()->sucursal_id);
-        }
-
+    
         $this->serie_actual = $query->first();
 
         if ($this->serie_actual) {
@@ -383,7 +379,7 @@ class Create extends Component
 
        try {
         DB::transaction(function () {
-            $this->validate();
+            //$this->validate();
 
             $matricula = Matricula::find($this->matricula_id);
 
@@ -423,7 +419,8 @@ class Create extends Component
             'factura' => 'Factura',
             'boleta' => 'Boleta',
             'nota_credito' => 'Nota de Crédito',
-            'recibo' => 'Recibo'
+            'recibo' => 'Recibo',
+            'comunidad educativa' => 'Comunidad Educativa',
         ];
 
         return view('livewire.admin.pagos.create', compact('tipos'))->layout($this->getLayout());
