@@ -193,7 +193,7 @@ Thumbs.db
 /.env.dusk.local
 /.env.dusk.testing
 /.env.dusk.staging
-/.env.example
+
 /.env.example.local
 /.env.example.development
 /.env.example.staging
@@ -281,7 +281,6 @@ Thumbs.db
 /resources/js/whatsapp/.env.temp
 /resources/js/whatsapp/.env.tmp
 /resources/js/whatsapp/.env.old
-/resources/js/whatsapp/.env.example
 /resources/js/whatsapp/.env.example.local
 /resources/js/whatsapp/.env.example.development
 /resources/js/whatsapp/.env.example.test
