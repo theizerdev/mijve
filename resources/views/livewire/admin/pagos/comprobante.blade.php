@@ -56,6 +56,9 @@
                                     <span class="badge bg-warning">Parcial</span>
                                 @endif
                             </td>
+                            @php
+                            \App\Models\Pago::find($comprobante->pago_id);
+                            @endphp
                             <td class="text-end">
                                 @money($comprobante->comprobanteable->monto)
                                 @if($comprobante->comprobanteable->estado == 'pendiente')

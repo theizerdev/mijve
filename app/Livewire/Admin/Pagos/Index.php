@@ -293,7 +293,8 @@ class Index extends Component
         $pdf->Ln(22);
 
         // Obtener tasa de cambio
-        $exchangeRate = ExchangeRate::getLatestRate('USD');
+        $exchangeRate = ExchangeRate::whereDate('created_at', $pago->created_at)->first();
+        //dd($exchangeRate);
 
         // Información del pago (alineada a la izquierda)
         $pdf->SetFont('Arial', 'B', 10);
@@ -332,7 +333,7 @@ class Index extends Component
             // Convertir monto a bolívares si hay tasa de cambio
             $monto = $detalle->precio_unitario * $detalle->cantidad;
             if ($exchangeRate) {
-                $montoBs = $monto * $exchangeRate;
+                $montoBs = $monto * $exchangeRate->usd_rate;
                 $pdf->Cell(25, 6, 'Bs. ' . number_format($montoBs, 2, ',', '.'), 1, 1, 'R');
             } else {
                 $pdf->Cell(25, 6, '$' . number_format($monto, 2, ',', '.'), 1, 1, 'R');
@@ -343,7 +344,7 @@ class Index extends Component
         $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell(170, 6, 'Subtotal:', 1, 0, 'R');
         if ($exchangeRate) {
-            $subtotalBs = $pago->subtotal * $exchangeRate;
+            $subtotalBs = $pago->subtotal * $exchangeRate->usd_rate;
             $pdf->Cell(25, 6, 'Bs. ' . number_format($subtotalBs, 2, ',', '.'), 1, 1, 'R');
         } else {
             $pdf->Cell(25, 6, '$' . number_format($pago->subtotal, 2, ',', '.'), 1, 1, 'R');
@@ -352,7 +353,7 @@ class Index extends Component
         if ($pago->descuento > 0) {
             $pdf->Cell(170, 6, 'Descuento:', 1, 0, 'R');
             if ($exchangeRate) {
-                $descuentoBs = $pago->descuento * $exchangeRate;
+                $descuentoBs = $pago->descuento * $exchangeRate->usd_rate;
                 $pdf->Cell(25, 6, 'Bs. ' . number_format($descuentoBs, 2, ',', '.'), 1, 1, 'R');
             } else {
                 $pdf->Cell(25, 6, '$' . number_format($pago->descuento, 2, ',', '.'), 1, 1, 'R');
@@ -362,7 +363,7 @@ class Index extends Component
         $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell(170, 6, 'Total:', 1, 0, 'R');
         if ($exchangeRate) {
-            $totalBs = $pago->total * $exchangeRate;
+            $totalBs = $pago->total * $exchangeRate->usd_rate;
             $pdf->Cell(25, 6, 'Bs. ' . number_format($totalBs, 2, ',', '.'), 1, 1, 'R');
         } else {
             $pdf->Cell(25, 6, '$' . number_format($pago->total, 2, ',', '.'), 1, 1, 'R');

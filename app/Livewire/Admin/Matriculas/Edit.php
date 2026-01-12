@@ -15,8 +15,7 @@ class Edit extends Component
 {
     use HasDynamicLayout, HasRegionalFormatting;
 
-
-    public $matricula;
+     public $matricula;
     public $student_id;
     public $programa_id;
     public $periodo_id;
@@ -41,6 +40,7 @@ class Edit extends Component
     public $paymentSchedule = [];
     public $showSchedule = false;
 
+
     protected $rules = [
         'student_id' => 'required|exists:students,id',
         'programa_id' => 'required|exists:programas,id',
@@ -52,7 +52,7 @@ class Edit extends Component
         'numero_cuotas' => 'required|integer|min:0'
     ];
 
-    public function mount(Matricula $matricula)
+  public function mount(Matricula $matricula)
     {
         $this->matricula = $matricula->load(['student', 'programa', 'periodo']);
         $this->student_id = $matricula->student_id;
@@ -82,7 +82,7 @@ class Edit extends Component
         }
     }
 
-    public function loadData()
+     public function loadData()
     {
         $query = Student::query();
 
@@ -124,34 +124,16 @@ class Edit extends Component
         }
     }
 
-    public function updatingStudentId($value)
-    {
-        // En modo edición, proteger el student_id original
-        if ($this->matricula && $this->matricula->exists) {
-            $this->student_id = $this->matricula->student_id;
-            return;
-        }
-    }
 
     public function updatedSearchStudent()
     {
-        // En modo edición, no permitir búsqueda de estudiantes
-        if ($this->matricula && $this->matricula->exists) {
-            return;
-        }
-        
         if (strlen($this->searchStudent) >= 2) {
-            $query = Student::query();
-
-            if (!auth()->user()->hasRole('Super Administrador')) {
-                $query->where('empresa_id', auth()->user()->empresa_id)
-                      ->where('sucursal_id', auth()->user()->sucursal_id);
-            }
-
-            $this->students = $query->where(function($q) {
-                    $q->where('nombres', 'like', '%' . $this->searchStudent . '%')
-                      ->orWhere('apellidos', 'like', '%' . $this->searchStudent . '%')
-                      ->orWhere('documento_identidad', 'like', '%' . $this->searchStudent . '%');
+            $this->students = Student::whereDoesntHave('matriculas')
+                ->with('nivelEducativo')
+                ->where(function($query) {
+                    $query->where('nombres', 'like', '%' . $this->searchStudent . '%')
+                          ->orWhere('apellidos', 'like', '%' . $this->searchStudent . '%')
+                          ->orWhere('documento_identidad', 'like', '%' . $this->searchStudent . '%');
                 })
                 ->orderBy('nombres')
                 ->orderBy('apellidos')
@@ -166,11 +148,6 @@ class Edit extends Component
 
     public function selectStudent($studentId)
     {
-        // En modo edición, no permitir cambiar el estudiante
-        if ($this->matricula && $this->matricula->exists) {
-            return;
-        }
-        
         $student = Student::with('nivelEducativo')->find($studentId);
         if ($student) {
             $this->selectedStudent = $student;
@@ -180,9 +157,9 @@ class Edit extends Component
             
             // Auto-completar costos del nivel educativo
             if ($student->nivelEducativo) {
-                $this->costo = $student->nivelEducativo->costo_matricula ?? $this->costo;
-                $this->cuota_inicial = $student->nivelEducativo->cuota_inicial ?? $this->cuota_inicial;
-                $this->numero_cuotas = $student->nivelEducativo->numero_cuotas ?? $this->numero_cuotas;
+                $this->costo = $student->nivelEducativo->costo;
+                $this->cuota_inicial = $student->nivelEducativo->cuota_inicial;
+                $this->numero_cuotas = $student->nivelEducativo->numero_cuotas;
             }
             
             $this->generatePaymentSchedule();
@@ -191,58 +168,30 @@ class Edit extends Component
 
     public function clearStudentSelection()
     {
-        // En modo edición, no permitir limpiar la selección de estudiante
-        if ($this->matricula && $this->matricula->exists) {
-            return;
-        }
-        
         $this->selectedStudent = null;
         $this->student_id = null;
         $this->searchStudent = '';
         $this->showStudentDropdown = false;
         $this->students = [];
-        $this->generatePaymentSchedule();
+        $this->costo = 0;
+        $this->cuota_inicial = 0;
+        $this->numero_cuotas = 0;
+        $this->paymentSchedule = [];
+        $this->showSchedule = false;
     }
 
-    public function updateCostos()
+    public function updatedStudentId($value)
     {
-        if ($this->student_id && $this->programa_id) {
-            $student = Student::find($this->student_id);
-            $programa = Programa::find($this->programa_id);
-            
-            if ($student && $student->nivelEducativo && $programa) {
-                $this->costo = $student->nivelEducativo->costo ?? 0;
-                $this->cuota_inicial = $student->nivelEducativo->cuota_inicial ?? 0;
-                $this->numero_cuotas = $student->nivelEducativo->numero_cuotas ?? 1;
-                $this->generatePaymentSchedule();
+        if ($value) {
+            $student = Student::with('nivelEducativo')->find($value);
+
+            if ($student && $student->nivelEducativo) {
+                $this->costo = $student->nivelEducativo->costo;
+                $this->cuota_inicial = $student->nivelEducativo->cuota_inicial;
+                $this->numero_cuotas = $student->nivelEducativo->numero_cuotas;
             }
-        }
-    }
 
-    public function loadPaymentSchedule()
-    {
-        if (class_exists('\App\Models\PaymentSchedule')) {
-            $this->paymentSchedule = $this->matricula->paymentSchedules()
-                ->orderBy('numero_cuota')
-                ->get()
-                ->map(function ($schedule) {
-                    return [
-                        'numero_cuota' => $schedule->numero_cuota,
-                        'descripcion' => $schedule->numero_cuota == 0 ? 'Cuota inicial' : 'Cuota ' . $schedule->numero_cuota,
-                        'monto' => $schedule->monto,
-                        'fecha_vencimiento' => $schedule->fecha_vencimiento,
-                        'estado' => $schedule->estado ?? 'pendiente'
-                    ];
-                })
-                ->toArray();
-        } else {
-            $this->paymentSchedule = [];
-        }
-
-        $this->showSchedule = count($this->paymentSchedule) > 0;
-
-        // Si no hay cronograma existente, generar uno nuevo
-        if (count($this->paymentSchedule) == 0) {
+            // Generar tabla de amortización cuando se selecciona un estudiante
             $this->generatePaymentSchedule();
         }
     }
@@ -353,24 +302,50 @@ class Edit extends Component
         $this->showSchedule = true;
     }
 
-    public function update()
+    public function loadPaymentSchedule()
     {
-        // Verificar permiso para editar matrículas
-        if (!auth()->user()->can('edit matriculas')) {
-            session()->flash('error', 'No tienes permiso para editar matrículas.');
-            return;
+        if (class_exists('\App\Models\PaymentSchedule')) {
+            $this->paymentSchedule = $this->matricula->paymentSchedules()
+                ->orderBy('numero_cuota')
+                ->get()
+                ->map(function ($schedule) {
+                    return [
+                        'numero_cuota' => $schedule->numero_cuota,
+                        'descripcion' => $schedule->numero_cuota == 0 ? 'Cuota inicial' : 'Cuota ' . $schedule->numero_cuota,
+                        'monto' => $schedule->monto,
+                        'fecha_vencimiento' => $schedule->fecha_vencimiento,
+                        'estado' => $schedule->estado ?? 'pendiente'
+                    ];
+                })
+                ->toArray();
+        } else {
+            $this->paymentSchedule = [];
         }
 
-        // Asegurar que el student_id se mantiene en modo edición
-        if ($this->matricula && $this->matricula->exists && !$this->student_id) {
-            $this->student_id = $this->matricula->student_id;
+        $this->showSchedule = count($this->paymentSchedule) > 0;
+
+        // Si no hay cronograma existente, generar uno nuevo
+        if (count($this->paymentSchedule) == 0) {
+            $this->generatePaymentSchedule();
+        }
+    }
+
+    public function store()
+    {
+        // Verificar permiso para crear matrículas
+        if (!auth()->user()->can('create matriculas')) {
+            session()->flash('error', 'No tienes permiso para crear matrículas.');
+            return;
         }
 
         $this->validate();
 
         try {
-            $this->matricula->update([
-                'student_id' => $this->student_id,
+             $matricula = Matricula::find($this->matricula->id);
+             $matricula->update([
+                'empresa_id' => auth()->user()->empresa_id,
+                'sucursal_id' => auth()->user()->sucursal_id,
+                'estudiante_id' => $this->student_id,
                 'programa_id' => $this->programa_id,
                 'periodo_id' => $this->periodo_id,
                 'fecha_matricula' => $this->fecha_matricula,
@@ -380,47 +355,155 @@ class Edit extends Component
                 'numero_cuotas' => $this->numero_cuotas
             ]);
 
-            // Actualizar cronograma de pagos
-            $this->updatePaymentSchedule();
+            // Generar cronograma de pagos si existe la clase
+            if (class_exists('\App\Models\PaymentSchedule')) {
+                $this->createPaymentSchedule($matricula);
+            }
 
-            session()->flash('message', 'Matrícula actualizada correctamente.');
+            // Enviar notificación WhatsApp de matrícula
+            //$whatsappResult = $this->enviarNotificacionMatricula($matricula);
+            
+            $mensaje = 'Matrícula creada correctamente.';
+           /* if ($whatsappResult['sent']) {
+                $mensaje .= ' Notificación enviada por WhatsApp a ' . $whatsappResult['destinatario'] . '.';
+            } elseif ($whatsappResult['attempted']) {
+                $mensaje .= ' No se pudo enviar notificación por WhatsApp.';
+            }
+           */
+            session()->flash('message', $mensaje);
             return redirect()->route('admin.matriculas.index');
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al actualizar la matrícula: ' . $e->getMessage());
+            session()->flash('error', 'Error al crear la matrícula: ' . $e->getMessage());
+            \Log::error('Error creating matricula: ' . $e->getMessage());
         }
     }
 
-    private function updatePaymentSchedule()
+    private function createPaymentSchedule($matricula)
     {
-        if (!class_exists('\App\Models\PaymentSchedule')) {
-            return;
-        }
-
-        // Solo eliminar cronograma si no hay pagos registrados
-        $existingSchedules = $this->matricula->paymentSchedules();
-        $hasPayments = $existingSchedules->where('monto_pagado', '>', 0)->exists();
-
-        if (!$hasPayments) {
-            // Eliminar cronograma existente solo si no hay pagos
-            $existingSchedules->delete();
-
-            // Crear nuevo cronograma
+        try {
+            $matricula = Matricula::find($this->matricula_id);
+            dd($matricula);
             foreach ($this->paymentSchedule as $schedule) {
-                PaymentSchedule::create([
-                    'matricula_id' => $this->matricula->id,
-                    'numero_cuota' => $schedule['numero_cuota'],
-                    'monto' => $schedule['monto'],
-                    'fecha_vencimiento' => $schedule['fecha_vencimiento'],
+                
+                PaymentSchedule::where('matricula_id', $matricula->id)
+                    ->updateOrCreate(
+                        ['numero_cuota' => $schedule['numero_cuota']],
+                        [
+                            'monto' => $schedule['monto'],
+                            'fecha_vencimiento' => $schedule['fecha_vencimiento'],
                     'estado' => 'pendiente',
-                    'empresa_id' => auth()->user()->empresa_id ?? 1,
-                    'sucursal_id' => auth()->user()->sucursal_id ?? 1,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'sucursal_id' => auth()->user()->sucursal_id,
                 ]);
             }
+        } catch (\Exception $e) {
+            \Log::error('Error creating payment schedule: ' . $e->getMessage());
         }
     }
+
+    private function enviarNotificacionMatricula($matricula)
+    {
+        $result = ['sent' => false, 'attempted' => false, 'destinatario' => null];
+        
+        try {
+            $estudiante = $matricula->student;
+            $esMayorDeEdad = \Carbon\Carbon::parse($estudiante->fecha_nacimiento)->age >= 18;
+            
+            $telefono = null;
+            $nombreDestino = null;
+
+            if ($esMayorDeEdad && $estudiante->phone) {
+                $telefono = $estudiante->phone;
+                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
+            } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
+                $telefonos = explode(',', $estudiante->representante_telefonos);
+        
+                $telefono = trim($telefonos[0] ?? '');
+                $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
+            }
+
+            if (!$telefono) return $result;
+
+            $result['attempted'] = true;
+            $result['destinatario'] = $nombreDestino;
+            
+            $mensaje = $this->generarMensajeMatricula($matricula, $estudiante, $esMayorDeEdad);
+            $telefonoFormateado = $this->formatPhoneNumber($telefono);
+            
+            $whatsappService = app('App\\Services\\WhatsAppService');
+            $whatsappResult = $whatsappService->sendMessage($telefonoFormateado, $mensaje);
+            
+            $result['sent'] = $whatsappResult && ($whatsappResult['success'] ?? false);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error enviando notificación WhatsApp de matrícula: ' . $e->getMessage());
+            $result['attempted'] = true;
+        }
+        
+        return $result;
+    }
+
+    private function generarMensajeMatricula($matricula, $estudiante, $esMayorDeEdad)
+    {
+        $nombreEstudiante = $estudiante->nombres . ' ' . $estudiante->apellidos;
+        $costoFormateado = '$' . number_format($matricula->costo, 2, ',', '.');
+        
+        if ($esMayorDeEdad) {
+            $mensaje = "🎓 *Matrícula Confirmada - Instituto Vargas Centro*\n\n";
+            $mensaje .= "Estimado/a {$nombreEstudiante},\n\n";
+            $mensaje .= "Su matrícula ha sido procesada exitosamente.\n\n";
+        } else {
+            $representante = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
+            $mensaje = "🎓 *Matrícula Confirmada - Instituto Vargas Centro*\n\n";
+            $mensaje .= "Estimado/a {$representante},\n\n";
+            $mensaje .= "La matrícula del estudiante *{$nombreEstudiante}* ha sido procesada exitosamente.\n\n";
+        }
+        
+        $mensaje .= "📝 *Detalles de la Matrícula:*\n";
+        $mensaje .= "• Programa: {$matricula->programa->nombre}\n";
+        $mensaje .= "• Período: {$matricula->schoolPeriod->name}\n";
+        $mensaje .= "• Fecha de Matrícula: " . \Carbon\Carbon::parse($matricula->fecha_matricula)->format('d/m/Y') . "\n";
+        $mensaje .= "• Costo Total: {$costoFormateado}\n";
+        
+        if ($matricula->cuota_inicial > 0) {
+            $cuotaInicialFormateada = '$' . number_format($matricula->cuota_inicial, 2, ',', '.');
+            $mensaje .= "• Cuota Inicial: {$cuotaInicialFormateada}\n";
+        }
+        
+        if ($matricula->numero_cuotas > 0) {
+            $mensaje .= "• Número de Cuotas: {$matricula->numero_cuotas}\n";
+        }
+        
+        $mensaje .= "\n💳 Próximamente recibirá información sobre las fechas de pago y métodos disponibles.\n\n";
+        $mensaje .= "Gracias por confiar en nuestra institución.\n\n";
+        $mensaje .= "*Instituto Vargas Centro*";
+        
+        return $mensaje;
+    }
+
+    private function formatPhoneNumber($number)
+    {
+        $empresa = \DB::table('empresas')->where('id', 1)->first();
+        $pais = $empresa ? \DB::table('pais')->where('id', $empresa->pais_id)->first() : null;
+        $codigoPais = $pais ? $pais->codigo_telefonico : '58';
+        
+        $cleaned = preg_replace('/[^0-9]/', '', $number);
+        
+        if (strlen($cleaned) > 10 && str_starts_with($cleaned, $codigoPais)) {
+            return $cleaned;
+        }
+        
+        if (str_starts_with($cleaned, '0')) {
+            $cleaned = substr($cleaned, 1);
+        }
+        
+        return $codigoPais . $cleaned;
+    }
+
+    
 
     public function render()
     {
-        return view('livewire.admin.matriculas.edit')->layout($this->getLayout());
+        return view('livewire.admin.matriculas.create')->layout($this->getLayout());
     }
 }
