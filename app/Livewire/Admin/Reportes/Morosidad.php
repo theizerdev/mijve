@@ -304,7 +304,6 @@ class Morosidad extends Component
         try {
             $whatsappService = app(WhatsAppService::class);
             $result = $whatsappService->sendMessage($telefonoFormateado, $mensaje);
-            dd($result);
             if ($result && ($result['success'] ?? false)) {
                 session()->flash('success', 'Mensaje de WhatsApp enviado correctamente a ' . $nombreDestino);
             } else {
