@@ -20,7 +20,7 @@
 <body>
     <div class="header">
         <h2>REPORTE DE MOROSIDAD</h2>
-        <p>U.E Vargas II </p>
+        <p>U.E Vargas II</p>
     </div>
 
     <div class="info">

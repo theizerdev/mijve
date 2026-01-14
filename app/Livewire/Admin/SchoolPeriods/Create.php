@@ -43,7 +43,7 @@ class Create extends Component
         $this->validate();
 
         // Verificar si hay solapamiento de fechas con otros periodos escolares
-        $overlapping = SchoolPeriod::where(function ($query) {
+       /* $overlapping = SchoolPeriod::where(function ($query) {
             $query->whereBetween('start_date', [$this->start_date, $this->end_date])
                 ->orWhereBetween('end_date', [$this->start_date, $this->end_date])
                 ->orWhere(function ($q) {
@@ -56,7 +56,7 @@ class Create extends Component
             $this->addError('start_date', 'Ya existe un periodo escolar que se solapa con estas fechas.');
             $this->addError('end_date', 'Ya existe un periodo escolar que se solapa con estas fechas.');
             return;
-        }
+        }*/
 
         SchoolPeriod::create([
             'name' => $this->name,

@@ -341,8 +341,8 @@
                                             <i class="ri ri-pencil-line me-1"></i> Editar
                                         </a>
                                         <button class="dropdown-item" wire:click="sendWelcomeEmail({{ $student->id }})"
-                                                wire:confirm="¿Estás seguro de enviar el correo de bienvenida a {{ $student->esMenorDeEdad ? 'su representante' : 'este estudiante' }}?">
-                                            <i class="ri ri-mail-line me-1"></i> Correo de Bienvenida
+                                                wire:confirm="¿Estás seguro de enviar notificacion de bienvenida a {{ $student->esMenorDeEdad ? 'su representante' : 'este estudiante' }}?">
+                                            <i class="ri ri-whatsapp-line me-1"></i> Notificacion de bienvenida
                                         </button>
                                         @endcan
                                         @can('delete students')

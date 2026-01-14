@@ -57,7 +57,7 @@ class WhatsAppAPIServer {
       const defaultCompany = await Company.findOrCreate({
         where: { apiKey: 'test-api-key-vargas-centro' },
         defaults: {
-          name: 'U.E Vargas II ',
+          name: 'U.E Vargas II',
           apiKey: 'test-api-key-vargas-centro',
           rateLimitPerMinute: 60,
           isActive: true

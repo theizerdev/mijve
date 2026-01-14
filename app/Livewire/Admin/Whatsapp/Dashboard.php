@@ -40,7 +40,7 @@ class Dashboard extends Component
         $jwtSecret = config('whatsapp.jwt_secret');
         $payload = [
             'company_id' => 1,
-            'company_name' => 'U.E Vargas II ',
+            'company_name' => 'U.E Vargas II',
             'iat' => time(),
             'exp' => time() + (365 * 24 * 60 * 60)
         ];

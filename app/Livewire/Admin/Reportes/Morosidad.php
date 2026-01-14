@@ -320,12 +320,12 @@ class Morosidad extends Component
         $saldoFormateado = '$' . number_format($saldoPendiente, 2, ',', '.');
         
         if ($esMayorDeEdad) {
-            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II *\n\n";
+            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II*\n\n";
             $mensaje .= "Estimado/a {$nombreEstudiante},\n\n";
             $mensaje .= "Le recordamos que tiene un saldo pendiente de *{$saldoFormateado}* en su matrícula.\n\n";
         } else {
             $representante = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
-            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II *\n\n";
+            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II*\n\n";
             $mensaje .= "Estimado/a {$representante},\n\n";
             $mensaje .= "Le recordamos que el estudiante *{$nombreEstudiante}* tiene un saldo pendiente de *{$saldoFormateado}* en su matrícula.\n\n";
         }

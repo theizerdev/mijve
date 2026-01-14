@@ -1,6 +1,6 @@
 # WhatsApp API v2 - Instituto Vargas
 
-API completa de WhatsApp usando Baileys para el U.E Vargas II .
+API completa de WhatsApp usando Baileys para el U.E Vargas II.
 
 ## 🚀 Inicio Rápido
 
@@ -82,7 +82,7 @@ node test-api.js
 Por defecto se incluye:
 - **ID**: 1
 - **API Key**: `test-api-key-vargas-centro`
-- **Nombre**: U.E Vargas II 
+- **Nombre**: U.E Vargas II
 
 ## 📊 Monitoreo
 

@@ -120,7 +120,15 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.admin.series.create')->layout($this->getLayout());
+          $tipos = [
+            'factura' => 'Factura',
+            'boleta' => 'Boleta',
+            'nota_credito' => 'Nota de Crédito',
+            'recibo' => 'Recibo',
+            'comunidad educativa' => 'Comunidad Educativa',
+            'educacion adulto' => 'Educación de Adultos',
+        ];
+        return view('livewire.admin.series.create',compact('tipos'))->layout($this->getLayout());
     }
 }
 

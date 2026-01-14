@@ -372,12 +372,12 @@ class Index extends Component
         try {
             // Para estudiantes mayores de edad con correo
             if (!$student->esMenorDeEdad && $student->correo_electronico) {
-                Mail::to($student->correo_electronico)->send(new StudentWelcomeMail($student));
+                $this->enviarNotificacionBienvenida($student);
                 session()->flash('message', 'Correo de bienvenida enviado al estudiante.');
             }
             // Para estudiantes menores de edad con correo de representante
-            elseif ($student->esMenorDeEdad && $student->representante_correo) {
-                Mail::to($student->representante_correo)->send(new RepresentativeWelcomeMail($student));
+            elseif ($student->esMenorDeEdad) {
+                $this->enviarNotificacionBienvenida($student);
                 session()->flash('message', 'Correo de bienvenida enviado al representante.');
             }
             // Si no hay correo al que enviar
@@ -426,5 +426,79 @@ class Index extends Component
             'Content-Type' => 'image/svg',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"'
         ]);
+    }
+
+    private function enviarNotificacionBienvenida($student)
+    {
+        $result = ['sent' => false, 'attempted' => false, 'destinatario' => null];
+        
+        try {
+            $esMayorDeEdad = Carbon::parse($student->fecha_nacimiento)->age >= 18;
+            $telefono = null;
+            $nombreDestino = null;
+
+            if (!$esMayorDeEdad && $student->representante_telefonos) {
+                $telefonos = explode(',', $student->representante_telefonos);
+                $telefono = trim($telefonos[0] ?? '');
+                $nombreDestino = $student->representante_nombres . ' ' . $student->representante_apellidos;
+            }
+
+
+
+            $result['attempted'] = true;
+            $result['destinatario'] = $nombreDestino;
+            
+            $mensaje = $this->generarMensajeBienvenida($student, $nombreDestino);
+            $telefonoFormateado = $this->formatPhoneNumber($telefono);
+            
+            $whatsappService = app('App\\Services\\WhatsAppService');
+            $whatsappResult = $whatsappService->sendMessage($telefonoFormateado, $mensaje);
+            
+            $result['sent'] = $whatsappResult && ($whatsappResult['success'] ?? false);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error enviando notificación WhatsApp de bienvenida: ' . $e->getMessage());
+            $result['attempted'] = true;
+        }
+        
+        return $result;
+    }
+
+    private function generarMensajeBienvenida($student, $nombreDestino)
+    {
+        $nombreEstudiante = $student->nombres . ' ' . $student->apellidos;
+        
+        $mensaje = "🎉 *¡Bienvenidos al U.E Vargas II!*\n\n";
+        $mensaje .= "Estimado/a {$nombreDestino},\n\n";
+        $mensaje .= "Nos complace informarle que el estudiante *{$nombreEstudiante}* ha sido registrado exitosamente en nuestra institución.\n\n";
+        $mensaje .= "📝 *Datos del Estudiante:*\n";
+        $mensaje .= "• Código: {$student->codigo}\n";
+        $mensaje .= "• Documento: {$student->documento_identidad}\n";
+        $mensaje .= "• Grado: {$student->grado} - Sección: {$student->seccion}\n";
+        $mensaje .= "\n📚 Estamos comprometidos con brindar una educación de calidad y acompañar a nuestros estudiantes en su crecimiento académico y personal.\n\n";
+        $mensaje .= "Próximamente recibirá información sobre el proceso de matrícula y demás detalles importantes.\n\n";
+        $mensaje .= "Gracias por confiar en nosotros.\n\n";
+        $mensaje .= "*U.E Vargas II*";
+        
+        return $mensaje;
+    }
+
+    private function formatPhoneNumber($number)
+    {
+        $empresa = \DB::table('empresas')->where('id', 1)->first();
+        $pais = $empresa ? \DB::table('pais')->where('id', $empresa->pais_id)->first() : null;
+        $codigoPais = $pais ? $pais->codigo_telefonico : '58';
+        
+        $cleaned = preg_replace('/[^0-9]/', '', $number);
+        
+        if (strlen($cleaned) > 10 && str_starts_with($cleaned, $codigoPais)) {
+            return $cleaned;
+        }
+        
+        if (str_starts_with($cleaned, '0')) {
+            $cleaned = substr($cleaned, 1);
+        }
+        
+        return $codigoPais . $cleaned;
     }
 }

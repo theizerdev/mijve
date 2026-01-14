@@ -37,7 +37,7 @@ class Edit extends Component
 
     public function guardar()
     {
-        $this->validate();
+       
 
         $existe = Serie::where('serie', $this->serie_codigo)
             ->where('empresa_id', $this->serie->empresa_id)
@@ -64,7 +64,15 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.admin.series.edit')->layout($this->getLayout());
+        $tipos = [
+            'factura' => 'Factura',
+            'boleta' => 'Boleta',
+            'nota_credito' => 'Nota de Crédito',
+            'recibo' => 'Recibo',
+            'comunidad educativa' => 'Comunidad Educativa',
+            'educacion adulto' => 'Educación de Adultos',
+        ];
+        return view('livewire.admin.series.edit',compact('tipos'))->layout($this->getLayout());
     }
 }
 

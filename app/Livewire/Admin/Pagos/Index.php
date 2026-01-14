@@ -267,10 +267,10 @@ class Index extends Component
         $halfPage = $pageHeight / 2;
 
         // Generar recibo original en la mitad superior
-        $this->generateReceiptContent($pdf, $pago, 'ORIGINAL', 15);
+        $this->generateReceiptContent($pdf, $pago, 'ORIGINAL', 7);
 
         // Generar copia en la mitad inferior
-        $this->generateReceiptContent($pdf, $pago, 'COPIA', $halfPage + 30);
+        $this->generateReceiptContent($pdf, $pago, 'COPIA', $halfPage + 9);
 
         // Mostrar PDF en el navegador en lugar de descargarlo
         return response($pdf->Output('S'), 200, [
@@ -298,84 +298,84 @@ class Index extends Component
 
         // Información del pago (alineada a la izquierda)
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(30, 6, 'Nro. Recibo:', 0, 0, 'L');
+        $pdf->Cell(30, 5, 'Nro. Recibo:', 0, 0, 'L');
         $pdf->SetFont('Arial', '', 10);
         // Extraer solo el número después del guión
         $numeroRecibo = explode('-', $pago->numero_completo);
         $numeroMostrar = isset($numeroRecibo[1]) ? $numeroRecibo[1] : $pago->numero_completo;
-        $pdf->Cell(0, 6, $numeroMostrar, 0, 1, 'L');
+        $pdf->Cell(0, 5, $numeroMostrar, 0, 1, 'L');
 
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(30, 6, 'Fecha:', 0, 0, 'L');
+        $pdf->Cell(30, 5, 'Fecha:', 0, 0, 'L');
         $pdf->SetFont('Arial', '', 10);
-        $pdf->Cell(0, 6, $pago->fecha->format('d/m/Y'), 0, 1, 'L');
+        $pdf->Cell(0, 5, $pago->fecha->format('d/m/Y'), 0, 1, 'L');
 
 
         // Información del estudiante
         $student = $pago->matricula->student;
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(30, 6, 'Estudiante:', 0, 0, 'L');
+        $pdf->Cell(30, 5, 'Estudiante:', 0, 0, 'L');
         $pdf->SetFont('Arial', '', 10);
-        $pdf->Cell(0, 6, substr($student->nombres . ' ' . $student->apellidos, 0, 45), 0, 1, 'L');
+        $pdf->Cell(0, 5, substr($student->nombres . ' ' . $student->apellidos, 0, 45), 0, 1, 'L');
 
         // Detalles del pago
         $pdf->Ln(3);
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(145, 6, 'Concepto', 1, 0, 'C');
-        $pdf->Cell(25, 6, 'Cantidad', 1, 0, 'C');
-        $pdf->Cell(25, 6, 'Monto', 1, 1, 'C');
+        $pdf->Cell(145, 5, 'Concepto', 1, 0, 'C');
+        $pdf->Cell(25, 5, 'Cantidad', 1, 0, 'C');
+        $pdf->Cell(25, 5, 'Monto', 1, 1, 'C');
 
-        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetFont('Arial', '', 7);
         foreach ($pago->detalles as $detalle) {
-            $pdf->Cell(145, 6, substr($detalle->descripcion, 0, 50), 1, 0);
-            $pdf->Cell(25, 6, number_format($detalle->cantidad, 2, ',', '.'), 1, 0, 'R');
+            $pdf->Cell(145, 5, substr($detalle->descripcion, 0, 50), 1, 0);
+            $pdf->Cell(25, 5, number_format($detalle->cantidad, 2, ',', '.'), 1, 0, 'R');
 
             // Convertir monto a bolívares si hay tasa de cambio
             $monto = $detalle->precio_unitario * $detalle->cantidad;
             if ($exchangeRate) {
                 $montoBs = $monto * $exchangeRate->usd_rate;
-                $pdf->Cell(25, 6, 'Bs. ' . number_format($montoBs, 2, ',', '.'), 1, 1, 'R');
+                $pdf->Cell(25, 5, 'Bs. ' . number_format($montoBs, 2, ',', '.'), 1, 1, 'R');
             } else {
-                $pdf->Cell(25, 6, '$' . number_format($monto, 2, ',', '.'), 1, 1, 'R');
+                $pdf->Cell(25, 5, '$' . number_format($monto, 2, ',', '.'), 1, 1, 'R');
             }
         }
 
         // Totales
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(170, 6, 'Subtotal:', 1, 0, 'R');
+        $pdf->Cell(170, 5, 'Subtotal:', 1, 0, 'R');
         if ($exchangeRate) {
             $subtotalBs = $pago->subtotal * $exchangeRate->usd_rate;
-            $pdf->Cell(25, 6, 'Bs. ' . number_format($subtotalBs, 2, ',', '.'), 1, 1, 'R');
+            $pdf->Cell(25, 5, 'Bs. ' . number_format($subtotalBs, 2, ',', '.'), 1, 1, 'R');
         } else {
-            $pdf->Cell(25, 6, '$' . number_format($pago->subtotal, 2, ',', '.'), 1, 1, 'R');
+            $pdf->Cell(25, 5, '$' . number_format($pago->subtotal, 2, ',', '.'), 1, 1, 'R');
         }
 
         if ($pago->descuento > 0) {
-            $pdf->Cell(170, 6, 'Descuento:', 1, 0, 'R');
+            $pdf->Cell(170, 5, 'Descuento:', 1, 0, 'R');
             if ($exchangeRate) {
                 $descuentoBs = $pago->descuento * $exchangeRate->usd_rate;
-                $pdf->Cell(25, 6, 'Bs. ' . number_format($descuentoBs, 2, ',', '.'), 1, 1, 'R');
+                $pdf->Cell(25, 5, 'Bs. ' . number_format($descuentoBs, 2, ',', '.'), 1, 1, 'R');
             } else {
-                $pdf->Cell(25, 6, '$' . number_format($pago->descuento, 2, ',', '.'), 1, 1, 'R');
+                $pdf->Cell(25, 5, '$' . number_format($pago->descuento, 2, ',', '.'), 1, 1, 'R');
             }
         }
 
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(170, 6, 'Total:', 1, 0, 'R');
+        $pdf->Cell(170, 5, 'Total:', 1, 0, 'R');
         if ($exchangeRate) {
             $totalBs = $pago->total * $exchangeRate->usd_rate;
-            $pdf->Cell(25, 6, 'Bs. ' . number_format($totalBs, 2, ',', '.'), 1, 1, 'R');
+            $pdf->Cell(25, 5, 'Bs. ' . number_format($totalBs, 2, ',', '.'), 1, 1, 'R');
         } else {
-            $pdf->Cell(25, 6, '$' . number_format($pago->total, 2, ',', '.'), 1, 1, 'R');
+            $pdf->Cell(25, 5, '$' . number_format($pago->total, 2, ',', '.'), 1, 1, 'R');
         }
 
         // Firma
         $pdf->Ln(4);
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(90, 6, '', 0, 0); // Espacio en blanco
-        $pdf->Cell(80, 6, '__________________________', 0, 1, 'C');
-        $pdf->Cell(90, 6, '', 0, 0); // Espacio en blanco
-        $pdf->Cell(80, 6, 'Firma y Sello', 0, 1, 'C');
+        $pdf->Cell(90, 5, '', 0, 0); // Espacio en blanco
+        $pdf->Cell(80, 5, '__________________________', 0, 1, 'C');
+        $pdf->Cell(90, 5, '', 0, 0); // Espacio en blanco
+        $pdf->Cell(80, 5, 'Firma y Sello', 0, 1, 'C');
     }
 
     public function closePreview()
