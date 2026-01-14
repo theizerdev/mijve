@@ -5,8 +5,8 @@ namespace App\Livewire\Admin\Whatsapp;
 use Livewire\Component;
 use App\Traits\HasDynamicLayout;
 use Illuminate\Support\Facades\Http;
-use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class Index extends Component
 {
@@ -17,10 +17,22 @@ class Index extends Component
     public $lastSeen = null;
     public $jwtToken = null;
     public $messages = [];
+    public $isLoading = false;
+    public $connectionError = null;
+    public $activeTab = 'dashboard';
+
     public $stats = [
         'sent' => 0,
-        'received' => 0,
-        'failed' => 0
+        'delivered' => 0,
+        'read' => 0,
+        'failed' => 0,
+        'pending' => 0,
+        'total' => 0
+    ];
+
+    protected $listeners = [
+        'refreshWhatsapp' => 'loadDashboard',
+        'connectionUpdated' => 'handleConnectionUpdate'
     ];
 
     public function mount()
@@ -28,79 +40,159 @@ class Index extends Component
         if (!Auth::user()->can('access whatsapp')) {
             abort(403, 'No tienes permiso para acceder a WhatsApp.');
         }
-        
+
         $this->generateToken();
         $this->loadDashboard();
     }
 
     public function generateToken()
     {
-        $empresa = \DB::table('empresas')->where('id', 1)->first();
-        if ($empresa && $empresa->api_key) {
-            $this->jwtToken = $empresa->api_key;
-        } else {
-            $jwtSecret = config('whatsapp.jwt_secret');
-            $payload = [
-                'company_id' => 1,
-                'company_name' => 'Instituto Vargas Centro',
-                'iat' => time(),
-                'exp' => time() + (365 * 24 * 60 * 60)
-            ];
-            $this->jwtToken = JWT::encode($payload, $jwtSecret, 'HS256');
-        }
+        $this->jwtToken = auth()->user()->empresa->api_key ?? null;
     }
 
     public function loadDashboard()
     {
+        $this->isLoading = true;
+        $this->connectionError = null;
+
         $this->checkStatus();
         $this->loadMessages();
+
+        $this->isLoading = false;
     }
 
     public function checkStatus()
     {
+        if (!$this->jwtToken) {
+            $this->connectionError = 'No se ha configurado la API Key de WhatsApp.';
+            return;
+        }
+
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->get(config('whatsapp.api_url') . '/api/whatsapp/status');
+            $response = Http::timeout(10)
+                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->get(config('whatsapp.api_url') . '/api/whatsapp/status');
 
             if ($response->successful()) {
                 $data = $response->json();
                 $this->status = $data['connectionState'] ?? 'disconnected';
                 $this->user = $data['user'] ?? null;
                 $this->lastSeen = $data['lastSeen'] ?? null;
+                $this->connectionError = null;
+            } else {
+                $this->handleApiError($response);
             }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            $this->status = 'service_unavailable';
+            $this->connectionError = 'No se puede conectar al servidor de WhatsApp. Verifique que el servicio esté activo.';
         } catch (\Exception $e) {
-            // Error silencioso
-           
+            $this->status = 'error';
+            $this->connectionError = 'Error al verificar estado: ' . $e->getMessage();
         }
     }
 
     public function loadMessages()
     {
+        if (!$this->jwtToken) return;
+
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->get(config('whatsapp.api_url') . '/api/whatsapp/messages?limit=10');
+            $response = Http::timeout(10)
+                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->get(config('whatsapp.api_url') . '/api/whatsapp/messages?limit=50');
 
             if ($response->successful()) {
                 $data = $response->json();
-                $this->messages = $data['messages'] ?? [];
-                
+                $allMessages = collect($data['messages'] ?? []);
+                $this->messages = $allMessages->take(10)->toArray();
+
                 $this->stats = [
-                    'sent' => collect($this->messages)->where('status', 'sent')->count(),
-                    'received' => collect($this->messages)->where('status', 'received')->count(),
-                    'failed' => collect($this->messages)->where('status', 'failed')->count()
+                    'sent' => $allMessages->where('status', 'sent')->count(),
+                    'delivered' => $allMessages->where('status', 'delivered')->count(),
+                    'read' => $allMessages->where('status', 'read')->count(),
+                    'failed' => $allMessages->where('status', 'failed')->count(),
+                    'pending' => $allMessages->where('status', 'pending')->count(),
+                    'total' => $data['total'] ?? $allMessages->count()
                 ];
             }
         } catch (\Exception $e) {
-            // Error silencioso
+            // Silencioso para mensajes
         }
     }
 
     public function refresh()
     {
         $this->loadDashboard();
-        session()->flash('message', 'Dashboard actualizado correctamente.');
+        $this->dispatch('notify', type: 'success', message: 'Dashboard actualizado correctamente.');
+    }
+
+    public function handleConnectionUpdate($newStatus)
+    {
+        $this->status = $newStatus;
+        if ($newStatus === 'connected') {
+            $this->loadDashboard();
+        }
+    }
+
+    public function setActiveTab($tab)
+    {
+        $this->activeTab = $tab;
+    }
+
+    protected function handleApiError($response)
+    {
+        $statusCode = $response->status();
+        $error = $response->json()['error'] ?? 'Error desconocido';
+
+        switch ($statusCode) {
+            case 401:
+                $this->connectionError = 'API Key inválida o expirada.';
+                break;
+            case 403:
+                $this->connectionError = 'No tiene permisos para acceder a este recurso.';
+                break;
+            case 500:
+                $this->connectionError = 'Error interno del servidor de WhatsApp.';
+                break;
+            default:
+                $this->connectionError = $error;
+        }
+
+        $this->status = 'error';
+    }
+
+    public function getStatusColorProperty()
+    {
+        return match ($this->status) {
+            'connected' => 'success',
+            'connecting', 'qr_ready' => 'warning',
+            'service_unavailable' => 'secondary',
+            'error' => 'danger',
+            default => 'danger'
+        };
+    }
+
+    public function getStatusIconProperty()
+    {
+        return match ($this->status) {
+            'connected' => 'ri ri-checkbox-circle-fill',
+            'connecting' => 'ri ri-loader-4-line',
+            'qr_ready' => 'ri ri-qr-code-line',
+            'service_unavailable' => 'ri ri-wifi-off-line',
+            'error' => 'ri ri-error-warning-fill',
+            default => 'ri ri-close-circle-fill'
+        };
+    }
+
+    public function getStatusTextProperty()
+    {
+        return match ($this->status) {
+            'connected' => 'Conectado',
+            'connecting' => 'Conectando...',
+            'qr_ready' => 'Esperando QR',
+            'service_unavailable' => 'Servicio No Disponible',
+            'error' => 'Error',
+            default => 'Desconectado'
+        };
     }
 
     protected function getPageTitle(): string
@@ -120,10 +212,16 @@ class Index extends Component
     {
         return $this->renderWithLayout('livewire.admin.whatsapp.index', [
             'status' => $this->status,
+            'statusColor' => $this->statusColor,
+            'statusIcon' => $this->statusIcon,
+            'statusText' => $this->statusText,
             'user' => $this->user,
             'lastSeen' => $this->lastSeen,
             'messages' => $this->messages,
-            'stats' => $this->stats
+            'stats' => $this->stats,
+            'isLoading' => $this->isLoading,
+            'connectionError' => $this->connectionError,
+            'activeTab' => $this->activeTab
         ], [
             'title' => 'WhatsApp - Panel de Control',
             'description' => 'Panel de control para gestión de WhatsApp',

@@ -39,7 +39,7 @@ class WhatsAppDashboard extends Component
         if (!Auth::user()->can('access whatsapp')) {
             abort(403, 'No tienes permiso para acceder a WhatsApp.');
         }
-        
+
         $this->generateToken();
         $this->loadDashboardData();
     }
@@ -53,7 +53,7 @@ class WhatsAppDashboard extends Component
             $jwtSecret = config('whatsapp.jwt_secret');
             $payload = [
                 'company_id' => 1,
-                'company_name' => 'Instituto Vargas Centro',
+                'company_name' => 'U.E Vargas II ',
                 'iat' => time(),
                 'exp' => time() + (365 * 24 * 60 * 60)
             ];
@@ -117,7 +117,8 @@ class WhatsAppDashboard extends Component
             'delivered' => WhatsAppMessage::where('status', 'delivered')->count(),
             'failed' => WhatsAppMessage::where('status', 'failed')->count(),
             'pending' => WhatsAppMessage::where('status', 'pending')->count(),
-            'total' => WhatsAppMessage::count()
+            'total' => WhatsAppMessage::count(),
+            'received' => WhatsAppMessage::where('direction', 'inbound')->count()
         ];
 
         // Estadísticas diarias (últimos 7 días)
@@ -156,7 +157,7 @@ class WhatsAppDashboard extends Component
         })->toArray();
 
         // Top destinatarios (más mensajes enviados)
-        $this->topRecipients = WhatsAppMessage::selectRaw('recipient_phone, recipient_name, COUNT(*) as total_messages, 
+        $this->topRecipients = WhatsAppMessage::selectRaw('recipient_phone, recipient_name, COUNT(*) as total_messages,
                 MAX(created_at) as last_message')
             ->groupBy('recipient_phone', 'recipient_name')
             ->orderBy('total_messages', 'desc')
@@ -191,7 +192,7 @@ class WhatsAppDashboard extends Component
     {
         $phone = substr($message->recipient_phone, -4);
         $name = $message->recipient_name ? $message->recipient_name : "***{$phone}";
-        
+
         switch ($message->status) {
             case 'sent':
                 return "Mensaje enviado a {$name}";

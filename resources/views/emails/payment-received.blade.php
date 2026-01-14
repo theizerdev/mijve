@@ -17,7 +17,7 @@
     <div class="container">
         <div class="header">
             <h2>✅ Pago Recibido</h2>
-            <p>Instituto Vargas Centro</p>
+            <p>U.E Vargas II </p>
         </div>
         
         <div class="content">
@@ -47,7 +47,7 @@
         </div>
         
         <div class="footer">
-            <p>Instituto Vargas Centro<br>
+            <p>U.E Vargas II <br>
             Este es un mensaje automático, por favor no responder a este correo.</p>
         </div>
     </div>

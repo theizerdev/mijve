@@ -22,7 +22,7 @@ class PaymentReceived extends Mailable
 
     public function build()
     {
-        return $this->subject('Confirmación de Pago Recibido - Instituto Vargas Centro')
+        return $this->subject('Confirmación de Pago Recibido - U.E Vargas II ')
                     ->view('emails.payment-received');
     }
 }

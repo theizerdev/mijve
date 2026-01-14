@@ -79,6 +79,8 @@ class Create extends Component
         $this->inicializarPagoMixto();
         $this->cargarPlantillasPago();
         $this->checkWhatsAppStatus();
+        
+        //dd($this->checkWhatsAppStatus());
     }
 
     public function inicializarPagoMixto()
@@ -373,40 +375,37 @@ class Create extends Component
     {
         $result = ['sent' => false, 'attempted' => false, 'destinatario' => null];
         
-        if ($this->whatsappStatus !== 'connected') {
-            return $result;
-        }
+        
 
         try {
-            $estudiante = $matricula->student;
-            $esMayorDeEdad = $estudiante->fecha_nacimiento && $estudiante->fecha_nacimiento->age >= 18;
+            $student = $matricula->student;
             
+            
+            $esMayorDeEdad = \Carbon\Carbon::parse($student->fecha_nacimiento)->age >= 18;
             $telefono = null;
             $nombreDestino = null;
-
-            if ($esMayorDeEdad && $estudiante->phone) {
-                $telefono = $estudiante->phone;
-                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
-            } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
-                $telefonos = $estudiante->representante_telefonos;
-                $telefono = is_array($telefonos) && count($telefonos) > 0 ? $telefonos[0] : null;
-                $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
-            }
-
+            
+            if (!$esMayorDeEdad && $student->representante_telefonos) {
+                $telefonos = explode(',', $student->representante_telefonos);
+                $telefono = trim($telefonos[0] ?? '');
+                $nombreDestino = $student->representante_nombres . ' ' . $student->representante_apellidos;
+                }
+                 
             if (!$telefono) return $result;
 
             $result['attempted'] = true;
             $result['destinatario'] = $nombreDestino;
             
-            $mensaje = $this->generarMensajePago($pago, $estudiante, $esMayorDeEdad);
+            $mensaje = $this->generarMensajePago($pago, $student, $esMayorDeEdad);
             $telefonoFormateado = $this->formatPhoneNumber($telefono);
             
-            $whatsappService = app('App\Services\WhatsAppService');
+            $whatsappService = new \App\Services\WhatsAppService();
             $whatsappResult = $whatsappService->sendMessage($telefonoFormateado, $mensaje);
-            
+           
             $result['sent'] = $whatsappResult && ($whatsappResult['success'] ?? false);
             
         } catch (\Exception $e) {
+
             \Log::error('Error enviando notificación WhatsApp de pago: ' . $e->getMessage());
             $result['attempted'] = true;
         }
@@ -420,11 +419,11 @@ class Create extends Component
         $totalFormateado = '$' . number_format($pago->total, 2, ',', '.');
         
         if ($esMayorDeEdad) {
-            $mensaje = "💳 *Pago Recibido - Instituto Vargas Centro*\n\n";
+            $mensaje = "💳 *Pago Recibido - U.E Vargas II *\n\n";
             $mensaje .= "Estimado/a {$nombreEstudiante},\n\n";
         } else {
             $representante = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
-            $mensaje = "💳 *Pago Recibido - Instituto Vargas Centro*\n\n";
+            $mensaje = "💳 *Pago Recibido - U.E Vargas II *\n\n";
             $mensaje .= "Estimado/a {$representante},\n\n";
             $mensaje .= "Hemos recibido el pago del estudiante *{$nombreEstudiante}*.\n\n";
         }
@@ -445,7 +444,7 @@ class Create extends Component
         
         $mensaje .= "\n💰 *Total Pagado: {$totalFormateado}*\n\n";
         $mensaje .= "Gracias por su pago puntual.\n\n";
-        $mensaje .= "*Instituto Vargas Centro*";
+        $mensaje .= "*U.E Vargas II *";
         
         return $mensaje;
     }
@@ -477,24 +476,24 @@ class Create extends Component
             
             // Verificar si el servicio está disponible
             $healthResponse = \Http::timeout(3)->get($apiUrl . '/health');
-            
             if (!$healthResponse->successful()) {
                 $this->whatsappStatus = 'disconnected';
                 return;
-            }
-            
-            // Obtener estado de conexión
-            $response = \Http::withHeaders(['X-API-Key' => $apiKey])
+                }
+                
+                // Obtener estado de conexión
+                $response = \Http::withHeaders(['X-API-Key' => $apiKey])
                 ->timeout(5)
                 ->get($apiUrl . '/api/whatsapp/status');
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                $this->whatsappStatus = $data['connectionState'] ?? 'disconnected';
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $this->whatsappStatus = $data['connectionState'] ?? 'disconnected';
             } else {
                 $this->whatsappStatus = 'disconnected';
             }
         } catch (\Exception $e) {
+            dd($e);
             $this->whatsappStatus = 'disconnected';
         }
     }
@@ -539,7 +538,6 @@ class Create extends Component
 
             // Enviar notificación por WhatsApp y esperar respuesta
             $whatsappResult = $this->enviarNotificacionWhatsApp($pago, $matricula);
-            
             $mensaje = 'Pago registrado exitosamente: ' . $pago->numero_completo;
             if ($whatsappResult['sent']) {
                 $mensaje .= ' - Notificación WhatsApp enviada a ' . $whatsappResult['destinatario'];
@@ -548,7 +546,7 @@ class Create extends Component
             }
             
             session()->flash('message', $mensaje);
-            return redirect()->route('admin.pagos.index');
+            return redirect()->route('admin.pagos.create');
         });
         } catch (\Throwable $th) {
             session()->flash('error', 'Error al crear el pago: ' . $th->getMessage());

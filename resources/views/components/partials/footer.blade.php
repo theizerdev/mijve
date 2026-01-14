@@ -9,7 +9,7 @@
           document.write(new Date().getFullYear());
         </script>
         , made with ❤️ by
-        <a href="{{ config('app.author_url', '#') }}" target="_blank" class="footer-link fw-medium">{{ config('app.author', 'ThemeSelection') }}</a>
+        <a href="{{ config('app.author_url', 'https://pixinvent.com') }}" target="_blank" class="footer-link fw-medium">{{ config('app.author', 'ThemeSelection') }}</a>
       </div>
       <div class="d-flex flex-column flex-md-row gap-2 gap-md-0">
         <div class="d-flex flex-wrap gap-2">

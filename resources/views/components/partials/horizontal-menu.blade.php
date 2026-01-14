@@ -313,7 +313,7 @@
     </a>
   </li>
 
-  @can('access mensajeria')
+  @can('access mensajerias')
   <!-- Mensajería -->
   <li class="menu-item {{ request()->routeIs('admin.mensajeria.*') ? 'active' : '' }}">
     <a href="{{ route('admin.mensajeria.index') }}" class="menu-link">
@@ -333,8 +333,8 @@
     <ul class="menu-sub">
      
       @can('view whatsapp connection')
-      <li class="menu-item {{ request()->routeIs('admin.whatsapp.connection') ? 'active' : '' }}">
-        <a href="{{ route('admin.whatsapp.connection') }}" class="menu-link">
+      <li class="menu-item {{ request()->routeIs('admin.whatsapp.index') ? 'active' : '' }}">
+        <a href="{{ route('admin.whatsapp.index') }}" class="menu-link">
           <div>Conexión</div>
         </a>
       </li>

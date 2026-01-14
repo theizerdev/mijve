@@ -187,7 +187,7 @@ class SendAccessWhatsAppNotificationJob implements ShouldQueue
             $message .= "\n⏱️ **Tiempo en el instituto:** {$timeInSchool}\n";
         }
 
-        $message .= "\n🏫 Instituto Vargas Centro\n";
+        $message .= "\n🏫 U.E Vargas II \n";
         $message .= "💡 Este es un mensaje automático";
 
         return $message;

@@ -255,6 +255,7 @@ class Morosidad extends Component
         try {
             $whatsappService = app(WhatsAppService::class);
             $status = $whatsappService->getStatus();
+            
             $this->whatsappStatus = $status['connectionState'] ?? 'disconnected';
         } catch (\Exception $e) {
             $this->whatsappStatus = 'disconnected';
@@ -270,20 +271,20 @@ class Morosidad extends Component
 
         $estudiante = $this->estudianteSeleccionado->student;
         
-    
+        
         $esMayorDeEdad = $estudiante->fecha_nacimiento && $estudiante->fecha_nacimiento->age >= 18;
-       
+        
         $telefono = null;
         $nombreDestino = null;
-
+        
         if ($esMayorDeEdad && $estudiante->phone) {
             $telefono = $estudiante->phone;
             $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
-        } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
-            // Decodificar JSON y tomar el primer teléfono
-            $telefonos = $estudiante->representante_telefonos;
-            
-            $telefono = is_array($telefonos) && count($telefonos) > 0 ? $telefonos[0] : null;
+            } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
+                // Decodificar JSON y tomar el primer teléfono
+                $telefonos = explode(',', $estudiante->representante_telefonos);
+                $telefono = trim($telefonos[0] ?? '');
+                
             
             $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
             //dd(!$telefono);
@@ -296,13 +297,14 @@ class Morosidad extends Component
         // Crear mensaje de morosidad
         $saldoPendiente = ($this->estudianteSeleccionado->costo ?? 0) - $this->estudianteSeleccionado->pagos->sum('total');
         $mensaje = $this->generarMensajeMorosidad($estudiante, $saldoPendiente, $esMayorDeEdad);
+       
         // Formatear teléfono según el país de la empresa
         $telefonoFormateado = $this->formatPhoneNumber($telefono);
         //dd($telefonoFormateado);
         try {
             $whatsappService = app(WhatsAppService::class);
             $result = $whatsappService->sendMessage($telefonoFormateado, $mensaje);
-            
+            dd($result);
             if ($result && ($result['success'] ?? false)) {
                 session()->flash('success', 'Mensaje de WhatsApp enviado correctamente a ' . $nombreDestino);
             } else {
@@ -319,12 +321,12 @@ class Morosidad extends Component
         $saldoFormateado = '$' . number_format($saldoPendiente, 2, ',', '.');
         
         if ($esMayorDeEdad) {
-            $mensaje = "🔔 *Recordatorio de Pago - Instituto Vargas Centro*\n\n";
+            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II *\n\n";
             $mensaje .= "Estimado/a {$nombreEstudiante},\n\n";
             $mensaje .= "Le recordamos que tiene un saldo pendiente de *{$saldoFormateado}* en su matrícula.\n\n";
         } else {
             $representante = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
-            $mensaje = "🔔 *Recordatorio de Pago - Instituto Vargas Centro*\n\n";
+            $mensaje = "🔔 *Recordatorio de Pago - U.E Vargas II *\n\n";
             $mensaje .= "Estimado/a {$representante},\n\n";
             $mensaje .= "Le recordamos que el estudiante *{$nombreEstudiante}* tiene un saldo pendiente de *{$saldoFormateado}* en su matrícula.\n\n";
         }
@@ -337,10 +339,8 @@ class Morosidad extends Component
         }
         
         $mensaje .= "\n💳 Para realizar su pago, puede acercarse a nuestras oficinas o contactarnos.\n\n";
-        $mensaje .= "📞 Teléfono: [NÚMERO DE CONTACTO]\n";
-        $mensaje .= "📍 Dirección: [DIRECCIÓN DEL INSTITUTO]\n\n";
         $mensaje .= "Gracias por su atención.\n\n";
-        $mensaje .= "*Instituto Vargas Centro*";
+        $mensaje .= "*U.E Vargas II*";
         
         return $mensaje;
     }

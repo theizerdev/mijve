@@ -25,7 +25,7 @@ class SyncWhatsAppCompany extends Command
         $jwtSecret = config('whatsapp.jwt_secret');
         $payload = [
             'company_id' => $empresa->id,
-            'company_name' => $empresa->nombre ?? $empresa->name ?? 'Instituto Vargas Centro',
+            'company_name' => $empresa->nombre ?? $empresa->name ?? 'U.E Vargas II ',
             'iat' => time(),
             'exp' => time() + (365 * 24 * 60 * 60)
         ];
@@ -73,12 +73,12 @@ class SyncWhatsAppCompany extends Command
             updatedAt = NOW()
         ", [
             $empresa->id,
-            $empresa->nombre ?? $empresa->name ?? 'Instituto Vargas Centro',
+            $empresa->nombre ?? $empresa->name ?? 'U.E Vargas II ',
             $token,
             $webhookUrl
         ]);
 
-        $nombreEmpresa = $empresa->nombre ?? $empresa->name ?? 'Instituto Vargas Centro';
+        $nombreEmpresa = $empresa->nombre ?? $empresa->name ?? 'U.E Vargas II ';
         $this->info("✅ Empresa {$nombreEmpresa} sincronizada con API de WhatsApp");
         $this->info("🔑 JWT Token: {$token}");
     }

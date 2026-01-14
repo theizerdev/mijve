@@ -13,7 +13,7 @@
         <!-- /Logo -->
 
         <div class="card-body mt-1">
-          <h4 class="mb-1">¡{{ __('auth_ui.login_title') }} a nuestra app! 👋</h4>
+          <h4 class="mb-1">¡{{ __('auth_ui.login_title') }}s! 👋</h4>
           <p class="mb-5">{{ __('auth_ui.login_subtitle') }}</p>
 
           <form wire:submit.prevent="authenticate" id="loginForm">
@@ -29,7 +29,8 @@
                 wire:model="email"
                 placeholder="{{ config('app.locale') == 'es' ? 'Ingresa tu nombre de usuario o email' : 'Enter your username or email' }}"
                 autofocus />
-              <label for="email">@if(config('app.locale') == 'es')Nombre de usuario o Email @else Username or Email @endif</label>
+              <label for="email">
+             @if(config('app.locale') == 'es')Nombre de usuario o Email @else Username or Email @endif</label>
               @if($hasError('email'))
                 <div class="invalid-feedback d-block">{{ $getError('email') }}</div>
               @endif
@@ -72,12 +73,7 @@
             </div>
           </form>
 
-          <p class="text-center mb-5">
-            <span>{{ __('auth_ui.no_account') }}</span>
-            <a href="{{ route('register') }}">
-              <span>{{ __('auth_ui.register_here') }}</span>
-            </a>
-          </p>
+          
 
           <div class="divider my-5">
             <div class="divider-text">or</div>

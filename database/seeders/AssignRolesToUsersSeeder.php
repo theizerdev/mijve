@@ -25,6 +25,12 @@ class AssignRolesToUsersSeeder extends Seeder
             $firstUser->assignRole($superadminRole);
         }
 
+        // Asignar rol de administrador al primer usuario creado (asumimos que es el administrador principal)
+        $adminUser = User::where('id','2')->first();
+        if ($adminUser) {
+            $adminUser->assignRole($superadminRole);
+        }
+
         // Asignar roles a otros usuarios de ejemplo
         $users = User::all();
         foreach ($users as $user) {
