@@ -340,8 +340,30 @@ class Index extends Component
 
         $pdf->SetFont('Arial', 'B', 8);
         $pdf->Cell(30, 5, utf8_decode('Método de pago:'), 0, 0, 'L');
-        $pdf->SetFont('Arial', 'B', 8);
-        $pdf->Cell(0, 5, strtoupper($pago->metodo_pago), 0, 1, 'L');
+        
+        // Para pagos mixtos, mostrar el método con los detalles en la misma línea
+         if (strtolower($pago->metodo_pago) === 'pago mixto' && !empty($pago->detalles_pago_mixto)) {
+            $pdf->SetFont('Arial', 'B', 8);
+            $detalles = [];
+            foreach ($pago->detalles_pago_mixto as $detalleMixto) {
+                $metodo = ucfirst(str_replace('_', ' ', $detalleMixto['metodo'] ?? ''));
+                $monto = $detalleMixto['monto'] ?? 0;
+                $referencia = $detalleMixto['referencia'] ?? '';
+                $detalles[] = "$metodo: " . number_format($monto, 2, ',', '.') . ($referencia ? " - Ref: $referencia" : "");
+            }
+            $pdf->Cell(0, 5, strtoupper($pago->metodo_pago) . ' (' . implode(' ', $detalles) . ')', 0, 1, 'L');
+        } else {
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(0, 5, strtoupper($pago->metodo_pago), 0, 1, 'L');
+        }
+
+        // Mostrar referencia bancaria para transferencias o pagos móviles
+        if (in_array($pago->metodo_pago, ['transferencia', 'pago_movil']) && !empty($pago->referencia)) {
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->Cell(30, 5, utf8_decode('Referencia:'), 0, 0, 'L');
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell(0, 5, $pago->referencia, 0, 1, 'L');
+        }
 
         
 
