@@ -353,16 +353,13 @@ class Index extends Component
             }
             $pdf->Cell(0, 5, strtoupper($pago->metodo_pago) . ' (' . implode(' ', $detalles) . ')', 0, 1, 'L');
         } else {
+            // Para métodos de pago normales, mostrar referencia en la misma línea si existe
+            $metodoPagoTexto = strtoupper($pago->metodo_pago);
+            if (in_array($pago->metodo_pago, ['transferencia', 'pago movil', 'punto de venta']) && !empty($pago->referencia)) {
+                $metodoPagoTexto .= ' - Ref: ' . $pago->referencia;
+            }
             $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(0, 5, strtoupper($pago->metodo_pago), 0, 1, 'L');
-        }
-
-        // Mostrar referencia bancaria para transferencias, pagos móviles o punto de venta
-        if (in_array($pago->metodo_pago, ['transferencia', 'pago movil', 'punto de venta']) && !empty($pago->referencia)) {
-            $pdf->SetFont('Arial', 'B', 8);
-            $pdf->Cell(30, 5, utf8_decode('Referencia:'), 0, 0, 'L');
-            $pdf->SetFont('Arial', '', 8);
-            $pdf->Cell(0, 5, $pago->referencia, 0, 1, 'L');
+            $pdf->Cell(0, 5, $metodoPagoTexto, 0, 1, 'L');
         }
 
         
