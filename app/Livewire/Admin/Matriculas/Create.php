@@ -317,13 +317,14 @@ class Create extends Component
             $telefono = null;
             $nombreDestino = null;
 
-            if ($esMayorDeEdad && $estudiante->phone) {
-                $telefono = $estudiante->phone;
-                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
-            } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
+            if (!$esMayorDeEdad && $estudiante->representante_telefonos) {
                 $telefonos = explode(',', $estudiante->representante_telefonos);
                 $telefono = trim($telefonos[0] ?? '');
                 $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
+            }
+            else {
+                $telefono = $estudiante->telefono;
+                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
             }
 
             if (!$telefono) return $result;

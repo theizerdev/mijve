@@ -25,7 +25,8 @@ class Edit extends Component
     public $fecha_nacimiento = '';
     public $codigo = '';
     public $documento_identidad = '';
-    public $grado = '';
+    public $grado = ''; 
+    public $telefono;
     public $seccion = '';
     public $nivel_educativo_id = '';
     public $turno_id = '';
@@ -53,6 +54,7 @@ class Edit extends Component
         'documento_identidad' => 'required|string',
         'grado' => 'required|string|max:50',
         'seccion' => 'required|string|max:10',
+        'seccion' => 'required|string|max:50', // Validación adicional para seccion
         'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
         'turno_id' => 'required|exists:turnos,id',
         'school_periods_id' => 'required|exists:school_periods,id',
@@ -95,6 +97,7 @@ class Edit extends Component
         $this->existingFoto = $student->foto;
         $this->correo_electronico = $student->correo_electronico; // Cargar correo existente
         $this->status = $student->status;
+        $this->telefono = $student->telefono;
 
         // Datos del representante (solo para menores de edad)
         $this->representante_nombres = $student->representante_nombres;
@@ -190,6 +193,7 @@ class Edit extends Component
             'foto' => $fotoPath,
             'correo_electronico' => $this->correo_electronico, // Guardar correo para estudiantes mayores
             'status' => $this->status,
+            'telefono' => $this->telefono, // Guardar estado para estudiantes mayores
             // Datos del representante (solo para menores de edad)
             'representante_nombres' => $this->representante_nombres,
             'representante_apellidos' => $this->representante_apellidos,

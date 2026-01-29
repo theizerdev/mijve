@@ -38,6 +38,7 @@ class Student extends Model
         'school_periods_id',
         'foto',
         'correo_electronico',
+        'telefono',
         'status',
         'representante_nombres',
         'representante_apellidos',
@@ -155,6 +156,47 @@ class Student extends Model
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Get the contact phone number based on student's age.
+     * For adults (18+), returns student's phone, otherwise returns representative's phone.
+     */
+    public function getTelefonoContactoAttribute()
+    {
+        // Si es mayor de edad y tiene teléfono propio, usar ese
+        if (!$this->esMenorDeEdad && !empty($this->telefono)) {
+            return $this->telefono;
+        }
+        
+        // Si es menor de edad o no tiene teléfono propio, usar el del representante
+        if (!empty($this->representante_telefonos) && is_array($this->representante_telefonos)) {
+            return $this->representante_telefonos[0] ?? null;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get all contact phone numbers for notifications.
+     * For adults: returns their own phone number.
+     * For minors: returns representative's phone numbers.
+     */
+    public function getTelefonosParaNotificacionAttribute()
+    {
+        $telefonos = [];
+        
+        // Si es mayor de edad y tiene teléfono propio
+        if (!$this->esMenorDeEdad && !empty($this->telefono)) {
+            $telefonos[] = $this->telefono;
+        }
+        
+        // Si es menor de edad o no tiene teléfono propio, usar los del representante
+        if ($this->esMenorDeEdad && !empty($this->representante_telefonos) && is_array($this->representante_telefonos)) {
+            $telefonos = array_merge($telefonos, $this->representante_telefonos);
+        }
+        
+        return array_filter($telefonos); // Eliminar valores vacíos
     }
 
     /**

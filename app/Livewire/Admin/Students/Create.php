@@ -33,6 +33,7 @@ class Create extends Component
     public $nivel_educativo_id = '';
     public $turno_id = '';
     public $school_periods_id = '';
+    public $telefono = 0; // Se agrega el campo school_periods_id
     public $foto;
     public $correo_electronico = ''; // Nuevo campo para estudiantes mayores de edad
     public $status = true;
@@ -54,6 +55,7 @@ class Create extends Component
         'codigo' => 'required|string|unique:students,codigo|size:8',
         'documento_identidad' => 'required|string|unique:students,documento_identidad',
         'grado' => 'required|string|max:50',
+        'telefono' => 'required|string|max:50',
         'seccion' => 'required|string|max:10',
         'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
         'turno_id' => 'required|exists:turnos,id',
@@ -159,6 +161,11 @@ class Create extends Component
                 $telefono = trim($telefonos[0] ?? '');
                 $nombreDestino = $student->representante_nombres . ' ' . $student->representante_apellidos;
             }
+            else
+                {
+                    $telefono = $student->telefono;
+                    $nombreDestino = $student->nombres . ' ' . $student->apellidos;
+                }
 
             if (!$telefono) return $result;
 
@@ -242,6 +249,7 @@ class Create extends Component
             'foto' => $fotoPath,
             'correo_electronico' => $this->correo_electronico, // Guardar correo para estudiantes mayores
             'status' => $this->status,
+            'telefono' => $this->telefono,
             // Datos del representante (solo para menores de edad)
             'representante_nombres' => $this->representante_nombres,
             'representante_apellidos' => $this->representante_apellidos,

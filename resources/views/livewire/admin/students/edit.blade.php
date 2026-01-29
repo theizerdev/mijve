@@ -80,6 +80,14 @@
                         <div class="form-text">Correo para enviar información de matrícula</div>
                         @error('correo_electronico') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+                     @if(!$this->esMenorDeEdad)
+                        <div class="col-md-12 mb-3">
+                        <label for="telefono" class="form-label">Número telefónico</label>
+                        <input type="text" id="telefono" class="form-control @error('telefono') is-invalid @enderror" wire:model="telefono" placeholder="ejemplo@correo.com">
+                        <div class="form-text">Número telefónico para contactar al estudiante</div>
+                        @error('telefono') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                      @endif
 
 
                     <div class="col-md-4 mb-3">

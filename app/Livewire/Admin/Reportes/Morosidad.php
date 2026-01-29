@@ -289,6 +289,11 @@ class Morosidad extends Component
             $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
             //dd(!$telefono);
         }
+        else
+        {
+            $telefono = $estudiante->telefono;
+            $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
+        }
         if (!$telefono) {
             session()->flash('error', 'No se encontró un teléfono válido para enviar el mensaje.');
             return;

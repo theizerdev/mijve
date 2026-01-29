@@ -367,26 +367,27 @@ class Create extends Component
         
 
         try {
-            $student = $matricula->student;
+              $estudiante = $matricula->student;
+            $esMayorDeEdad = \Carbon\Carbon::parse($estudiante->fecha_nacimiento)->age >= 18;
             
-            
-            $esMayorDeEdad = \Carbon\Carbon::parse($student->fecha_nacimiento)->age >= 18;
             $telefono = null;
             $nombreDestino = null;
-            
-           
-            if (!$esMayorDeEdad && $student->representante_telefonos) {
-                $telefonos = explode(',', $student->representante_telefonos);
+
+            if (!$esMayorDeEdad && $estudiante->representante_telefonos) {
+                $telefonos = explode(',', $estudiante->representante_telefonos);
                 $telefono = trim($telefonos[0] ?? '');
-                $nombreDestino = $student->representante_nombres . ' ' . $student->representante_apellidos;
-                }
-                 
-            if (!$telefono) return $result;
+                $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
+            }
+            else {
+                $telefono = $estudiante->telefono;
+                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
+            }
+
 
             $result['attempted'] = true;
             $result['destinatario'] = $nombreDestino;
             
-            $mensaje = $this->generarMensajePago($pago, $student, $esMayorDeEdad);
+            $mensaje = $this->generarMensajePago($pago, $estudiante, $esMayorDeEdad);
             $telefonoFormateado = $this->formatPhoneNumber($telefono);
             
             $whatsappService = new \App\Services\WhatsAppService();

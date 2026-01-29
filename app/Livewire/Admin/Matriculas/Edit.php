@@ -361,18 +361,19 @@ class Edit extends Component
             }
 
             // Enviar notificación WhatsApp de matrícula
-            //$whatsappResult = $this->enviarNotificacionMatricula($matricula);
-            
+            $whatsappResult = $this->enviarNotificacionMatricula($matricula);
+            dd($whatsappResult);
             $mensaje = 'Matrícula creada correctamente.';
-           /* if ($whatsappResult['sent']) {
+            if ($whatsappResult['sent']) {
                 $mensaje .= ' Notificación enviada por WhatsApp a ' . $whatsappResult['destinatario'] . '.';
             } elseif ($whatsappResult['attempted']) {
                 $mensaje .= ' No se pudo enviar notificación por WhatsApp.';
             }
-           */
+           
             session()->flash('message', $mensaje);
             return redirect()->route('admin.matriculas.index');
         } catch (\Exception $e) {
+            dd($e);
             session()->flash('error', 'Error al crear la matrícula: ' . $e->getMessage());
             \Log::error('Error creating matricula: ' . $e->getMessage());
         }
@@ -412,15 +413,19 @@ class Edit extends Component
             $telefono = null;
             $nombreDestino = null;
 
-            if ($esMayorDeEdad && $estudiante->phone) {
-                $telefono = $estudiante->phone;
-                $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
-            } elseif (!$esMayorDeEdad && $estudiante->representante_telefonos) {
+            if (!$esMayorDeEdad && $estudiante->representante_telefonos) {
                 $telefonos = explode(',', $estudiante->representante_telefonos);
         
                 $telefono = trim($telefonos[0] ?? '');
                 $nombreDestino = $estudiante->representante_nombres . ' ' . $estudiante->representante_apellidos;
             }
+            else
+                {
+                    $telefono = $estudiante->telefono;
+                    $nombreDestino = $estudiante->nombres . ' ' . $estudiante->apellidos;
+                }
+
+                //dd($telefono);
 
             if (!$telefono) return $result;
 

@@ -381,10 +381,10 @@ class Index extends Component
                 session()->flash('message', 'Correo de bienvenida enviado al representante.');
             }
             // Si no hay correo al que enviar
-            else {
-                session()->flash('error', 'No hay correo registrado para enviar el mensaje de bienvenida.');
-                return;
-            }
+             else
+                {
+                    $this->enviarNotificacionBienvenida($student);
+                }
         } catch (\Exception $e) {
             \Log::error('Error al enviar correo de bienvenida: ' . $e->getMessage());
             session()->flash('error', 'Error al enviar el correo de bienvenida: ' . $e->getMessage() . '. Por favor, inténtelo más tarde.');
@@ -442,6 +442,11 @@ class Index extends Component
                 $telefono = trim($telefonos[0] ?? '');
                 $nombreDestino = $student->representante_nombres . ' ' . $student->representante_apellidos;
             }
+            else
+                {
+                    $telefono = $student->telefono;
+                    $nombreDestino = $student->nombres . ' ' . $student->apellidos;
+                }
 
 
 

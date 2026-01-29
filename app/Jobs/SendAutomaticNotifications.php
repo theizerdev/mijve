@@ -78,13 +78,29 @@ class SendAutomaticNotifications implements ShouldQueue
             if ($student) {
                 // Notificar al estudiante o representante
                 if (!$student->esMenorDeEdad && $student->correo_electronico) {
-                    // Enviar notificación al estudiante
+                    // Enviar notificación al estudiante (mayor de edad)
                     \Mail::to($student->correo_electronico)
                         ->send(new \App\Mail\EnrollmentDueMail($student, $schedule));
+                    
+                    // Enviar notificación WhatsApp si el estudiante tiene teléfono
+                    if (!empty($student->telefono)) {
+                        // Aquí puedes agregar la lógica para enviar WhatsApp al estudiante
+                        // Por ejemplo: $this->sendWhatsAppNotification($student->telefono, $student, $schedule);
+                    }
                 } elseif ($student->esMenorDeEdad && $student->representante_correo) {
                     // Enviar notificación al representante
                     \Mail::to($student->representante_correo)
                         ->send(new \App\Mail\EnrollmentDueMail($student, $schedule));
+                    
+                    // Enviar notificación WhatsApp al representante si tiene teléfono
+                    if (!empty($student->representante_telefonos) && is_array($student->representante_telefonos)) {
+                        foreach ($student->representante_telefonos as $telefono) {
+                            if (!empty($telefono)) {
+                                // Aquí puedes agregar la lógica para enviar WhatsApp al representante
+                                // Por ejemplo: $this->sendWhatsAppNotification($telefono, $student, $schedule);
+                            }
+                        }
+                    }
                 }
                 
                 // Notificar a los administradores
