@@ -12,11 +12,11 @@
                         <div class="text-center mb-4">
                             <div class="avatar avatar-xl mb-3">
                                 <span class="avatar-title rounded-circle bg-primary">
-                                    {{ strtoupper(substr($teacher->user->name, 0, 1)) }}
+                                    {{ strtoupper(substr($teacher->name, 0, 1)) }}
                                 </span>
                             </div>
-                            <h4>{{ $teacher->user->name }}</h4>
-                            <p class="text-muted">{{ $teacher->user->email }}</p>
+                            <h4>{{ $teacher->name }}</h4>
+                            <p class="text-muted">{{ $teacher->email }}</p>
                         </div>
 
                         <div class="row mb-3">

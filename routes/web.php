@@ -64,8 +64,10 @@ Route::group(['prefix' => 'superadmin', 'as' => 'superadmin.', 'middleware' => [
 
 // Admin routes
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
-    Route::get('/dashboard', \App\Livewire\Admin\Dashboard::class)->name('dashboard');
-    require __DIR__.'/admin.php';
+   Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/dashboard', \App\Livewire\Admin\Dashboard::class)->name('dashboard');
+        require __DIR__.'/admin.php';
+   });
 });
 
 Route::get('/admin/template-customization', \App\Livewire\Admin\TemplateCustomization\Index::class)

@@ -16,6 +16,8 @@ class Teacher extends Model
 
     protected $fillable = [
         'user_id',
+        'name',
+        'email',
         'employee_code',
         'specialization',
         'degree',
@@ -33,7 +35,7 @@ class Teacher extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'user_id');
     }
 
     public function subjects(): BelongsToMany
@@ -75,11 +77,11 @@ class Teacher extends Model
 
     public function getFullNameAttribute(): string
     {
-        return $this->user->name ?? 'Sin nombre';
+        return $this->name ?? 'Sin nombre';
     }
 
-    public function getEmailAttribute(): string
+    public function getTeacherEmailAttribute(): string
     {
-        return $this->user->email ?? '';
+        return $this->email ?? '';
     }
 }

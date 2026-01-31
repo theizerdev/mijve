@@ -248,6 +248,12 @@ Route::get('/whatsapp', \App\Livewire\Admin\Whatsapp\Index::class)->name('whatsa
 
 // ===== CONTROL DE ESTUDIOS =====
 
+// Aulas (Classrooms)
+Route::get('/aulas', \App\Livewire\Admin\Classroom\Index::class)->name('classrooms.index');
+Route::get('/aulas/crear', \App\Livewire\Admin\Classroom\Create::class)->name('classrooms.create');
+Route::get('/aulas/{classroom}/editar', \App\Livewire\Admin\Classroom\Edit::class)->name('classrooms.edit');
+Route::get('/aulas/{classroom}', \App\Livewire\Admin\Classroom\Show::class)->name('classrooms.show');
+
 // Lapsos de Evaluación
 Route::get('/lapsos-evaluacion', \App\Livewire\Admin\EvaluationPeriods\Index::class)->name('evaluation-periods.index');
 Route::get('/lapsos-evaluacion/crear', \App\Livewire\Admin\EvaluationPeriods\Create::class)->name('evaluation-periods.create');
@@ -268,3 +274,17 @@ Route::get('/evaluaciones/{evaluation}', \App\Livewire\Admin\Evaluations\Show::c
 Route::get('/calificaciones', \App\Livewire\Admin\Grades\Index::class)->name('grades.index');
 Route::get('/calificaciones/registrar/{evaluation}', \App\Livewire\Admin\Grades\Register::class)->name('grades.register');
 Route::get('/calificaciones/estudiante/{student}', \App\Livewire\Admin\Grades\StudentGrades::class)->name('grades.student');
+
+// ===== SECCIONES Y HORARIOS =====
+
+// Horarios - Rutas específicas deben ir antes que las rutas con parámetros
+Route::get('/horarios', \App\Livewire\Admin\Schedules\Index::class)->name('schedules.index');
+Route::get('/horarios/crear', \App\Livewire\Admin\Schedules\Create::class)->name('schedules.create');
+Route::get('/horarios/{schedule}/editar', \App\Livewire\Admin\Schedules\Edit::class)->name('schedules.edit');
+Route::get('/horarios/{schedule}', \App\Livewire\Admin\Schedules\Show::class)->name('schedules.show');
+
+// Secciones
+Route::get('/secciones', \App\Livewire\Admin\Sections\Index::class)->name('sections.index');
+Route::get('/secciones/crear', \App\Livewire\Admin\Sections\Create::class)->name('sections.create');
+Route::get('/secciones/{section}/editar', \App\Livewire\Admin\Sections\Edit::class)->name('sections.edit');
+Route::get('/secciones/{section}', \App\Livewire\Admin\Sections\Show::class)->name('sections.show');

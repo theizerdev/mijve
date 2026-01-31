@@ -22,7 +22,7 @@ class Show extends Component
             abort(403, 'No tienes permiso para ver profesores.');
         }
 
-        $this->teacher = $teacher->load(['user', 'subjects.programa', 'subjects.educationalLevel', 'createdBy', 'updatedBy']);
+        $this->teacher = $teacher->load(['subjects.programa', 'subjects.educationalLevel', 'createdBy', 'updatedBy']);
     }
 
     public function render()
@@ -43,7 +43,7 @@ class Show extends Component
 
     protected function getPageTitle(): string
     {
-        return 'Detalles del Profesor: ' . $this->teacher->user->name;
+        return 'Detalles del Profesor: ' . $this->teacher->name;
     }
 
     protected function getBreadcrumb(): array
@@ -51,7 +51,7 @@ class Show extends Component
         return [
             'admin.dashboard' => 'Dashboard',
             'admin.teachers.index' => 'Profesores',
-            '' => $this->teacher->user->name
+            '' => $this->teacher->name
         ];
     }
 }

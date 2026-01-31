@@ -39,6 +39,11 @@ class Empresa extends Model
         return $this->hasMany(Sucursal::class);
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
     public function pais()
     {
         return $this->belongsTo(Pais::class);

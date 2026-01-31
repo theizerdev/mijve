@@ -134,8 +134,8 @@
                                 <th wire:click="sortBy('employee_code')" style="cursor: pointer;">
                                     Código @if($sortBy === 'employee_code') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
-                                <th wire:click="sortBy('user.name')" style="cursor: pointer;">
-                                    Profesor @if($sortBy === 'user.name') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
+                                <th wire:click="sortBy('name')" style="cursor: pointer;">
+                                    Profesor @if($sortBy === 'name') <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i> @endif
                                 </th>
                                 <th>Especialización</th>
                                 <th>Título</th>
@@ -157,12 +157,12 @@
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-sm me-2">
                                                 <span class="avatar-initial rounded bg-label-primary">
-                                                    {{ strtoupper(substr($teacher->user->name ?? 'SN', 0, 1)) }}
+                                                    {{ strtoupper(substr($teacher->name ?? 'SN', 0, 1)) }}
                                                 </span>
                                             </div>
                                             <div>
-                                                <h6 class="mb-0">{{ $teacher->user->name ?? 'Sin nombre' }}</h6>
-                                                <small class="text-muted">{{ $teacher->user->email ?? '' }}</small>
+                                                <h6 class="mb-0">{{ $teacher->name ?? 'Sin nombre' }}</h6>
+                                                <small class="text-muted">{{ $teacher->email ?? '' }}</small>
                                             </div>
                                         </div>
                                     </td>

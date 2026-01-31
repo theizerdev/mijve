@@ -167,6 +167,7 @@
   </li>
   @endcan
 
+    @canany(['access evaluation periods', 'access evaluation types', 'access evaluations', 'access grades'])
     <!-- Control de Estudios -->
     <li class="menu-item {{ request()->routeIs('admin.evaluation-periods.*') || request()->routeIs('admin.evaluation-types.*') || request()->routeIs('admin.evaluations.*') || request()->routeIs('admin.grades.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -174,28 +175,70 @@
         <div>Control de Estudios</div>
       </a>
       <ul class="menu-sub">
+        @can('access evaluation periods')
         <li class="menu-item {{ request()->routeIs('admin.evaluation-periods.*') ? 'active' : '' }}">
           <a href="{{ route('admin.evaluation-periods.index') }}" class="menu-link">
             <div>Lapsos</div>
           </a>
         </li>
+        @endcan
+        @can('access evaluation types')
         <li class="menu-item {{ request()->routeIs('admin.evaluation-types.*') ? 'active' : '' }}">
           <a href="{{ route('admin.evaluation-types.index') }}" class="menu-link">
             <div>Tipos de Evaluación</div>
           </a>
         </li>
+        @endcan
+        @can('access evaluations')
         <li class="menu-item {{ request()->routeIs('admin.evaluations.*') ? 'active' : '' }}">
           <a href="{{ route('admin.evaluations.index') }}" class="menu-link">
             <div>Evaluaciones</div>
           </a>
         </li>
+        @endcan
+        @can('access grades')
         <li class="menu-item {{ request()->routeIs('admin.grades.*') ? 'active' : '' }}">
           <a href="{{ route('admin.grades.index') }}" class="menu-link">
             <div>Calificaciones</div>
           </a>
         </li>
+        @endcan
       </ul>
     </li>
+    @endcan
+
+    @canany(['access classrooms', 'access sections', 'access schedules'])
+    <!-- Secciones y Horarios -->
+    <li class="menu-item {{ request()->routeIs('admin.classrooms.*') || request()->routeIs('admin.sections.*') || request()->routeIs('admin.schedules.*') ? 'active open' : '' }}">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons ri ri-calendar-schedule-line"></i>
+        <div>Secciones y Horarios</div>
+      </a>
+      <ul class="menu-sub">
+        @can('access classrooms')
+        <li class="menu-item {{ request()->routeIs('admin.classrooms.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.classrooms.index') }}" class="menu-link">
+            <div>Aulas</div>
+          </a>
+        </li>
+        @endcan
+        @can('access sections')
+        <li class="menu-item {{ request()->routeIs('admin.sections.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.sections.index') }}" class="menu-link">
+            <div>Secciones</div>
+          </a>
+        </li>
+        @endcan
+        @can('access schedules')
+        <li class="menu-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.schedules.index') }}" class="menu-link">
+            <div>Horarios</div>
+          </a>
+        </li>
+        @endcan
+      </ul>
+    </li>
+    @endcan
 
     @canany(['access pagos', 'access conceptos pago', 'access cajas'])
     <!-- Pagos y Finanzas -->

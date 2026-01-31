@@ -12,7 +12,7 @@
                     <div class="card-body">
                         @if (session()->has('message'))
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle me-2"></i>
+                                <i class="ri ri-check-line me-2"></i>
                                 {{ session('message') }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
@@ -20,7 +20,7 @@
                         
                         @if (session()->has('error'))
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <i class="ri ri-error-warning-line me-2"></i>
                                 {{ session('error') }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
@@ -38,7 +38,7 @@
                                  onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor=''">
                                 <input type="file" class="d-none" wire:model="file" id="file" accept=".xlsx,.xls,.csv">
                                 <label for="file" class="cursor-pointer">
-                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <i class="ri ri-upload-cloud-2-line fa-3x text-muted mb-3"></i>
                                     <h5 class="text-muted">Arrastra tu archivo aquí o haz clic para seleccionar</h5>
                                     <p class="text-muted small mb-0">Formatos aceptados: Excel (.xlsx, .xls) o CSV (.csv)</p>
                                 </label>
@@ -46,14 +46,14 @@
                             
                             @if($file)
                                 <div class="alert alert-info">
-                                    <i class="fas fa-file-alt me-2"></i>
+                                    <i class="ri ri-file-line me-2"></i>
                                     <strong>Archivo seleccionado:</strong> {{ $file->getClientOriginalName() }}
                                 </div>
                             @endif
                             
                             @error('file') 
                                 <div class="alert alert-danger">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <i class="ri ri-error-warning-line me-2"></i>
                                     {{ $message }}
                                 </div>
                             @enderror
@@ -106,7 +106,7 @@
                                     <div class="card h-100 bg-info bg-opacity-10 border-0">
                                         <div class="card-body text-center">
                                             <div class="d-flex align-items-center justify-content-center mb-2">
-                                                <i class="fas fa-table text-info me-2"></i>
+                                                <i class="ri ri-table-line text-info me-2"></i>
                                                 <h5 class="mb-0 text-info">Total de filas</h5>
                                             </div>
                                             <h3 class="text-info mb-0">{{ number_format($totalRows) }}</h3>
@@ -138,7 +138,7 @@
                                     </div>
                                     <div class="col-md-6 text-end">
                                         <span class="badge bg-primary fs-6">
-                                            <i class="fas fa-check me-1"></i>
+                                            <i class="ri ri-check-line me-1"></i>
                                             {{ count($selectedRows) }} de {{ $totalRows }} filas seleccionadas
                                         </span>
                                     </div>
@@ -168,15 +168,15 @@
                                                     <td class="text-center">
                                                         @if(count($validationErrors[$index]) > 0)
                                                             <span class="badge bg-danger" data-bs-toggle="tooltip" title="{{ implode(', ', $validationErrors[$index]) }}">
-                                                                <i class="fas fa-exclamation-triangle me-1"></i>Error
+                                                                <i class="ri ri-alert-line me-1"></i>Error
                                                             </span>
                                                         @elseif(isset($rowData['existing_student']) && $rowData['existing_student'])
                                                             <span class="badge bg-warning text-dark">
-                                                                <i class="fas fa-user-check me-1"></i>Existe
+                                                                <i class="ri ri-user-follow-line me-1"></i>Existe
                                                             </span>
                                                         @else
                                                             <span class="badge bg-success">
-                                                                <i class="fas fa-user-plus me-1"></i>Nuevo
+                                                                <i class="ri ri-user-add-line me-1"></i>Nuevo
                                                             </span>
                                                         @endif
                                                     </td>
@@ -195,7 +195,7 @@
                                             <div class="card border-success bg-success bg-opacity-10">
                                                 <div class="card-body text-center">
                                                     <h5 class="text-success mb-1">
-                                                        <i class="fas fa-user-plus"></i>
+                                                        <i class="ri ri-user-add-line"></i>
                                                         {{ collect($selectedRows)->filter(function($index) use ($processedData) { return !($processedData[$index]['existing_student'] ?? false); })->count() }}
                                                     </h5>
                                                     <small class="text-muted">Estudiantes nuevos</small>
@@ -206,7 +206,7 @@
                                             <div class="card border-warning bg-warning bg-opacity-10">
                                                 <div class="card-body text-center">
                                                     <h5 class="text-warning mb-1">
-                                                        <i class="fas fa-user-check"></i>
+                                                        <i class="ri ri-user-follow-line"></i>
                                                         {{ collect($selectedRows)->filter(function($index) use ($processedData) { return $processedData[$index]['existing_student'] ?? false; })->count() }}
                                                     </h5>
                                                     <small class="text-muted">Estudiantes existentes</small>
@@ -217,7 +217,7 @@
                                             <div class="card border-danger bg-danger bg-opacity-10">
                                                 <div class="card-body text-center">
                                                     <h5 class="text-danger mb-1">
-                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                        <i class="ri ri-alert-line"></i>
                                                         {{ collect($selectedRows)->filter(function($index) use ($validationErrors) { return count($validationErrors[$index]) > 0; })->count() }}
                                                     </h5>
                                                     <small class="text-muted">Filas con errores</small>
@@ -245,7 +245,7 @@
                                         <div class="card border-primary border-opacity-25 h-100">
                                             <div class="card-header bg-primary bg-opacity-10">
                                                 <h6 class="mb-0 text-primary">
-                                                    <i class="fas fa-user-graduate me-2"></i>Datos del Estudiante
+                                                    <i class="ri ri-graduation-cap-line me-2"></i>Datos del Estudiante
                                                 </h6>
                                             </div>
                                             <div class="card-body">
@@ -419,7 +419,7 @@
                                 
                                 <div class="alert alert-info border-start-4 border-start-info mt-4">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-info-circle fs-4 me-3 text-info"></i>
+                                        <i class="ri ri-information-line fs-4 me-3 text-info"></i>
                                         <div>
                                             <h6 class="mb-1">Instrucciones de Mapeo</h6>
                                             <ul class="mb-0 small">
@@ -439,16 +439,16 @@
                         <!-- Botones de acción -->
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-secondary" wire:click="resetImport">
-                                <i class="fas fa-redo"></i> Reiniciar
+                                <i class="ri ri-refresh-line"></i> Reiniciar
                             </button>
                             
                             @if($importMode === 'preview' && $preview && count($selectedRows) > 0)
                                 <button type="button" class="btn btn-info" wire:click="proceedToMapping">
-                                    <i class="fas fa-cogs"></i> Configurar Mapeo
+                                    <i class="ri ri-settings-3-line"></i> Configurar Mapeo
                                 </button>
                             @elseif($importMode === 'mapping')
                                 <button type="button" class="btn btn-primary" wire:click="proceedToImport" @if($importing) disabled @endif>
-                                    <i class="fas fa-upload"></i> Importar Estudiantes
+                                    <i class="ri ri-upload-2-line"></i> Importar Estudiantes
                                     <div wire:loading wire:target="import" class="spinner-border spinner-border-sm ms-2" role="status">
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
@@ -483,7 +483,7 @@
                                         <div class="card border-success bg-success bg-opacity-10 text-center h-100">
                                             <div class="card-body py-3">
                                                 <div class="mb-2">
-                                                    <i class="fas fa-check-circle fs-2 text-success"></i>
+                                                    <i class="ri ri-checkbox-circle-line fs-2 text-success"></i>
                                                 </div>
                                                 <h4 class="text-success mb-1 fw-bold">{{ $importedRows }}</h4>
                                                 <p class="text-muted mb-0 small">Estudiantes importados</p>
@@ -494,7 +494,7 @@
                                         <div class="card border-danger bg-danger bg-opacity-10 text-center h-100">
                                             <div class="card-body py-3">
                                                 <div class="mb-2">
-                                                    <i class="fas fa-times-circle fs-2 text-danger"></i>
+                                                    <i class="ri ri-close-circle-line fs-2 text-danger"></i>
                                                 </div>
                                                 <h4 class="text-danger mb-1 fw-bold">{{ $failedRows }}</h4>
                                                 <p class="text-muted mb-0 small">Importaciones fallidas</p>
@@ -505,7 +505,7 @@
                                         <div class="card border-info bg-info bg-opacity-10 text-center h-100">
                                             <div class="card-body py-3">
                                                 <div class="mb-2">
-                                                    <i class="fas fa-list fs-2 text-info"></i>
+                                                    <i class="ri ri-list-check fs-2 text-info"></i>
                                                 </div>
                                                 <h4 class="text-info mb-1 fw-bold">{{ count($selectedRows) }}</h4>
                                                 <p class="text-muted mb-0 small">Filas seleccionadas</p>
@@ -516,7 +516,7 @@
                                         <div class="card border-primary bg-primary bg-opacity-10 text-center h-100">
                                             <div class="card-body py-3">
                                                 <div class="mb-2">
-                                                    <i class="fas fa-cogs fs-2 text-primary"></i>
+                                                    <i class="ri ri-settings-3-line fs-2 text-primary"></i>
                                                 </div>
                                                 <h4 class="text-primary mb-1 fw-bold">{{ $importedRows + $failedRows }}</h4>
                                                 <p class="text-muted mb-0 small">Total procesado</p>
@@ -530,7 +530,7 @@
                                     <div class="card border-danger">
                                         <div class="card-header bg-danger bg-opacity-10">
                                             <h6 class="mb-0 text-danger">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <i class="ri ri-alert-line me-2"></i>
                                                 Errores de Importación ({{ count($errorsList) }})
                                             </h6>
                                         </div>
@@ -539,7 +539,7 @@
                                                 @foreach($errorsList as $error)
                                                     <div class="alert alert-danger alert-sm border-0 mb-2">
                                                         <div class="d-flex align-items-start">
-                                                            <i class="fas fa-times-circle mt-1 me-2"></i>
+                                                            <i class="ri ri-close-circle-line mt-1 me-2"></i>
                                                             <div class="flex-grow-1">
                                                                 <strong>Fila {{ $error['row'] }}:</strong> {{ $error['error'] }}
                                                             </div>
@@ -555,7 +555,7 @@
                                     <div class="text-center mt-4">
                                         <div class="alert alert-success border-start-4 border-start-success mb-3">
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-check-circle fs-4 me-3 text-success"></i>
+                                                <i class="ri ri-checkbox-circle-line fs-4 me-3 text-success"></i>
                                                 <div>
                                                     <h6 class="mb-1">¡Importación Completada!</h6>
                                                     <p class="mb-0">Se han procesado todas las filas seleccionadas exitosamente.</p>
@@ -563,7 +563,7 @@
                                             </div>
                                         </div>
                                         <button type="button" class="btn btn-success btn-lg px-4" wire:click="resetImport">
-                                            <i class="fas fa-check me-2"></i> Finalizar Importación
+                                            <i class="ri ri-check-line me-2"></i> Finalizar Importación
                                         </button>
                                     </div>
                                 @endif

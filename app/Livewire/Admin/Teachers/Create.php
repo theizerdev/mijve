@@ -31,7 +31,7 @@ class Create extends Component
     protected $rules = [
         // User validation rules
         'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255|unique:users,email',
+        'email' => 'required|email|max:255|unique:teachers,email',
         'username' => 'required|string|max:50|unique:users,username',
         
         // Teacher validation rules
@@ -101,6 +101,8 @@ class Create extends Component
             // Crear el profesor asociado al usuario
             $teacher = Teacher::create([
                 'user_id' => $user->id,
+                'name' => $this->name,
+                'email' => $this->email,
                 'employee_code' => strtoupper($this->employee_code),
                 'specialization' => $this->specialization,
                 'degree' => $this->degree,

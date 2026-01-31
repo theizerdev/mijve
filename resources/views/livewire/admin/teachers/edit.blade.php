@@ -13,6 +13,27 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
+                                        <label for="name" class="form-label">Nombre Completo *</label>
+                                        <input type="text" wire:model="name" id="name" class="form-control @error('name') is-invalid @enderror" placeholder="Ej: Juan Pérez García">
+                                        @error('name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Correo Electrónico *</label>
+                                        <input type="email" wire:model="email" id="email" class="form-control @error('email') is-invalid @enderror" placeholder="Ej: juan.perez@ejemplo.com">
+                                        @error('email')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
                                         <label for="user_id" class="form-label">Usuario *</label>
                                         <select wire:model="user_id" id="user_id" class="form-select @error('user_id') is-invalid @enderror">
                                             <option value="">Seleccione un usuario</option>

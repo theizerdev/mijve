@@ -267,6 +267,82 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view teacher schedules',
                 'manage teacher schedules',
             ],
+            // Control de Estudios - Lapsos (Evaluation Periods)
+            'evaluation_periods' => [
+                'access evaluation periods',
+                'view evaluation periods',
+                'create evaluation periods',
+                'edit evaluation periods',
+                'delete evaluation periods',
+                'manage evaluation periods',
+            ],
+            // Control de Estudios - Tipos de Evaluación (Evaluation Types)
+            'evaluation_types' => [
+                'access evaluation types',
+                'view evaluation types',
+                'create evaluation types',
+                'edit evaluation types',
+                'delete evaluation types',
+                'manage evaluation types',
+            ],
+            // Control de Estudios - Evaluaciones (Evaluations)
+            'evaluations' => [
+                'access evaluations',
+                'view evaluations',
+                'create evaluations',
+                'edit evaluations',
+                'delete evaluations',
+                'manage evaluations',
+                'approve evaluations',
+                'publish evaluations',
+            ],
+            // Control de Estudios - Calificaciones (Grades)
+            'grades' => [
+                'access grades',
+                'view grades',
+                'create grades',
+                'edit grades',
+                'delete grades',
+                'manage grades',
+                'import grades',
+                'export grades',
+                'publish grades',
+                'approve grades',
+            ],
+            // Secciones y Horarios - Aulas (Classrooms)
+            'classrooms' => [
+                'access classrooms',
+                'view classrooms',
+                'create classrooms',
+                'edit classrooms',
+                'delete classrooms',
+                'manage classrooms',
+                'assign classrooms',
+            ],
+            // Secciones y Horarios - Secciones (Sections)
+            'sections' => [
+                'access sections',
+                'view sections',
+                'create sections',
+                'edit sections',
+                'delete sections',
+                'manage sections',
+                'assign sections',
+                'enroll students sections',
+                'manage section schedules',
+            ],
+            // Secciones y Horarios - Horarios (Schedules)
+            'schedules' => [
+                'access',
+                'view',
+                'create',
+                'edit',
+                'delete',
+                'manage',
+                'assign',
+                'conflict resolution',
+                'publish',
+            ],
         ];
 
         // Crear permisos organizados por módulos
@@ -295,27 +371,83 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Asignar permisos al Recepcionista (solo de estudiantes, matrículas, pagos, profesores y dashboard básico)
+        // Asignar permisos de Control de Estudios y Secciones y Horarios a Administradores y Super Administradores
+        $academicPermissions = Permission::whereIn('module', [
+            'evaluation_periods',
+            'evaluation_types', 
+            'evaluations',
+            'grades',
+            'classrooms',
+            'sections',
+            'schedules'
+        ])->get();
+        
+        $superAdminRole->givePermissionTo($academicPermissions);
+        $adminRole->givePermissionTo($academicPermissions);
+
+        // Asignar permisos al Recepcionista (estudiantes, matrículas, pagos, profesores, dashboard básico y algunos de Control de Estudios)
         $recepcionistaPermissions = Permission::whereIn('module', [
             'students',
             'matriculas',
             'pagos',
-            'teachers'
+            'teachers',
+            'evaluation_periods', // Solo ver lapsos
+            'evaluation_types',   // Solo ver tipos de evaluación
+            'classrooms',         // Solo ver aulas
+            'sections',           // Solo ver secciones
+            'schedules'           // Solo ver horarios
         ])->orWhereIn('name', [
             'access dashboard',
             'dashboard.alerts',
             'dashboard.academic',
-            'dashboard.access'
+            'dashboard.access',
+            'access evaluation periods',
+            'view evaluation periods',
+            'access evaluation types',
+            'view evaluation types',
+            'access classrooms',
+            'view classrooms',
+            'access sections',
+            'view sections',
+            'access schedules',
+            'view schedules'
         ])->get();
         $recepcionistaRole->syncPermissions($recepcionistaPermissions);
 
-        // Asignar permisos básicos al Profesor (solo acceso a profesores y dashboard básico)
+        // Asignar permisos básicos al Profesor (profesores, dashboard básico y Control de Estudios limitado)
         $profesorPermissions = Permission::whereIn('module', [
-            'teachers'
+            'teachers',
+            'evaluation_periods', // Solo ver lapsos
+            'evaluation_types',   // Solo ver tipos de evaluación
+            'evaluations',        // Ver y crear evaluaciones
+            'grades',             // Ver y gestionar calificaciones
+            'classrooms',         // Solo ver aulas
+            'sections',           // Solo ver secciones
+            'schedules'           // Solo ver horarios
         ])->orWhereIn('name', [
             'access dashboard',
             'dashboard.academic',
-            'dashboard.access'
+            'dashboard.access',
+            'access teachers',
+            'view teachers',
+            'edit teachers',
+            'access evaluation periods',
+            'view evaluation periods',
+            'access evaluation types',
+            'view evaluation types',
+            'access evaluations',
+            'view evaluations',
+            'create evaluations',
+            'access grades',
+            'view grades',
+            'create grades',
+            'edit grades',
+            'access classrooms',
+            'view classrooms',
+            'access sections',
+            'view sections',
+            'access schedules',
+            'view schedules'
         ])->get();
         $profesorRole->syncPermissions($profesorPermissions);
 

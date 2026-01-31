@@ -153,10 +153,8 @@ class Index extends Component
                 $query->where(function ($q) {
                     $q->where('employee_code', 'like', '%' . $this->search . '%')
                         ->orWhere('specialization', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('user', function ($subQuery) {
-                            $subQuery->where('name', 'like', '%' . $this->search . '%')
-                                    ->orWhere('email', 'like', '%' . $this->search . '%');
-                        });
+                        ->orWhere('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->specialization !== '', function ($query) {
