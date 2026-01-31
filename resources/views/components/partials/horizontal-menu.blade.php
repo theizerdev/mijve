@@ -213,7 +213,7 @@
       @can('access evaluation periods')
       <li class="menu-item {{ request()->routeIs('admin.evaluation-periods.*') ? 'active' : '' }}">
         <a href="{{ route('admin.evaluation-periods.index') }}" class="menu-link">
-          <div>Lapsos</div>
+          <div>Período de Evaluación</div>
         </a>
       </li>
       @endcan
@@ -329,6 +329,36 @@
       <li class="menu-item {{ request()->routeIs('admin.reportes.historico-matriculas') ? 'active' : '' }}">
         <a href="{{ route('admin.reportes.historico-matriculas') }}" class="menu-link">
           <div>Histórico Matrículas</div>
+        </a>
+      </li>
+      @endcan
+      
+      <!-- Reportes Académicos - Fase 1 -->
+      @can('view estadisticas calificaciones materia')
+      <li class="menu-item {{ request()->routeIs('admin.reportes.estadisticas-calificaciones-materia') ? 'active' : '' }}">
+        <a href="{{ route('admin.reportes.estadisticas-calificaciones-materia') }}" class="menu-link">
+          <div>Estadísticas Calificaciones</div>
+        </a>
+      </li>
+      @endcan
+      @can('view rendimiento estudiantil periodo')
+      <li class="menu-item {{ request()->routeIs('admin.reportes.rendimiento-estudiantil-periodo') ? 'active' : '' }}">
+        <a href="{{ route('admin.reportes.rendimiento-estudiantil-periodo') }}" class="menu-link">
+          <div>Rendimiento Estudiantil</div>
+        </a>
+      </li>
+      @endcan
+      @can('view asistencia evaluaciones')
+      <li class="menu-item {{ request()->routeIs('admin.reportes.asistencia-evaluaciones') ? 'active' : '' }}">
+        <a href="{{ route('admin.reportes.asistencia-evaluaciones') }}" class="menu-link">
+          <div>Asistencia y Evaluaciones</div>
+        </a>
+      </li>
+      @endcan
+      @can('view boletines calificaciones')
+      <li class="menu-item {{ request()->routeIs('admin.reportes.boletines-calificaciones') ? 'active' : '' }}">
+        <a href="{{ route('admin.reportes.boletines-calificaciones') }}" class="menu-link">
+          <div>Boletines de Calificaciones</div>
         </a>
       </li>
       @endcan

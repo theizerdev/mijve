@@ -186,6 +186,12 @@ Route::prefix('reportes')->as('reportes.')->group(function () {
     Route::get('/morosidad', \App\Livewire\Admin\Reportes\Morosidad::class)->name('morosidad');
     Route::get('/ingresos-totales', \App\Livewire\Admin\Reportes\IngresosTotales::class)->name('ingresos-totales');
     Route::get('/historico-matriculas', \App\Livewire\Admin\Reportes\HistoricoMatriculas::class)->name('historico-matriculas');
+    
+    // Reportes Académicos - Fase 1
+    Route::get('/estadisticas-calificaciones-materia', \App\Livewire\Admin\Reportes\EstadisticasCalificacionesMateria::class)->name('estadisticas-calificaciones-materia');
+    Route::get('/rendimiento-estudiantil-periodo', \App\Livewire\Admin\Reportes\RendimientoEstudiantilPeriodo::class)->name('rendimiento-estudiantil-periodo');
+    Route::get('/asistencia-evaluaciones', \App\Livewire\Admin\Reportes\AsistenciaEvaluaciones::class)->name('asistencia-evaluaciones');
+    Route::get('/boletines-calificaciones', \App\Livewire\Admin\Reportes\BoletinesCalificaciones::class)->name('boletines-calificaciones');
 });
 
 
@@ -254,7 +260,7 @@ Route::get('/aulas/crear', \App\Livewire\Admin\Classroom\Create::class)->name('c
 Route::get('/aulas/{classroom}/editar', \App\Livewire\Admin\Classroom\Edit::class)->name('classrooms.edit');
 Route::get('/aulas/{classroom}', \App\Livewire\Admin\Classroom\Show::class)->name('classrooms.show');
 
-// Lapsos de Evaluación
+// Período de Evaluación
 Route::get('/lapsos-evaluacion', \App\Livewire\Admin\EvaluationPeriods\Index::class)->name('evaluation-periods.index');
 Route::get('/lapsos-evaluacion/crear', \App\Livewire\Admin\EvaluationPeriods\Create::class)->name('evaluation-periods.create');
 Route::get('/lapsos-evaluacion/{evaluationPeriod}/editar', \App\Livewire\Admin\EvaluationPeriods\Edit::class)->name('evaluation-periods.edit');

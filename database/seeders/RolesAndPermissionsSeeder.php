@@ -158,6 +158,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view ingresos totales',
                 'view historico matriculas',
                 'export reportes',
+                // Reportes Académicos - Fase 1
+                'view estadisticas calificaciones materia',
+                'view rendimiento estudiantil periodo',
+                'view asistencia evaluaciones',
+                'view boletines calificaciones',
             ],
             // Módulo de actividad
             'activity_log' => [
@@ -385,6 +390,17 @@ class RolesAndPermissionsSeeder extends Seeder
         $superAdminRole->givePermissionTo($academicPermissions);
         $adminRole->givePermissionTo($academicPermissions);
 
+        // Asignar permisos de Reportes Académicos a Administradores y Super Administradores
+        $academicReportsPermissions = Permission::whereIn('name', [
+            'view estadisticas calificaciones materia',
+            'view rendimiento estudiantil periodo',
+            'view asistencia evaluaciones',
+            'view boletines calificaciones'
+        ])->get();
+        
+        $superAdminRole->givePermissionTo($academicReportsPermissions);
+        $adminRole->givePermissionTo($academicReportsPermissions);
+
         // Asignar permisos al Recepcionista (estudiantes, matrículas, pagos, profesores, dashboard básico y algunos de Control de Estudios)
         $recepcionistaPermissions = Permission::whereIn('module', [
             'students',
@@ -447,7 +463,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'access sections',
             'view sections',
             'access schedules',
-            'view schedules'
+            'view schedules',
+            // Reportes Académicos - Solo ver
+            'view estadisticas calificaciones materia',
+            'view rendimiento estudiantil periodo',
+            'view asistencia evaluaciones',
+            'view boletines calificaciones'
         ])->get();
         $profesorRole->syncPermissions($profesorPermissions);
 
