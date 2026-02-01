@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Multitenantable;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
@@ -81,6 +83,22 @@ class Matricula extends Model
         return $this->belongsTo(Sucursal::class);
     }
 
+    // Relaciones con AcademicTracking
+    public function academicRecords(): HasMany
+    {
+        return $this->hasMany(AcademicRecord::class, 'matricula_id');
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class, 'matricula_id');
+    }
+
+    public function academicStatusTracking(): HasMany
+    {
+        return $this->hasMany(AcademicStatusTracking::class, 'matricula_id');
+    }
+
     // Corregir el nombre de la relación para que coincida con el modelo PaymentSchedule
     public function paymentSchedules()
     {
@@ -96,6 +114,28 @@ class Matricula extends Model
     public function pagos()
     {
         return $this->hasMany(Pago::class, 'matricula_id');
+    }
+
+    // Métodos auxiliares para el estado académico
+    public function getCurrentAcademicStatusAttribute()
+    {
+        return $this->academicStatusTracking()
+                   ->where('status', AcademicStatusTracking::TRACKING_ACTIVE)
+                   ->first();
+    }
+
+    public function getLatestCertificateAttribute()
+    {
+        return $this->certificates()
+                   ->where('status', Certificate::STATUS_ACTIVE)
+                   ->latest()
+                   ->first();
+    }
+
+    public function getAcademicPerformanceAttribute()
+    {
+        $academicStatus = $this->current_academic_status;
+        return $academicStatus ? $academicStatus->academic_summary : null;
     }
 
     public function getActivitylogOptions(): LogOptions

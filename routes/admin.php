@@ -147,6 +147,13 @@ Route::get('/materias/crear', \App\Livewire\Admin\Subjects\Create::class)->name(
 Route::get('/materias/{subject}/editar', \App\Livewire\Admin\Subjects\Edit::class)->name('subjects.edit');
 Route::get('/materias/{subject}', \App\Livewire\Admin\Subjects\Show::class)->name('subjects.show');
 Route::get('/materias/{subject}/asignar-profesores', \App\Livewire\Admin\Subjects\AssignTeachers::class)->name('subjects.assign-teachers');
+Route::get('/materias/{subject}/prerrequisitos', \App\Livewire\Admin\Subjects\Prerequisites::class)->name('subjects.prerequisites');
+
+// Planes de Estudio (Study Plans)
+Route::get('/planes-estudio', \App\Livewire\Admin\StudyPlans\Index::class)->name('study-plans.index');
+Route::get('/planes-estudio/crear', \App\Livewire\Admin\StudyPlans\Create::class)->name('study-plans.create');
+Route::get('/planes-estudio/{studyPlan}/editar', \App\Livewire\Admin\StudyPlans\Edit::class)->name('study-plans.edit');
+Route::get('/planes-estudio/{studyPlan}', \App\Livewire\Admin\StudyPlans\Show::class)->name('study-plans.show');
 
 // Profesores (Teachers)
 Route::get('/profesores', \App\Livewire\Admin\Teachers\Index::class)->name('teachers.index');
@@ -294,3 +301,39 @@ Route::get('/secciones', \App\Livewire\Admin\Sections\Index::class)->name('secti
 Route::get('/secciones/crear', \App\Livewire\Admin\Sections\Create::class)->name('sections.create');
 Route::get('/secciones/{section}/editar', \App\Livewire\Admin\Sections\Edit::class)->name('sections.edit');
 Route::get('/secciones/{section}', \App\Livewire\Admin\Sections\Show::class)->name('sections.show');
+
+// ===== ASISTENCIA DIARIA =====
+
+Route::get('/asistencia', \App\Livewire\Admin\Attendance\Index::class)->name('attendance.index');
+Route::get('/asistencia/registrar', \App\Livewire\Admin\Attendance\Register::class)->name('attendance.register');
+Route::get('/asistencia/estudiante/{student}', \App\Livewire\Admin\Attendance\StudentReport::class)->name('attendance.student');
+
+// ===== LIBRO DE VIDA (CONDUCTA) =====
+
+Route::get('/libro-vida', \App\Livewire\Admin\ConductRecords\Index::class)->name('conduct-records.index');
+Route::get('/libro-vida/crear', \App\Livewire\Admin\ConductRecords\Create::class)->name('conduct-records.create');
+Route::get('/libro-vida/{conductRecord}', \App\Livewire\Admin\ConductRecords\Show::class)->name('conduct-records.show');
+Route::get('/libro-vida/estudiante/{student}', \App\Livewire\Admin\ConductRecords\StudentHistory::class)->name('conduct-records.student');
+
+// ===== ACTAS DE NOTAS =====
+
+Route::get('/actas-notas', \App\Livewire\Admin\GradeReports\Index::class)->name('grade-reports.index');
+Route::get('/actas-notas/crear', \App\Livewire\Admin\GradeReports\Create::class)->name('grade-reports.create');
+Route::get('/actas-notas/{gradeReport}', \App\Livewire\Admin\GradeReports\Show::class)->name('grade-reports.show');
+
+// ===== CONSTANCIAS Y CERTIFICADOS =====
+
+Route::get('/certificados', \App\Livewire\Admin\Certificates\Index::class)->name('certificates.index');
+Route::get('/certificados/crear', \App\Livewire\Admin\Certificates\Create::class)->name('certificates.create');
+Route::get('/certificados/{certificate}', \App\Livewire\Admin\Certificates\Show::class)->name('certificates.show');
+
+// ===== SEGUIMIENTO ACADÉMICO - FASE 3 =====
+
+// Historial Académico
+Route::get('/seguimiento-academico/historial', \App\Livewire\Admin\AcademicTracking\AcademicHistory::class)->name('academic-tracking.academic-history');
+
+// Control de Promoción
+Route::get('/seguimiento-academico/control-promocion', \App\Livewire\Admin\AcademicTracking\PromotionControl::class)->name('academic-tracking.promotion-control');
+
+// Gestión de Períodos de Recuperación
+Route::get('/seguimiento-academico/periodos-recuperacion', \App\Livewire\Admin\AcademicTracking\RecoveryPeriodsManagement::class)->name('academic-tracking.recovery-periods');

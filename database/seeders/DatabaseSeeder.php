@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
             SchoolPeriodSeeder::class,
             StudentSeeder::class,
             ProgramaSeeder::class,
+            SubjectsSeeder::class,
+            StudyPlansSeeder::class,
             ConceptoPagoMejoradoSeeder::class,
             BibliotecaCategoriasSeeder::class,
             BibliotecaArchivosSeeder::class,
@@ -32,6 +34,7 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             SerieSeeder::class,
             MatriculaSeeder::class,
+            SubjectPrerequisitesSeeder::class, // Agregar prerrequisitos de ejemplo
             //PagoSeeder::class,
         ]);
     }

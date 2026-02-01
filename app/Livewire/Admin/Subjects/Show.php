@@ -14,7 +14,7 @@ class Show extends Component
 
     public function mount(Subject $subject)
     {
-        $this->subject = $subject->load(['programa', 'educationalLevel', 'teachers.user', 'createdBy', 'updatedBy']);
+        $this->subject = $subject->load(['programa', 'educationalLevel', 'teachers.user', 'createdBy', 'updatedBy', 'prerequisites.prerequisiteSubject']);
     }
 
     public function render()

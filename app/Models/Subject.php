@@ -80,6 +80,32 @@ class Subject extends Model
         return $this->hasMany(Evaluation::class);
     }
 
+    /**
+     * Relación con los prerrequisitos de la materia
+     */
+    public function prerequisites(): HasMany
+    {
+        return $this->hasMany(SubjectPrerequisite::class, 'subject_id');
+    }
+
+    /**
+     * Relación con las materias donde esta materia es prerrequisito
+     */
+    public function prerequisiteOf(): HasMany
+    {
+        return $this->hasMany(SubjectPrerequisite::class, 'prerequisite_subject_id');
+    }
+
+    /**
+     * Relación con los planes de estudio de la materia
+     */
+    public function studyPlans(): BelongsToMany
+    {
+        return $this->belongsToMany(StudyPlan::class, 'study_plan_subjects', 'subject_id', 'study_plan_id')
+                    ->withPivot('semester', 'year', 'subject_type', 'order', 'is_active')
+                    ->withTimestamps();
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

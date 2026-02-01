@@ -45,6 +45,22 @@ class Programa extends Model
         return $this->belongsTo(Sucursal::class);
     }
 
+    /**
+     * Relación con los planes de estudio del programa
+     */
+    public function studyPlans()
+    {
+        return $this->hasMany(StudyPlan::class, 'program_id');
+    }
+
+    /**
+     * Relación con las materias del programa
+     */
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class, 'program_id');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

@@ -259,6 +259,16 @@ class RolesAndPermissionsSeeder extends Seeder
                 'assign teachers',
                 'assign students',
                 'manage subject schedules',
+                'manage prerequisites',
+            ],
+            // Planes de Estudio (Study Plans)
+            'study_plans' => [
+                'access study_plans',
+                'view study_plans',
+                'create study_plans',
+                'edit study_plans',
+                'delete study_plans',
+                'export study_plans',
             ],
             // Profesores (Teachers)
             'teachers' => [
@@ -348,6 +358,48 @@ class RolesAndPermissionsSeeder extends Seeder
                 'conflict resolution',
                 'publish',
             ],
+            // Seguimiento Académico - Historial Académico
+            'academic_records' => [
+                'access academic records',
+                'view academic records',
+                'create academic records',
+                'edit academic records',
+                'delete academic records',
+                'manage academic records',
+                'export academic records',
+                'view student academic history',
+                'manage student promotion',
+                'manage student retention',
+                'manage student withdrawal',
+                'view academic statistics',
+                'generate academic reports',
+            ],
+            // Seguimiento Académico - Períodos de Recuperación
+            'recovery_periods' => [
+                'access recovery periods',
+                'view recovery periods',
+                'create recovery periods',
+                'edit recovery periods',
+                'delete recovery periods',
+                'manage recovery periods',
+                'approve recovery periods',
+                'activate recovery periods',
+                'manage recovery registrations',
+                'view recovery statistics',
+                'export recovery reports',
+            ],
+            // Seguimiento Académico - Control de Promoción
+            'promotion_control' => [
+                'access promotion control',
+                'view promotion control',
+                'manage student promotion',
+                'manage student retention',
+                'approve promotions',
+                'generate promotion reports',
+                'view promotion statistics',
+                'manage grade repetition',
+                'manage academic warnings',
+            ],
         ];
 
         // Crear permisos organizados por módulos
@@ -390,6 +442,14 @@ class RolesAndPermissionsSeeder extends Seeder
         $superAdminRole->givePermissionTo($academicPermissions);
         $adminRole->givePermissionTo($academicPermissions);
 
+        // Asignar permisos de Planes de Estudio a Administradores y Super Administradores
+        $studyPlanPermissions = Permission::whereIn('module', [
+            'study_plans'
+        ])->get();
+        
+        $superAdminRole->givePermissionTo($studyPlanPermissions);
+        $adminRole->givePermissionTo($studyPlanPermissions);
+
         // Asignar permisos de Reportes Académicos a Administradores y Super Administradores
         $academicReportsPermissions = Permission::whereIn('name', [
             'view estadisticas calificaciones materia',
@@ -400,6 +460,16 @@ class RolesAndPermissionsSeeder extends Seeder
         
         $superAdminRole->givePermissionTo($academicReportsPermissions);
         $adminRole->givePermissionTo($academicReportsPermissions);
+
+        // Asignar permisos de Seguimiento Académico a Administradores y Super Administradores
+        $academicTrackingPermissions = Permission::whereIn('module', [
+            'academic_records',
+            'recovery_periods',
+            'promotion_control'
+        ])->get();
+        
+        $superAdminRole->givePermissionTo($academicTrackingPermissions);
+        $adminRole->givePermissionTo($academicTrackingPermissions);
 
         // Asignar permisos al Recepcionista (estudiantes, matrículas, pagos, profesores, dashboard básico y algunos de Control de Estudios)
         $recepcionistaPermissions = Permission::whereIn('module', [

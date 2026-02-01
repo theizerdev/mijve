@@ -117,9 +117,9 @@
   </li>
   @endcan
 
-  @canany(['access matriculas', 'access programas', 'access subjects'])
+  @canany(['access matriculas', 'access programas', 'access subjects', 'access study_plans'])
   <!-- Matrículas y Materias -->
-  <li class="menu-item {{ request()->routeIs('admin.matriculas.*') || request()->routeIs('admin.programas.*') || request()->routeIs('admin.subjects.*') ? 'active open' : '' }}">
+  <li class="menu-item {{ request()->routeIs('admin.matriculas.*') || request()->routeIs('admin.programas.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.study-plans.*') ? 'active open' : '' }}">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
       <i class="menu-icon tf-icons ri ri-graduation-cap-line"></i>
       <div>Matrículas y Materias</div>
@@ -136,6 +136,13 @@
       <li class="menu-item {{ request()->routeIs('admin.subjects.index') ? 'active' : '' }}">
         <a href="{{ route('admin.subjects.index') }}" class="menu-link">
           <div>Materias</div>
+        </a>
+      </li>
+      @endcan
+      @can('access study_plans')
+      <li class="menu-item {{ request()->routeIs('admin.study-plans.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.study-plans.index') }}" class="menu-link">
+          <div>Planes de Estudio</div>
         </a>
       </li>
       @endcan
@@ -235,6 +242,39 @@
       <li class="menu-item {{ request()->routeIs('admin.grades.*') ? 'active' : '' }}">
         <a href="{{ route('admin.grades.index') }}" class="menu-link">
           <div>Calificaciones</div>
+        </a>
+      </li>
+      @endcan
+    </ul>
+  </li>
+  @endcan
+
+  @canany(['access academic records', 'access recovery periods', 'access promotion control'])
+  <!-- Seguimiento Académico - Fase 3 -->
+  <li class="menu-item {{ request()->routeIs('admin.academic-tracking.*') ? 'active open' : '' }}">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
+      <i class="menu-icon tf-icons ri ri-line-chart-line"></i>
+      <div>Seguimiento Académico</div>
+    </a>
+    <ul class="menu-sub">
+      @can('access academic records')
+      <li class="menu-item {{ request()->routeIs('admin.academic-tracking.academic-history') ? 'active' : '' }}">
+        <a href="{{ route('admin.academic-tracking.academic-history') }}" class="menu-link">
+          <div>Historial Académico</div>
+        </a>
+      </li>
+      @endcan
+      @can('access promotion control')
+      <li class="menu-item {{ request()->routeIs('admin.academic-tracking.promotion-control') ? 'active' : '' }}">
+        <a href="{{ route('admin.academic-tracking.promotion-control') }}" class="menu-link">
+          <div>Control de Promoción</div>
+        </a>
+      </li>
+      @endcan
+      @can('access recovery periods')
+      <li class="menu-item {{ request()->routeIs('admin.academic-tracking.recovery-periods') ? 'active' : '' }}">
+        <a href="{{ route('admin.academic-tracking.recovery-periods') }}" class="menu-link">
+          <div>Períodos de Recuperación</div>
         </a>
       </li>
       @endcan

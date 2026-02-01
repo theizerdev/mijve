@@ -71,6 +71,53 @@
                 </div>
             </div>
 
+            <!-- Prerequisites Section -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <h6 class="mb-3">Prerrequisitos</h6>
+                    @if($subject->prerequisites->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Materia Prerrequisito</th>
+                                        <th>Código</th>
+                                        <th>Tipo</th>
+                                        <th>Notas</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($subject->prerequisites as $prerequisite)
+                                        <tr>
+                                            <td>{{ $prerequisite->prerequisiteSubject->name ?? '-' }}</td>
+                                            <td>{{ $prerequisite->prerequisiteSubject->code ?? '-' }}</td>
+                                            <td>
+                                                @if($prerequisite->type === 'mandatory')
+                                                    <span class="badge bg-label-danger">Obligatorio</span>
+                                                @else
+                                                    <span class="badge bg-label-warning">Recomendado</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $prerequisite->notes ?? '-' }}</td>
+                                            <td>
+                                                <span class="badge bg-label-{{ $prerequisite->is_active ? 'success' : 'secondary' }}">
+                                                    {{ $prerequisite->is_active ? 'Activo' : 'Inactivo' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info">
+                            No hay prerrequisitos definidos para esta materia.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Teachers Section -->
             <div class="row mt-4">
                 <div class="col-md-12">
@@ -132,6 +179,11 @@
                             @can('assign teachers')
                                 <a href="{{ route('admin.subjects.assign-teachers', $subject->id) }}" class="btn btn-info">
                                     <i class="ri ri-user-settings-line me-1"></i> Asignar Profesores
+                                </a>
+                            @endcan
+                            @can('manage prerequisites')
+                                <a href="{{ route('admin.subjects.prerequisites', $subject->id) }}" class="btn btn-warning">
+                                    <i class="ri ri-book-mark-line me-1"></i> Prerrequisitos
                                 </a>
                             @endcan
                         </div>
