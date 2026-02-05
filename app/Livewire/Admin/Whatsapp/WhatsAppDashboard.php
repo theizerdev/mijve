@@ -18,7 +18,8 @@ class WhatsAppDashboard extends Component
     public $status = 'disconnected';
     public $user = null;
     public $lastSeen = null;
-    public $jwtToken = null;
+    public $whatsappApiKey = null;
+    public $companyId = null;
     public $stats = [
         'sent' => 0,
         'delivered' => 0,
@@ -33,6 +34,9 @@ class WhatsAppDashboard extends Component
     public $topRecipients = [];
     public $recentActivity = [];
     public $isLoading = false;
+    public $empresaNombre = null;
+    public $whatsappPhone = null;
+    public $error = null;
 
     public function mount()
     {
@@ -40,25 +44,42 @@ class WhatsAppDashboard extends Component
             abort(403, 'No tienes permiso para acceder a WhatsApp.');
         }
 
-        $this->generateToken();
+        $this->initializeWhatsApp();
         $this->loadDashboardData();
     }
 
-    public function generateToken()
+    /**
+     * Inicializa la configuración de WhatsApp para la empresa del usuario
+     */
+    public function initializeWhatsApp()
     {
-        $empresa = \DB::table('empresas')->where('id', 1)->first();
-        if ($empresa && $empresa->api_key) {
-            $this->jwtToken = $empresa->api_key;
+        $empresa = auth()->user()->empresa ?? null;
+        dd($this->whatsappApiKey);   
+        if ($empresa) {
+            $this->companyId = $empresa->id;
+            $this->whatsappApiKey = $empresa->whatsapp_api_key;
+            $this->empresaNombre = $empresa->razon_social;
+            $this->whatsappPhone = $empresa->whatsapp_phone;
+            
+            // Si no tiene API key, mostrar mensaje
+            if (empty($this->whatsappApiKey)) {
+                $this->error = 'Esta empresa no tiene configurada la API Key de WhatsApp. Contacte al administrador.';
+            }
         } else {
-            $jwtSecret = config('whatsapp.jwt_secret');
-            $payload = [
-                'company_id' => 1,
-                'company_name' => 'U.E JOSE MARIA VARGAS',
-                'iat' => time(),
-                'exp' => time() + (365 * 24 * 60 * 60)
-            ];
-            $this->jwtToken = JWT::encode($payload, $jwtSecret, 'HS256');
+            $this->error = 'Usuario sin empresa asignada.';
         }
+    }
+
+    /**
+     * Obtiene los headers necesarios para la API de WhatsApp
+     */
+    private function getApiHeaders(): array
+    {
+        return [
+            'X-API-Key' => $this->whatsappApiKey,
+            'X-Company-Id' => (string) $this->companyId,
+            'Content-Type' => 'application/json'
+        ];
     }
 
     public function loadDashboardData()
@@ -71,10 +92,17 @@ class WhatsAppDashboard extends Component
 
     public function checkStatus()
     {
+        
+
+        if (!$this->whatsappApiKey) {
+            $this->status = 'error';
+            return;
+        }
+
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->timeout(10)->get(config('whatsapp.api_url') . '/api/whatsapp/status');
+            $response = Http::timeout(10)
+                ->withHeaders($this->getApiHeaders())
+                ->get(config('whatsapp.api_url') . '/api/whatsapp/status');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -82,8 +110,12 @@ class WhatsAppDashboard extends Component
                 $this->user = $data['user'] ?? null;
                 $this->lastSeen = $data['lastSeen'] ?? null;
             }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            $this->status = 'service_unavailable';
+            $this->error = 'Servicio de WhatsApp no disponible.';
         } catch (\Exception $e) {
             $this->status = 'error';
+            $this->error = 'Error al verificar estado.';
         }
     }
 

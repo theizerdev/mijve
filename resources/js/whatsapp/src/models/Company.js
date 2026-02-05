@@ -24,6 +24,10 @@ const Company = sequelize.define('Company', {
     type: DataTypes.INTEGER,
     defaultValue: 60
   },
+  dailyMessageLimit: {
+    type: DataTypes.INTEGER,
+    defaultValue: 500
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true

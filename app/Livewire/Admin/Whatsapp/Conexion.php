@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Whatsapp;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
+use App\Services\WhatsAppService;
 
 class Conexion extends Component
 {
@@ -13,29 +14,60 @@ class Conexion extends Component
     public $isDisconnecting = false;
     public $error = null;
     public $success = null;
-    public $jwtToken = null;
+    public $whatsappApiKey = null;
+    public $companyId = null;
     public $user = null;
     public $lastSeen = null;
     public $pollingActive = false;
+    public $empresaNombre = null;
+    public $whatsappPhone = null;
 
     protected $listeners = ['checkConnectionStatus' => 'checkStatus'];
 
     public function mount()
     {
-        $this->generateToken();
+        $this->initializeWhatsApp();
         $this->checkStatus();
     }
 
-    public function generateToken()
+    /**
+     * Inicializa la configuración de WhatsApp para la empresa del usuario
+     */
+    public function initializeWhatsApp()
     {
         $empresa = auth()->user()->empresa ?? null;
-        $this->jwtToken = $empresa->api_key ?? null;
+        
+        if ($empresa) {
+            $this->companyId = $empresa->id;
+            $this->whatsappApiKey = $empresa->whatsapp_api_key;
+            $this->empresaNombre = $empresa->razon_social;
+            $this->whatsappPhone = $empresa->whatsapp_phone;
+            
+            // Si no tiene API key, mostrar mensaje
+            if (empty($this->whatsappApiKey)) {
+                $this->error = 'Esta empresa no tiene configurada la API Key de WhatsApp. Contacte al administrador.';
+            }
+        } else {
+            $this->error = 'Usuario sin empresa asignada.';
+        }
+    }
+
+    /**
+     * Obtiene los headers necesarios para la API de WhatsApp
+     */
+    private function getApiHeaders(): array
+    {
+        return [
+            'X-API-Key' => $this->whatsappApiKey,
+            'X-Company-Id' => (string) $this->companyId,
+            'Content-Type' => 'application/json'
+        ];
     }
 
     public function connect()
     {
-        if (!$this->jwtToken) {
-            $this->error = 'No se ha configurado la API Key de WhatsApp.';
+        if (!$this->whatsappApiKey) {
+            $this->error = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
             return;
         }
 
@@ -46,16 +78,13 @@ class Conexion extends Component
 
         try {
             $response = Http::timeout(15)
-                ->withHeaders([
-                    'X-API-Key' => $this->jwtToken,
-                    'Content-Type' => 'application/json'
-                ])
+                ->withHeaders($this->getApiHeaders())
                 ->post(config('whatsapp.api_url') . '/api/whatsapp/connect');
 
             if ($response->successful()) {
                 $this->status = 'connecting';
                 $this->pollingActive = true;
-                $this->success = 'Iniciando conexión. Espere el código QR...';
+                $this->success = 'Iniciando conexión para ' . $this->empresaNombre . '. Espere el código QR...';
                 $this->checkQR();
             } else {
                 $this->error = $response->json()['error'] ?? 'Error al iniciar conexión.';
@@ -71,15 +100,15 @@ class Conexion extends Component
 
     public function checkStatus()
     {
-        if (!$this->jwtToken) {
+        if (!$this->whatsappApiKey) {
             $this->status = 'error';
-            $this->error = 'API Key no configurada.';
+            $this->error = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
             return;
         }
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->get(config('whatsapp.api_url') . '/api/whatsapp/status');
 
             if ($response->successful()) {
@@ -87,31 +116,39 @@ class Conexion extends Component
                 $this->status = $data['connectionState'] ?? 'disconnected';
                 $this->user = $data['user'] ?? null;
                 $this->lastSeen = $data['lastSeen'] ?? null;
+                $this->whatsappPhone = $data['user']['id'] ?? $this->whatsappPhone;
 
                 if ($this->status === 'connected') {
                     $this->qrCode = null;
                     $this->pollingActive = false;
                     $this->error = null;
                     $this->dispatch('connectionUpdated', newStatus: 'connected');
+                    
+                    // Actualizar estado en la empresa
+                    $this->updateEmpresaWhatsAppStatus('connected');
                 } elseif ($this->status === 'qr_ready') {
                     $this->checkQR();
                 }
+            } else {
+                // Si la respuesta no es exitosa, mostrar el error detallado
+                $errorData = $response->json();
+                $this->error = 'Error del servidor: ' . ($errorData['error'] ?? 'Error desconocido') . ' (Código: ' . $response->status() . ')';
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             $this->status = 'service_unavailable';
-            $this->error = 'Servicio de WhatsApp no disponible.';
+            $this->error = 'Servicio de WhatsApp no disponible. No se puede conectar al servidor.';
         } catch (\Exception $e) {
-            $this->error = 'Error al verificar estado.';
+            $this->error = 'Error al verificar estado: ' . $e->getMessage();
         }
     }
 
     public function checkQR()
     {
-        if (!$this->jwtToken) return;
+        if (!$this->whatsappApiKey) return;
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->get(config('whatsapp.api_url') . '/api/whatsapp/qr');
 
             if ($response->successful()) {
@@ -129,14 +166,14 @@ class Conexion extends Component
 
     public function disconnect()
     {
-        if (!$this->jwtToken) return;
+        if (!$this->whatsappApiKey) return;
 
         $this->isDisconnecting = true;
         $this->error = null;
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->delete(config('whatsapp.api_url') . '/api/whatsapp/disconnect');
 
             if ($response->successful()) {
@@ -144,8 +181,11 @@ class Conexion extends Component
                 $this->qrCode = null;
                 $this->user = null;
                 $this->pollingActive = false;
-                $this->success = 'WhatsApp desconectado correctamente.';
+                $this->success = 'WhatsApp desconectado correctamente para ' . $this->empresaNombre;
                 $this->dispatch('connectionUpdated', newStatus: 'disconnected');
+                
+                // Actualizar estado en la empresa
+                $this->updateEmpresaWhatsAppStatus('disconnected');
             } else {
                 $this->error = $response->json()['error'] ?? 'Error al desconectar.';
             }
@@ -154,6 +194,17 @@ class Conexion extends Component
         }
 
         $this->isDisconnecting = false;
+    }
+
+    /**
+     * Actualiza el estado de WhatsApp en la empresa
+     */
+    private function updateEmpresaWhatsAppStatus(string $status): void
+    {
+        $empresa = auth()->user()->empresa;
+        if ($empresa) {
+            $empresa->updateWhatsAppStatus($status, $this->whatsappPhone);
+        }
     }
 
     public function clearMessages()

@@ -105,6 +105,9 @@ class Create extends Component
     {
         $this->validate();
 
+        // Generar API key para WhatsApp antes de crear la empresa
+        $whatsappApiKey = 'wa_' . uniqid() . '_' . bin2hex(random_bytes(8));
+
         $empresa = Empresa::create([
             'razon_social' => $this->razon_social,
             'documento' => $this->documento,
@@ -116,12 +119,40 @@ class Create extends Component
             'telefono' => $this->telefono,
             'email' => $this->email,
             'pais_id' => $this->pais_id,
+            'whatsapp_api_key' => $whatsappApiKey,
+            'whatsapp_active' => false, // Inicialmente inactivo hasta que se conecte
         ]);
 
         // Aplicar configuración regional para la nueva empresa
         $this->applyRegionalConfigurationToEmpresa($empresa);
 
-        session()->flash('message', 'Empresa creada correctamente. Configuración regional aplicada.');
+        // Sincronizar automáticamente con la API de WhatsApp
+        try {
+            $webhookUrl = config('whatsapp.api_url') . '/api/whatsapp/webhook';
+            
+            \DB::connection('whatsapp_api')->table('companies')->updateOrInsert(
+                ['id' => $empresa->id],
+                [
+                    'name' => $empresa->razon_social,
+                    'apiKey' => $whatsappApiKey,
+                    'webhookUrl' => $webhookUrl,
+                    'rateLimitPerMinute' => 60,
+                    'isActive' => 1,
+                    'createdAt' => now(),
+                    'updatedAt' => now()
+                ]
+            );
+
+            session()->flash('message', 'Empresa creada correctamente. Configuración regional aplicada y sincronizada con WhatsApp API.');
+            
+        } catch (\Exception $e) {
+            // Si falla la sincronización, igual mostrar mensaje de éxito pero con advertencia
+            session()->flash('message', 'Empresa creada correctamente. Configuración regional aplicada. Nota: No se pudo sincronizar automáticamente con WhatsApp API.');
+            \Log::error('Error sincronizando empresa nueva con WhatsApp API', [
+                'empresa_id' => $empresa->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return redirect()->route('admin.empresas.index');
     }

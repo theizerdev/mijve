@@ -16,11 +16,14 @@ class WhatsAppConnection extends Component
     public $qrCode = null;
     public $user = null;
     public $lastSeen = null;
-    public $jwtToken = null;
+    public $whatsappApiKey = null;
+    public $companyId = null;
     public $isConnecting = false;
     public $connectionError = null;
     public $autoRefresh = true;
     public $refreshInterval = 5;
+    public $empresaNombre = null;
+    public $whatsappPhone = null;
 
     protected $listeners = ['refreshConnection' => 'checkConnection'];
 
@@ -30,18 +33,52 @@ class WhatsAppConnection extends Component
             abort(403, 'No tienes permiso para acceder a WhatsApp.');
         }
         
-        $this->generateToken();
+        $this->initializeWhatsApp();
         $this->checkConnection();
-        //dd($this->generateToken());
     }
 
-    public function generateToken()
+    /**
+     * Inicializa la configuración de WhatsApp para la empresa del usuario
+     */
+    public function initializeWhatsApp()
     {
-        $this->jwtToken = config('whatsapp.api_key', 'test-api-key-vargas-centro');
+        $empresa = auth()->user()->empresa ?? null;
+        
+        if ($empresa) {
+            $this->companyId = $empresa->id;
+            $this->whatsappApiKey = $empresa->whatsapp_api_key;
+            $this->empresaNombre = $empresa->razon_social;
+            $this->whatsappPhone = $empresa->whatsapp_phone;
+            
+            // Si no tiene API key, mostrar mensaje
+            if (empty($this->whatsappApiKey)) {
+                $this->connectionError = 'Esta empresa no tiene configurada la API Key de WhatsApp. Contacte al administrador.';
+            }
+        } else {
+            $this->connectionError = 'Usuario sin empresa asignada.';
+        }
+    }
+
+    /**
+     * Obtiene los headers necesarios para la API de WhatsApp
+     */
+    private function getApiHeaders(): array
+    {
+        return [
+            'X-API-Key' => $this->whatsappApiKey,
+            'X-Company-Id' => (string) $this->companyId,
+            'Content-Type' => 'application/json'
+        ];
     }
 
     public function checkConnection()
     {
+        if (!$this->whatsappApiKey) {
+            $this->status = 'error';
+            $this->connectionError = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
+            return;
+        }
+
         try {
             $apiUrl = config('whatsapp.api_url', 'http://localhost:3001');
             
@@ -54,9 +91,9 @@ class WhatsAppConnection extends Component
                 return;
             }
             
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->timeout(10)->get($apiUrl . '/api/whatsapp/status');
+            $response = Http::timeout(10)
+                ->withHeaders($this->getApiHeaders())
+                ->get($apiUrl . '/api/whatsapp/status');
            
             if ($response->successful()) {
                 $data = $response->json();
@@ -92,10 +129,15 @@ class WhatsAppConnection extends Component
 
     public function getQRCode()
     {
+        if (!$this->whatsappApiKey) {
+            $this->qrCode = null;
+            return;
+        }
+
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->timeout(10)->get(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/qr');
+            $response = Http::timeout(10)
+                ->withHeaders($this->getApiHeaders())
+                ->get(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/qr');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -108,13 +150,18 @@ class WhatsAppConnection extends Component
 
     public function startConnection()
     {
+        if (!$this->whatsappApiKey) {
+            $this->connectionError = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
+            return;
+        }
+
         $this->isConnecting = true;
         $this->connectionError = null;
 
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->timeout(30)->post(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/connect');
+            $response = Http::timeout(30)
+                ->withHeaders($this->getApiHeaders())
+                ->post(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/connect');
 
             if ($response->successful()) {
                 $this->checkConnection();
@@ -131,10 +178,15 @@ class WhatsAppConnection extends Component
 
     public function disconnect()
     {
+        if (!$this->whatsappApiKey) {
+            session()->flash('error', 'No se ha configurado la API Key de WhatsApp para esta empresa.');
+            return;
+        }
+
         try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->jwtToken
-            ])->timeout(10)->delete(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/disconnect');
+            $response = Http::timeout(10)
+                ->withHeaders($this->getApiHeaders())
+                ->delete(config('whatsapp.api_url', 'http://localhost:3001') . '/api/whatsapp/disconnect');
 
             if ($response->successful()) {
                 $this->status = 'disconnected';

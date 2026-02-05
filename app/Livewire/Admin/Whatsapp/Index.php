@@ -15,11 +15,14 @@ class Index extends Component
     public $status = 'disconnected';
     public $user = null;
     public $lastSeen = null;
-    public $jwtToken = null;
+    public $whatsappApiKey = null;
+    public $companyId = null;
     public $messages = [];
     public $isLoading = false;
     public $connectionError = null;
     public $activeTab = 'dashboard';
+    public $empresaNombre = null;
+    public $whatsappPhone = null;
 
     public $stats = [
         'sent' => 0,
@@ -41,13 +44,42 @@ class Index extends Component
             abort(403, 'No tienes permiso para acceder a WhatsApp.');
         }
 
-        $this->generateToken();
+        $this->initializeWhatsApp();
         $this->loadDashboard();
     }
 
-    public function generateToken()
+    /**
+     * Inicializa la configuración de WhatsApp para la empresa del usuario
+     */
+    public function initializeWhatsApp()
     {
-        $this->jwtToken = auth()->user()->empresa->api_key ?? null;
+        $empresa = auth()->user()->empresa ?? null;
+        
+        if ($empresa) {
+            $this->companyId = $empresa->id;
+            $this->whatsappApiKey = $empresa->whatsapp_api_key;
+            $this->empresaNombre = $empresa->razon_social;
+            $this->whatsappPhone = $empresa->whatsapp_phone;
+            
+            // Si no tiene API key, mostrar mensaje
+            if (empty($this->whatsappApiKey)) {
+                $this->connectionError = 'Esta empresa no tiene configurada la API Key de WhatsApp. Contacte al administrador.';
+            }
+        } else {
+            $this->connectionError = 'Usuario sin empresa asignada.';
+        }
+    }
+
+    /**
+     * Obtiene los headers necesarios para la API de WhatsApp
+     */
+    private function getApiHeaders(): array
+    {
+        return [
+            'X-API-Key' => $this->whatsappApiKey,
+            'X-Company-Id' => (string) $this->companyId,
+            'Content-Type' => 'application/json'
+        ];
     }
 
     public function loadDashboard()
@@ -63,14 +95,14 @@ class Index extends Component
 
     public function checkStatus()
     {
-        if (!$this->jwtToken) {
-            $this->connectionError = 'No se ha configurado la API Key de WhatsApp.';
+        if (!$this->whatsappApiKey) {
+            $this->connectionError = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
             return;
         }
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->get(config('whatsapp.api_url') . '/api/whatsapp/status');
 
             if ($response->successful()) {
@@ -93,11 +125,11 @@ class Index extends Component
 
     public function loadMessages()
     {
-        if (!$this->jwtToken) return;
+        if (!$this->whatsappApiKey) return;
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->get(config('whatsapp.api_url') . '/api/whatsapp/messages?limit=50');
 
             if ($response->successful()) {

@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const antiBlockProtection = require('../middleware/antiBlockProtection');
 
 class WhatsAppController {
   async getStatus(req, res) {
@@ -119,6 +120,25 @@ class WhatsAppController {
         });
       }
 
+      // 🔒 PROTECCIÓN ANTI-BLOQUEO CRÍTICA
+      try {
+        await antiBlockProtection.protectMessage(req.company.id, to, message);
+      } catch (protectionError) {
+        logger.warn(`Message blocked by anti-block protection: ${protectionError.message}`, {
+          companyId: req.company.id,
+          companyName: req.company.name,
+          to,
+          reason: protectionError.message
+        });
+        
+        return res.status(429).json({ 
+          success: false, 
+          error: protectionError.message,
+          code: 'ANTI_BLOCK_PROTECTION',
+          company: req.company.name
+        });
+      }
+
       const result = await whatsappService.sendMessage(to, message, {
         type,
         mediaUrl,
@@ -128,7 +148,11 @@ class WhatsAppController {
       res.json({ 
         success: true, 
         messageId: result.messageId, 
-        company: req.company.name 
+        company: req.company.name,
+        antiBlock: {
+          protected: true,
+          message: 'Mensaje validado y protegido contra bloqueo'
+        }
       });
     } catch (error) {
       logger.error('Error sending message:', error);

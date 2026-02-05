@@ -4,82 +4,105 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Log;
 
 class SyncWhatsAppCompany extends Command
 {
-    protected $signature = 'whatsapp:sync-company';
-    protected $description = 'Sincroniza empresa con API de WhatsApp';
+    protected $signature = 'whatsapp:sync-company {empresa? : ID de la empresa a sincronizar (opcional, por defecto sincroniza todas las empresas activas)}';
+    protected $description = 'Sincroniza empresa(s) con API de WhatsApp';
 
     public function handle()
     {
-        // Obtener empresa de vargasCentro
-        $empresa = DB::table('empresas')->where('id', 1)->first();
+        $empresaId = $this->argument('empresa');
+        
+        if ($empresaId) {
+            // Sincronizar una empresa específica
+            $this->syncSingleCompany($empresaId);
+        } else {
+            // Sincronizar todas las empresas activas
+            $this->syncAllCompanies();
+        }
+    }
+
+    /**
+     * Sincroniza una empresa específica
+     */
+    private function syncSingleCompany($empresaId)
+    {
+        $empresa = DB::table('empresas')->where('id', $empresaId)->first();
         
         if (!$empresa) {
-            $this->error('Empresa con ID 1 no encontrada en tabla empresas');
+            $this->error("❌ Empresa con ID {$empresaId} no encontrada en tabla empresas");
             return;
         }
 
-        // Generar JWT token
-        $jwtSecret = config('whatsapp.jwt_secret');
-        $payload = [
-            'company_id' => $empresa->id,
-            'company_name' => $empresa->nombre ?? $empresa->name ?? 'U.E JOSE MARIA VARGAS',
-            'iat' => time(),
-            'exp' => time() + (365 * 24 * 60 * 60)
-        ];
-        $token = JWT::encode($payload, $jwtSecret, 'HS256');
+        $this->syncCompanyToWhatsAppAPI($empresa);
+    }
 
-        // Crear base de datos si no existe
-        DB::statement('CREATE DATABASE IF NOT EXISTS whatsapp_api_v2');
+    /**
+     * Sincroniza todas las empresas activas
+     */
+    private function syncAllCompanies()
+    {
+        $empresas = DB::table('empresas')->where('status', 1)->get();
         
-        // Configurar conexión a whatsapp_api_v2
-        config(['database.connections.whatsapp_api' => [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => 'whatsapp_api_v2',
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ]]);
-        
-        // Crear tabla companies si no existe
-        DB::connection('whatsapp_api')->statement('
-            CREATE TABLE IF NOT EXISTS companies (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                name VARCHAR(255),
-                apiKey TEXT,
-                webhookUrl VARCHAR(255),
-                rateLimitPerMinute INT DEFAULT 60,
-                isActive BOOLEAN DEFAULT 1,
-                createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )
-        ');
+        if ($empresas->isEmpty()) {
+            $this->warn("⚠️ No hay empresas activas para sincronizar");
+            return;
+        }
 
-        // Sincronizar con base de datos whatsapp_api_v2
-        $webhookUrl = config('whatsapp.api_url') . '/api/whatsapp/webhook';
+        $this->info("🔄 Sincronizando {$empresas->count()} empresas activas...");
         
-        DB::connection('whatsapp_api')->statement("
-            INSERT INTO companies (id, name, apiKey, webhookUrl, rateLimitPerMinute, isActive, createdAt, updatedAt) 
-            VALUES (?, ?, ?, ?, 60, 1, NOW(), NOW())
-            ON DUPLICATE KEY UPDATE 
-            name = VALUES(name),
-            apiKey = VALUES(apiKey),
-            webhookUrl = VALUES(webhookUrl),
-            updatedAt = NOW()
-        ", [
-            $empresa->id,
-            $empresa->nombre ?? $empresa->name ?? 'U.E JOSE MARIA VARGAS',
-            $token,
-            $webhookUrl
-        ]);
+        foreach ($empresas as $empresa) {
+            $this->syncCompanyToWhatsAppAPI($empresa);
+            $this->newLine();
+        }
+        
+        $this->info("✅ Sincronización completada");
+    }
 
-        $nombreEmpresa = $empresa->nombre ?? $empresa->name ?? 'U.E JOSE MARIA VARGAS';
-        $this->info("✅ Empresa {$nombreEmpresa} sincronizada con API de WhatsApp");
-        $this->info("🔑 JWT Token: {$token}");
+    /**
+     * Sincroniza una empresa individual con la API de WhatsApp
+     */
+    private function syncCompanyToWhatsAppAPI($empresa)
+    {
+        // Verificar si la empresa tiene API key configurada
+        if (empty($empresa->whatsapp_api_key)) {
+            $nombreEmpresa = $empresa->nombre ?? $empresa->name ?? "Empresa ID {$empresa->id}";
+            $this->warn("⚠️ La empresa {$nombreEmpresa} no tiene API Key de WhatsApp configurada");
+            return;
+        }
+
+        try {
+            // Usar la conexión existente a larawhatsapp
+            $whatsappConnection = DB::connection('whatsapp_api');
+            
+            // Sincronizar con tabla companies en larawhatsapp
+            $webhookUrl = config('whatsapp.api_url') . '/api/whatsapp/webhook';
+            
+            $whatsappConnection->table('companies')->updateOrInsert(
+                ['id' => $empresa->id],
+                [
+                    'name' => $empresa->razon_social ?? $empresa->name ?? 'Empresa',
+                    'apiKey' => $empresa->whatsapp_api_key,
+                    'webhookUrl' => $webhookUrl,
+                    'rateLimitPerMinute' => $empresa->whatsapp_rate_limit ?? 60,
+                    'isActive' => 1,
+                    'createdAt' => now(),
+                    'updatedAt' => now()
+                ]
+            );
+
+            $nombreEmpresa = $empresa->nombre ?? $empresa->name ?? "Empresa ID {$empresa->id}";
+            $this->info("✅ Empresa {$nombreEmpresa} sincronizada con API de WhatsApp (larawhatsapp)");
+            $this->info("🔑 API Key: " . substr($empresa->whatsapp_api_key, 0, 20) . "...");
+            
+        } catch (\Exception $e) {
+            $this->error("❌ Error al sincronizar empresa: " . $e->getMessage());
+            Log::error('Error sincronizando empresa con WhatsApp API', [
+                'empresa_id' => $empresa->id,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

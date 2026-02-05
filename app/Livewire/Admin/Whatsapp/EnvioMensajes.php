@@ -16,10 +16,13 @@ class EnvioMensajes extends Component
     public $sending = false;
     public $success = null;
     public $error = null;
-    public $jwtToken = null;
+    public $whatsappApiKey = null;
+    public $companyId = null;
     public $recentMessages = [];
     public $charCount = 0;
     public $selectedTemplate = null;
+    public $empresaNombre = null;
+    public $whatsappPhone = null;
 
     public $targetGroup = 'mayores';
     public $filterNivel = '';
@@ -69,14 +72,42 @@ class EnvioMensajes extends Component
 
     public function mount()
     {
-        $this->generateToken();
+        $this->initializeWhatsApp();
         $this->loadRecentMessages();
     }
 
-    public function generateToken()
+    /**
+     * Inicializa la configuración de WhatsApp para la empresa del usuario
+     */
+    public function initializeWhatsApp()
     {
         $empresa = auth()->user()->empresa ?? null;
-        $this->jwtToken = $empresa->api_key ?? null;
+        
+        if ($empresa) {
+            $this->companyId = $empresa->id;
+            $this->whatsappApiKey = $empresa->whatsapp_api_key;
+            $this->empresaNombre = $empresa->razon_social;
+            $this->whatsappPhone = $empresa->whatsapp_phone;
+            
+            // Si no tiene API key, mostrar mensaje
+            if (empty($this->whatsappApiKey)) {
+                $this->error = 'Esta empresa no tiene configurada la API Key de WhatsApp. Contacte al administrador.';
+            }
+        } else {
+            $this->error = 'Usuario sin empresa asignada.';
+        }
+    }
+
+    /**
+     * Obtiene los headers necesarios para la API de WhatsApp
+     */
+    private function getApiHeaders(): array
+    {
+        return [
+            'X-API-Key' => $this->whatsappApiKey,
+            'X-Company-Id' => (string) $this->companyId,
+            'Content-Type' => 'application/json'
+        ];
     }
 
     public function updatedMessage($value)
@@ -205,8 +236,8 @@ class EnvioMensajes extends Component
 
         $this->validate();
 
-        if (!$this->jwtToken) {
-            $this->error = 'No se ha configurado la API Key.';
+        if (!$this->whatsappApiKey) {
+            $this->error = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
             return;
         }
 
@@ -216,10 +247,7 @@ class EnvioMensajes extends Component
 
         try {
             $response = Http::timeout(15)
-                ->withHeaders([
-                    'X-API-Key' => $this->jwtToken,
-                    'Content-Type' => 'application/json'
-                ])
+                ->withHeaders($this->getApiHeaders())
                 ->post(config('whatsapp.api_url') . '/api/whatsapp/send', [
                     'to' => $this->to,
                     'message' => $this->message
@@ -250,8 +278,8 @@ class EnvioMensajes extends Component
             'selectedStudents' => 'required|array|min:1'
         ]);
 
-        if (!$this->jwtToken) {
-            $this->error = 'No se ha configurado la API Key.';
+        if (!$this->whatsappApiKey) {
+            $this->error = 'No se ha configurado la API Key de WhatsApp para esta empresa.';
             return;
         }
 
@@ -281,10 +309,7 @@ class EnvioMensajes extends Component
                 );
 
                 $response = Http::timeout(10)
-                    ->withHeaders([
-                        'X-API-Key' => $this->jwtToken,
-                        'Content-Type' => 'application/json'
-                    ])
+                    ->withHeaders($this->getApiHeaders())
                     ->post(config('whatsapp.api_url') . '/api/whatsapp/send', [
                         'to' => $phone,
                         'message' => $personalizedMessage
@@ -320,11 +345,11 @@ class EnvioMensajes extends Component
 
     public function loadRecentMessages()
     {
-        if (!$this->jwtToken) return;
+        if (!$this->whatsappApiKey) return;
 
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['X-API-Key' => $this->jwtToken])
+                ->withHeaders($this->getApiHeaders())
                 ->get(config('whatsapp.api_url') . '/api/whatsapp/messages?limit=5');
 
             if ($response->successful()) {
