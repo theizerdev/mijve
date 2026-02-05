@@ -20,8 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Registrar observers
-        \App\Models\Empresa::observe(\App\Observers\EmpresaObserver::class);
+        
         // Configurar vista de paginación personalizada para Livewire
         Paginator::defaultView('livewire.pagination');
         Paginator::defaultSimpleView('livewire.pagination');

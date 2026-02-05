@@ -20,22 +20,8 @@ class DatabaseSeeder extends Seeder
             PaisSeeder::class, // Agregar países antes que empresas
             EmpresaSeeder::class,
             SucursalSeeder::class,
-            ShiftSeeder::class,
-            EducationalLevelSeeder::class,
-            SchoolPeriodSeeder::class,
-            StudentSeeder::class,
-            ProgramaSeeder::class,
-            SubjectsSeeder::class,
-            StudyPlansSeeder::class,
-            ConceptoPagoMejoradoSeeder::class,
-            BibliotecaCategoriasSeeder::class,
-            BibliotecaArchivosSeeder::class,
-            MensajeriaSeeder::class,
             UsersTableSeeder::class,
             SerieSeeder::class,
-            MatriculaSeeder::class,
-            SubjectPrerequisitesSeeder::class, // Agregar prerrequisitos de ejemplo
-            //PagoSeeder::class,
         ]);
     }
 }

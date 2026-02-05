@@ -75,212 +75,7 @@
       </a>
     </li>
 
-
-
-    @can('access students')
-    <!-- Estudiantes -->
-    <li class="menu-item {{ request()->routeIs('admin.students.*') || request()->routeIs('admin.access.students') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-user-3-line"></i>
-        <div>Estudiantes</div>
-      </a>
-      <ul class="menu-sub">
-        <li class="menu-item {{ request()->routeIs('admin.students.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.students.index') }}" class="menu-link">
-            <div>Listado</div>
-          </a>
-        </li>
-        @can('create students')
-        <li class="menu-item {{ request()->routeIs('admin.students.create') ? 'active' : '' }}">
-          <a href="{{ route('admin.students.create') }}" class="menu-link">
-            <div>Crear</div>
-          </a>
-        </li>
-        @endcan
-        @can('import students')
-        <li class="menu-item {{ request()->routeIs('admin.students.import') ? 'active' : '' }}">
-          <a href="{{ route('admin.students.import') }}" class="menu-link">
-            <div>Importar</div>
-          </a>
-        </li>
-        @endcan
-        <li class="menu-item {{ request()->routeIs('admin.access.students') ? 'active' : '' }}">
-          <a href="{{ route('admin.access.students') }}" class="menu-link">
-            <div>Control de Acceso</div>
-          </a>
-        </li>
-      </ul>
-    </li>
-    @endcan
-
-    @canany(['access matriculas', 'access programas', 'access subjects', 'access study_plans'])
-  <!-- Matrículas y Materias -->
-  <li class="menu-item {{ request()->routeIs('admin.matriculas.*') || request()->routeIs('admin.programas.*') || request()->routeIs('admin.subjects.*') || request()->routeIs('admin.study-plans.*') ? 'active open' : '' }}">
-    <a href="javascript:void(0);" class="menu-link menu-toggle">
-      <i class="menu-icon tf-icons ri ri-graduation-cap-line"></i>
-      <div>Matrículas y Materias</div>
-    </a>
-    <ul class="menu-sub">
-      @can('access programas')
-      <li class="menu-item {{ request()->routeIs('admin.programas.*') ? 'active' : '' }}">
-        <a href="{{ route('admin.programas.index') }}" class="menu-link">
-          <div>Programas</div>
-        </a>
-      </li>
-      @endcan
-      @can('access subjects')
-      <li class="menu-item {{ request()->routeIs('admin.subjects.index') ? 'active' : '' }}">
-        <a href="{{ route('admin.subjects.index') }}" class="menu-link">
-          <div>Materias</div>
-        </a>
-      </li>
-      @endcan
-      @can('access study_plans')
-      <li class="menu-item {{ request()->routeIs('admin.study-plans.*') ? 'active' : '' }}">
-        <a href="{{ route('admin.study-plans.index') }}" class="menu-link">
-          <div>Planes de Estudio</div>
-        </a>
-      </li>
-      @endcan
-      @can('access teachers')
-      <li class="menu-item {{ request()->routeIs('admin.teachers.*') ? 'active' : '' }}">
-        <a href="{{ route('admin.teachers.index') }}" class="menu-link">
-          <div>Profesores</div>
-        </a>
-      </li>
-      @endcan
-      @can('access matriculas')
-      <li class="menu-item {{ request()->routeIs('admin.matriculas.index') ? 'active' : '' }}">
-        <a href="{{ route('admin.matriculas.index') }}" class="menu-link">
-          <div>Listado</div>
-        </a>
-      </li>
-      @can('create matriculas')
-      <li class="menu-item {{ request()->routeIs('admin.matriculas.create') ? 'active' : '' }}">
-        <a href="{{ route('admin.matriculas.create') }}" class="menu-link">
-          <div>Crear</div>
-        </a>
-      </li>
-      @endcan
-      @can('cambiar cuotas matriculas')
-      <li class="menu-item {{ request()->routeIs('admin.matriculas.cambiar-cuotas') ? 'active' : '' }}">
-        <a href="{{ route('admin.matriculas.cambiar-cuotas') }}" class="menu-link">
-          <div>Cambiar Cuotas</div>
-        </a>
-      </li>
-      @endcan
-      @endcan
-    </ul>
-  </li>
-  @endcan
-
-    @canany(['access evaluation periods', 'access evaluation types', 'access evaluations', 'access grades'])
-    <!-- Control de Estudios -->
-    <li class="menu-item {{ request()->routeIs('admin.evaluation-periods.*') || request()->routeIs('admin.evaluation-types.*') || request()->routeIs('admin.evaluations.*') || request()->routeIs('admin.grades.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-file-list-2-line"></i>
-        <div>Control de Estudios</div>
-      </a>
-      <ul class="menu-sub">
-        @can('access evaluation periods')
-        <li class="menu-item {{ request()->routeIs('admin.evaluation-periods.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.evaluation-periods.index') }}" class="menu-link">
-            <div>Período de Evaluación</div>
-          </a>
-        </li>
-        @endcan
-        @can('access evaluation types')
-        <li class="menu-item {{ request()->routeIs('admin.evaluation-types.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.evaluation-types.index') }}" class="menu-link">
-            <div>Tipos de Evaluación</div>
-          </a>
-        </li>
-        @endcan
-        @can('access evaluations')
-        <li class="menu-item {{ request()->routeIs('admin.evaluations.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.evaluations.index') }}" class="menu-link">
-            <div>Evaluaciones</div>
-          </a>
-        </li>
-        @endcan
-        @can('access grades')
-        <li class="menu-item {{ request()->routeIs('admin.grades.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.grades.index') }}" class="menu-link">
-            <div>Calificaciones</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
-    @canany(['access academic records', 'access recovery periods', 'access promotion control'])
-    <!-- Seguimiento Académico - Fase 3 -->
-    <li class="menu-item {{ request()->routeIs('admin.academic-tracking.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-line-chart-line"></i>
-        <div>Seguimiento Académico</div>
-      </a>
-      <ul class="menu-sub">
-        @can('access academic records')
-        <li class="menu-item {{ request()->routeIs('admin.academic-tracking.academic-history') ? 'active' : '' }}">
-          <a href="{{ route('admin.academic-tracking.academic-history') }}" class="menu-link">
-            <div>Historial Académico</div>
-          </a>
-        </li>
-        @endcan
-        @can('access promotion control')
-        <li class="menu-item {{ request()->routeIs('admin.academic-tracking.promotion-control') ? 'active' : '' }}">
-          <a href="{{ route('admin.academic-tracking.promotion-control') }}" class="menu-link">
-            <div>Control de Promoción</div>
-          </a>
-        </li>
-        @endcan
-        @can('access recovery periods')
-        <li class="menu-item {{ request()->routeIs('admin.academic-tracking.recovery-periods') ? 'active' : '' }}">
-          <a href="{{ route('admin.academic-tracking.recovery-periods') }}" class="menu-link">
-            <div>Períodos de Recuperación</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
-    @canany(['access classrooms', 'access sections', 'access schedules'])
-    <!-- Secciones y Horarios -->
-    <li class="menu-item {{ request()->routeIs('admin.classrooms.*') || request()->routeIs('admin.sections.*') || request()->routeIs('admin.schedules.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-calendar-schedule-line"></i>
-        <div>Secciones y Horarios</div>
-      </a>
-      <ul class="menu-sub">
-        @can('access classrooms')
-        <li class="menu-item {{ request()->routeIs('admin.classrooms.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.classrooms.index') }}" class="menu-link">
-            <div>Aulas</div>
-          </a>
-        </li>
-        @endcan
-        @can('access sections')
-        <li class="menu-item {{ request()->routeIs('admin.sections.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.sections.index') }}" class="menu-link">
-            <div>Secciones</div>
-          </a>
-        </li>
-        @endcan
-        @can('access schedules')
-        <li class="menu-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.schedules.index') }}" class="menu-link">
-            <div>Horarios</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
-    @canany(['access pagos', 'access conceptos pago', 'access cajas'])
+    @canany(['access conceptos pago', 'access cajas'])
     <!-- Pagos y Finanzas -->
     <li class="menu-item {{ request()->routeIs('admin.pagos.*') || request()->routeIs('admin.conceptos-pago.*') || request()->routeIs('admin.cajas.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -288,20 +83,8 @@
         <div>Pagos y Finanzas</div>
       </a>
       <ul class="menu-sub">
-        @can('access pagos')
-        <li class="menu-item {{ request()->routeIs('admin.pagos.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.pagos.index') }}" class="menu-link">
-            <div>Pagos</div>
-          </a>
-        </li>
-        @can('create pagos')
-        <li class="menu-item {{ request()->routeIs('admin.pagos.create') ? 'active' : '' }}">
-          <a href="{{ route('admin.pagos.create') }}" class="menu-link">
-            <div>Registrar Pago</div>
-          </a>
-        </li>
-        @endcan
-        @endcan
+       
+     
         @can('access conceptos pago')
         <li class="menu-item {{ request()->routeIs('admin.conceptos-pago.index') ? 'active' : '' }}">
           <a href="{{ route('admin.conceptos-pago.index') }}" class="menu-link">
@@ -316,94 +99,11 @@
           </a>
         </li>
         @endcan
-        @can('access late payment rules')
-        <li class="menu-item {{ request()->routeIs('admin.late-payment-rules.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.late-payment-rules.index') }}" class="menu-link">
-            <div>Reglas de Morosidad</div>
-          </a>
-        </li>
-        @endcan
       </ul>
     </li>
     @endcan
 
-    @can('access reportes')
-    <!-- Reportes -->
-    <li class="menu-item {{ request()->routeIs('admin.reportes.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-file-chart-line"></i>
-        <div>Reportes</div>
-      </a>
-      <ul class="menu-sub">
-        @can('view estado cuentas')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.estado-cuentas') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.estado-cuentas') }}" class="menu-link">
-            <div>Estado de Cuentas</div>
-          </a>
-        </li>
-        @endcan
-        @can('view resumen pagos')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.resumen-pagos') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.resumen-pagos') }}" class="menu-link">
-            <div>Resumen de Pagos</div>
-          </a>
-        </li>
-        @endcan
-        @can('view morosidad')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.morosidad') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.morosidad') }}" class="menu-link">
-            <div>Morosidad</div>
-          </a>
-        </li>
-        @endcan
-        @can('view ingresos totales')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.ingresos-totales') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.ingresos-totales') }}" class="menu-link">
-            <div>Ingresos Totales</div>
-          </a>
-        </li>
-        @endcan
-        @can('view historico matriculas')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.historico-matriculas') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.historico-matriculas') }}" class="menu-link">
-            <div>Histórico Matrículas</div>
-          </a>
-        </li>
-        @endcan
-        
-        <!-- Reportes Académicos - Fase 1 -->
-        @can('view estadisticas calificaciones materia')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.estadisticas-calificaciones-materia') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.estadisticas-calificaciones-materia') }}" class="menu-link">
-            <div>Estadísticas Calificaciones</div>
-          </a>
-        </li>
-        @endcan
-        @can('view rendimiento estudiantil periodo')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.rendimiento-estudiantil-periodo') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.rendimiento-estudiantil-periodo') }}" class="menu-link">
-            <div>Rendimiento Estudiantil</div>
-          </a>
-        </li>
-        @endcan
-        @can('view asistencia evaluaciones')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.asistencia-evaluaciones') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.asistencia-evaluaciones') }}" class="menu-link">
-            <div>Asistencia y Evaluaciones</div>
-          </a>
-        </li>
-        @endcan
-        @can('view boletines calificaciones')
-        <li class="menu-item {{ request()->routeIs('admin.reportes.boletines-calificaciones') ? 'active' : '' }}">
-          <a href="{{ route('admin.reportes.boletines-calificaciones') }}" class="menu-link">
-            <div>Boletines de Calificaciones</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
+   
 
 
     @canany(['access empresas', 'access sucursales', 'access school periods', 'access niveles educativos', 'access turnos'])
@@ -435,27 +135,7 @@
           </a>
         </li>
         @endcan
-        @can('access school periods')
-        <li class="menu-item {{ request()->routeIs('admin.school-periods.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.school-periods.index') }}" class="menu-link">
-            <div>Períodos Escolares</div>
-          </a>
-        </li>
-        @endcan
-        @can('access niveles educativos')
-        <li class="menu-item {{ request()->routeIs('admin.niveles-educativos.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.niveles-educativos.index') }}" class="menu-link">
-            <div>Niveles Educativos</div>
-          </a>
-        </li>
-        @endcan
-        @can('access turnos')
-        <li class="menu-item {{ request()->routeIs('admin.turnos.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.turnos.index') }}" class="menu-link">
-            <div>Turnos</div>
-          </a>
-        </li>
-        @endcan
+       
       </ul>
     </li>
     @endcan
@@ -489,91 +169,18 @@
     </li>
 
 
-
-    @can('access mensajeria')
-    <!-- Mensajería -->
-    <li class="menu-item {{ request()->routeIs('admin.mensajeria.*') ? 'active' : '' }}">
-      <a href="{{ route('admin.mensajeria.index') }}" class="menu-link">
-        <i class="menu-icon tf-icons ri ri-mail-line"></i>
-        <div>Mensajería</div>
-      </a>
-    </li>
-    @endcan
-
-    @can('access whatsapp')
     <!-- WhatsApp -->
-    <li class="menu-item {{ request()->routeIs('admin.whatsapp.*') ? 'active open' : '' }}">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons ri ri-whatsapp-line"></i>
-        <div>WhatsApp</div>
-      </a>
-      <ul class="menu-sub">
-        @can('access whatsapp')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.dashboard') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.dashboard') }}" class="menu-link">
-            <div>Dashboard</div>
-          </a>
-        </li>
+    @can('access whatsapp')
         <li class="menu-item {{ request()->routeIs('admin.whatsapp.connection') ? 'active' : '' }}">
           <a href="{{ route('admin.whatsapp.connection') }}" class="menu-link">
-            <div>Conexión</div>
+               <i class="menu-icon tf-icons ri ri-whatsapp-line"></i>
+            <div>Whatsapp</div>
           </a>
         </li>
-        @endcan
-        @can('create whatsapp templates')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.templates.index') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.templates.index') }}" class="menu-link">
-            <div>Plantillas</div>
-          </a>
-        </li>
-        @endcan
-        @can('send whatsapp messages')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.send-messages') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.send-messages') }}" class="menu-link">
-            <div>Enviar Mensajes</div>
-          </a>
-        </li>
-        @endcan
-        @can('send whatsapp messages')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.history') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.history') }}" class="menu-link">
-            <div>Historial</div>
-          </a>
-        </li>
-        @endcan
-        @can('schedule whatsapp messages')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.scheduled-messages') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.scheduled-messages') }}" class="menu-link">
-            <div>Mensajes Programados</div>
-          </a>
-        </li>
-        @endcan
-        @can('view whatsapp statistics')
-        <li class="menu-item {{ request()->routeIs('admin.whatsapp.statistics') ? 'active' : '' }}">
-          <a href="{{ route('admin.whatsapp.statistics') }}" class="menu-link">
-            <div>Estadísticas</div>
-          </a>
-        </li>
-        @endcan
-      </ul>
-    </li>
-    @endcan
-
-    @can('access biblioteca')
-    <!-- Biblioteca Digital -->
-    <li class="menu-item {{ request()->routeIs('admin.biblioteca.*') ? 'active' : '' }}">
-      <a href="{{ route('admin.biblioteca.index') }}" class="menu-link">
-        <i class="menu-icon tf-icons ri ri-book-2-line"></i>
-        <div>Biblioteca</div>
-      </a>
-    </li>
     @endcan
 
 
-
-
-
-    @canany(['access users', 'access roles', 'access permissions'])
+   @canany(['access users', 'access roles', 'access permissions'])
     <!-- Usuarios y Permisos -->
     <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') ? 'active open' : '' }}">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
