@@ -25,48 +25,8 @@ class RegionalConfigurationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Registrar helpers globales
-        $this->registerGlobalHelpers();
-
         // Registrar eventos para cambios de empresa
         $this->registerEvents();
-    }
-
-    /**
-     * Registrar helpers globales para configuración regional
-     */
-    private function registerGlobalHelpers(): void
-    {
-        // Helper para obtener configuración actual
-        if (!function_exists('current_regional_config')) {
-            function current_regional_config() {
-                return \App\Services\RegionalConfigurationService::getCurrentConfiguration();
-            }
-        }
-
-        // Helper para obtener el país actual
-        if (!function_exists('current_pais')) {
-            function current_pais() {
-                $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
-                return $config['pais'] ?? null;
-            }
-        }
-
-        // Helper para obtener la moneda actual
-        if (!function_exists('current_currency')) {
-            function current_currency() {
-                $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
-                return $config['currency'] ?? config('app.currency', 'USD');
-            }
-        }
-
-        // Helper para obtener el símbolo de moneda actual
-        if (!function_exists('current_currency_symbol')) {
-            function current_currency_symbol() {
-                $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
-                return $config['currency_symbol'] ?? '$';
-            }
-        }
     }
 
     /**
@@ -81,5 +41,33 @@ class RegionalConfigurationServiceProvider extends ServiceProvider
                 RegionalConfigurationService::setRegionalConfiguration($empresa);
             }
         );
+    }
+}
+
+// Helpers globales definidos fuera de la clase para evitar redeclaración en tests
+if (!function_exists('App\Providers\current_regional_config')) {
+    function current_regional_config() {
+        return \App\Services\RegionalConfigurationService::getCurrentConfiguration();
+    }
+}
+
+if (!function_exists('App\Providers\current_pais')) {
+    function current_pais() {
+        $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
+        return $config['pais'] ?? null;
+    }
+}
+
+if (!function_exists('App\Providers\current_currency')) {
+    function current_currency() {
+        $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
+        return $config['currency'] ?? config('app.currency', 'USD');
+    }
+}
+
+if (!function_exists('App\Providers\current_currency_symbol')) {
+    function current_currency_symbol() {
+        $config = \App\Services\RegionalConfigurationService::getCurrentConfiguration();
+        return $config['currency_symbol'] ?? '$';
     }
 }

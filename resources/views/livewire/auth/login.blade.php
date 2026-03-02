@@ -6,8 +6,8 @@
         <!-- Logo -->
         <div class="app-brand justify-content-center mt-5">
           <a href="{{ url('/') }}" class="app-brand-link gap-2">
+            <img src="{{ asset('logo/logo.png') }}" alt="logo" style="height: 120px;" />
            
-            <span class="app-brand-text demo text-heading fw-semibold">{{ config('app.name', 'Laravel') }}</span>
           </a>
         </div>
         <!-- /Logo -->
@@ -64,9 +64,7 @@
                 <input class="form-check-input" type="checkbox" id="remember-me" wire:model="remember" />
                 <label class="form-check-label" for="remember-me"> {{ __('auth_ui.remember_me') }} </label>
               </div>
-              <a href="{{ route('password.request') }}" class="float-end mb-1 mt-2">
-                <span>{{ __('auth_ui.forgot_password') }}</span>
-              </a>
+              
             </div>
             <div class="mb-5">
               <button class="btn btn-primary d-grid w-100" type="submit">{{ __('auth_ui.login_button') }}</button>

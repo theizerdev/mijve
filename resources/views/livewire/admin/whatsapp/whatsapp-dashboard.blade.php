@@ -14,12 +14,12 @@
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 Actualizando...
                             @else
-                                <i class="ri-refresh-line me-2"></i>
+                                <i class="ri ri-refresh-line me-2"></i>
                                 Actualizar
                             @endif
                         </button>
                         <a href="{{ route('admin.whatsapp.connection') }}" class="btn btn-outline-primary">
-                            <i class="ri-link me-2"></i>
+                            <i class="ri ri-link me-2"></i>
                             Gestionar Conexión
                         </a>
                     </div>
@@ -45,7 +45,7 @@
                                 </h3>
                                 @if($user)
                                     <small class="text-muted">
-                                        <i class="ri-user-line me-1"></i>
+                                        <i class="ri ri-user-line me-1"></i>
                                         {{ $user['name'] ?? 'Usuario' }}
                                     </small>
                                 @endif
@@ -62,7 +62,7 @@
                             <div class="card-body text-center">
                                 <div class="avatar avatar-md mx-auto mb-2">
                                     <span class="avatar-initial rounded bg-primary">
-                                        <i class="ri-send-plane-line mdi-20px"></i>
+                                        <i class="ri ri-send-plane-line mdi-20px"></i>
                                     </span>
                                 </div>
                                 <h4 class="mb-1">{{ $stats['sent'] }}</h4>
@@ -75,7 +75,7 @@
                             <div class="card-body text-center">
                                 <div class="avatar avatar-md mx-auto mb-2">
                                     <span class="avatar-initial rounded bg-success">
-                                        <i class="ri-inbox-line mdi-20px"></i>
+                                        <i class="ri ri-inbox-line mdi-20px"></i>
                                     </span>
                                 </div>
                                 <h4 class="mb-1">{{ $stats['received'] }}</h4>
@@ -88,7 +88,7 @@
                             <div class="card-body text-center">
                                 <div class="avatar avatar-md mx-auto mb-2">
                                     <span class="avatar-initial rounded bg-danger">
-                                        <i class="ri-error-warning-line mdi-20px"></i>
+                                        <i class="ri ri-error-warning-line mdi-20px"></i>
                                     </span>
                                 </div>
                                 <h4 class="mb-1">{{ $stats['failed'] }}</h4>
@@ -107,11 +107,11 @@
                     <div class="card-header bg-transparent border-0 pb-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
-                                <i class="ri-message-3-line me-2"></i>
+                                <i class="ri ri-message-3-line me-2"></i>
                                 Mensajes Recientes
                             </h5>
                             <a href="{{ route('admin.whatsapp.send-messages') }}" class="btn btn-sm btn-outline-primary">
-                                <i class="ri-add-line me-1"></i>
+                                <i class="ri ri-add-line me-1"></i>
                                 Nuevo Mensaje
                             </a>
                         </div>
@@ -133,7 +133,7 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="ri-{{ $message['direction'] === 'outbound' ? 'send-plane' : 'inbox' }}-line me-2"></i>
+                                                        <i class="ri ri-{{ $message['direction'] === 'outbound' ? 'send-plane' : 'inbox' }}-line me-2"></i>
                                                         {{ $message['from'] ?? $message['to'] ?? 'Desconocido' }}
                                                     </div>
                                                 </td>
@@ -163,10 +163,10 @@
                             </div>
                         @else
                             <div class="text-center py-4">
-                                <i class="ri-inbox-line ri-3x text-muted mb-3"></i>
+                                <i class="ri ri-inbox-line ri-3x text-muted mb-3"></i>
                                 <p class="text-muted">No hay mensajes recientes</p>
                                 <a href="{{ route('admin.whatsapp.send-messages') }}" class="btn btn-primary">
-                                    <i class="ri-send-plane-line me-2"></i>
+                                    <i class="ri ri-send-plane-line me-2"></i>
                                     Enviar primer mensaje
                                 </a>
                             </div>
@@ -182,7 +182,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-transparent border-0 pb-0">
                         <h5 class="card-title mb-0">
-                            <i class="ri-lightbulb-line me-2"></i>
+                            <i class="ri ri-lightbulb-line me-2"></i>
                             Acciones Rápidas
                         </h5>
                     </div>
@@ -190,7 +190,7 @@
                         <div class="row g-3">
                             <div class="col-lg-3 col-md-6">
                                 <a href="{{ route('admin.whatsapp.connection') }}" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center py-3">
-                                    <i class="ri-link me-2"></i>
+                                    <i class="ri ri-link me-2"></i>
                                     <div class="text-start">
                                         <div class="fw-bold">Conexión</div>
                                         <small class="text-muted">Gestionar conexión</small>
@@ -199,7 +199,7 @@
                             </div>
                             <div class="col-lg-3 col-md-6">
                                 <a href="{{ route('admin.whatsapp.send-messages') }}" class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center py-3">
-                                    <i class="ri-send-plane-line me-2"></i>
+                                    <i class="ri ri-send-plane-line me-2"></i>
                                     <div class="text-start">
                                         <div class="fw-bold">Enviar Mensajes</div>
                                         <small class="text-muted">Nuevo mensaje</small>
@@ -208,7 +208,7 @@
                             </div>
                             <div class="col-lg-3 col-md-6">
                                 <a href="{{ route('admin.whatsapp.templates.index') }}" class="btn btn-outline-info w-100 d-flex align-items-center justify-content-center py-3">
-                                    <i class="ri-file-text-line me-2"></i>
+                                    <i class="ri ri-file-text-line me-2"></i>
                                     <div class="text-start">
                                         <div class="fw-bold">Plantillas</div>
                                         <small class="text-muted">Gestionar plantillas</small>
@@ -217,7 +217,7 @@
                             </div>
                             <div class="col-lg-3 col-md-6">
                                 <a href="{{ route('admin.whatsapp.history') }}" class="btn btn-outline-warning w-100 d-flex align-items-center justify-content-center py-3">
-                                    <i class="ri-history-line me-2"></i>
+                                    <i class="ri ri-history-line me-2"></i>
                                     <div class="text-start">
                                         <div class="fw-bold">Historial</div>
                                         <small class="text-muted">Ver historial completo</small>
@@ -235,7 +235,7 @@
     @if (session()->has('message'))
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="ri-check-line me-2"></i>
+                <i class="ri ri-check-line me-2"></i>
                 {{ session('message') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>

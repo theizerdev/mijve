@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'track-active-session' => \App\Http\Middleware\TrackActiveSession::class,
             'superadmin' => App\Http\Middleware\RedirectIfSuperAdmin::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'scope-by-extension' => \App\Http\Middleware\ScopeByExtension::class,
+            'audit-access' => \App\Http\Middleware\AuditAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

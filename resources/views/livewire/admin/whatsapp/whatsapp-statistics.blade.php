@@ -11,7 +11,7 @@
                     <div class="d-flex gap-2">
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="ri-download-line me-2"></i>
+                                <i class="ri ri-download-line me-2"></i>
                                 Exportar
                             </button>
                             <ul class="dropdown-menu">
@@ -20,7 +20,7 @@
                             </ul>
                         </div>
                         <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line me-2"></i>
+                            <i class="ri ri-arrow-left-line me-2"></i>
                             Volver al Dashboard
                         </a>
                     </div>
@@ -83,7 +83,7 @@
                                 <button type="button" 
                                         wire:click="resetFilters" 
                                         class="btn btn-outline-secondary w-100">
-                                    <i class="ri-refresh-line"></i>
+                                    <i class="ri ri-refresh-line"></i>
                                 </button>
                             </div>
                         </div>
@@ -98,7 +98,7 @@
                 <a class="nav-link @if($activeTab === 'overview') active @endif" 
                    wire:click="$set('activeTab', 'overview')" 
                    href="#">
-                   <i class="ri-dashboard-line me-2"></i>
+                   <i class="ri ri-dashboard-line me-2"></i>
                     Vista General
                 </a>
             </li>
@@ -106,7 +106,7 @@
                 <a class="nav-link @if($activeTab === 'detailed') active @endif" 
                    wire:click="$set('activeTab', 'detailed')" 
                    href="#">
-                   <i class="ri-file-list-line me-2"></i>
+                   <i class="ri ri-file-list-line me-2"></i>
                     Detalle de Mensajes
                 </a>
             </li>
@@ -120,7 +120,7 @@
                         <div class="card-body text-center">
                             <div class="avatar avatar-sm mx-auto mb-3">
                                 <span class="avatar-initial rounded-circle bg-primary">
-                                    <i class="ri-message-3-line"></i>
+                                    <i class="ri ri-message-3-line"></i>
                                 </span>
                             </div>
                             <h3 class="mb-1">{{ number_format($statistics['total']) }}</h3>
@@ -133,7 +133,7 @@
                         <div class="card-body text-center">
                             <div class="avatar avatar-sm mx-auto mb-3">
                                 <span class="avatar-initial rounded-circle bg-success">
-                                    <i class="ri-send-plane-line"></i>
+                                    <i class="ri ri-send-plane-line"></i>
                                 </span>
                             </div>
                             <h3 class="mb-1">{{ number_format($statistics['delivered']) }}</h3>
@@ -147,7 +147,7 @@
                         <div class="card-body text-center">
                             <div class="avatar avatar-sm mx-auto mb-3">
                                 <span class="avatar-initial rounded-circle bg-info">
-                                    <i class="ri-eye-line"></i>
+                                    <i class="ri ri-eye-line"></i>
                                 </span>
                             </div>
                             <h3 class="mb-1">{{ number_format($statistics['read']) }}</h3>
@@ -161,7 +161,7 @@
                         <div class="card-body text-center">
                             <div class="avatar avatar-sm mx-auto mb-3">
                                 <span class="avatar-initial rounded-circle bg-danger">
-                                    <i class="ri-error-warning-line"></i>
+                                    <i class="ri ri-error-warning-line"></i>
                                 </span>
                             </div>
                             <h3 class="mb-1">{{ number_format($statistics['failed']) }}</h3>
@@ -278,7 +278,7 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="ri-user-line me-2 text-muted"></i>
+                                                        <i class="ri ri-user-line me-2 text-muted"></i>
                                                         {{ $user->user->name ?? 'Usuario eliminado' }}
                                                     </div>
                                                 </td>
@@ -317,7 +317,7 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="ri-file-text-line me-2 text-muted"></i>
+                                                        <i class="ri ri-file-text-line me-2 text-muted"></i>
                                                         {{ $template->template->name ?? 'Plantilla eliminada' }}
                                                     </div>
                                                 </td>
@@ -379,7 +379,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="ri-whatsapp-line me-2 text-success"></i>
+                                                        <i class="ri ri-whatsapp-line me-2 text-success"></i>
                                                         <div>
                                                             <div class="fw-bold">+58{{ $message->recipient }}</div>
                                                             @if($message->student)
@@ -415,7 +415,7 @@
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="ri-user-line me-2 text-muted"></i>
+                                                        <i class="ri ri-user-line me-2 text-muted"></i>
                                                         <div>
                                                             <div class="fw-bold">{{ $message->user->name }}</div>
                                                             <small class="text-muted">{{ $message->user->email }}</small>
@@ -426,7 +426,7 @@
                                         @empty
                                             <tr>
                                                 <td colspan="6" class="text-center py-4">
-                                                    <i class="ri-file-list-line ri-3x text-muted mb-3"></i>
+                                                    <i class="ri ri-file-list-line ri-3x text-muted mb-3"></i>
                                                     <h6 class="text-muted">No hay mensajes registrados</h6>
                                                     <p class="text-muted small">Los mensajes aparecerán aquí según los filtros aplicados</p>
                                                 </td>
@@ -456,7 +456,7 @@
     @if(session()->has('success'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ri-check-line me-2"></i>
+            <i class="ri ri-check-line me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -466,7 +466,7 @@
     @if(session()->has('error'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="ri-error-warning-line me-2"></i>
+            <i class="ri ri-error-warning-line me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

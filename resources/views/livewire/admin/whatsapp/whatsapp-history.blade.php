@@ -10,7 +10,7 @@
                     </div>
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line me-2"></i>
+                            <i class="ri ri-arrow-left-line me-2"></i>
                             Volver al Dashboard
                         </a>
                     </div>
@@ -25,7 +25,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-primary">
-                                <i class="ri-message-3-line"></i>
+                                <i class="ri ri-message-3-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['total'] }}</h4>
@@ -38,7 +38,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-info">
-                                <i class="ri-send-plane-line"></i>
+                                <i class="ri ri-send-plane-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['sent'] }}</h4>
@@ -51,7 +51,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-success">
-                                <i class="ri-check-double-line"></i>
+                                <i class="ri ri-check-double-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['delivered'] }}</h4>
@@ -64,7 +64,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-warning">
-                                <i class="ri-eye-line"></i>
+                                <i class="ri ri-eye-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['read'] }}</h4>
@@ -77,7 +77,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-danger">
-                                <i class="ri-error-warning-line"></i>
+                                <i class="ri ri-error-warning-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['failed'] }}</h4>
@@ -90,7 +90,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-secondary">
-                                <i class="ri-calendar-line"></i>
+                                <i class="ri ri-calendar-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['today'] }}</h4>
@@ -144,7 +144,7 @@
                                     <button type="button" 
                                             wire:click="resetFilters" 
                                             class="btn btn-outline-secondary">
-                                        <i class="ri-refresh-line"></i>
+                                        <i class="ri ri-refresh-line"></i>
                                         Limpiar
                                     </button>
                                 </div>
@@ -199,7 +199,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ri-whatsapp-line me-2 text-success"></i>
+                                                    <i class="ri ri-whatsapp-line me-2 text-success"></i>
                                                     <div>
                                                         <div class="fw-bold">+58{{ $message->recipient }}</div>
                                                         @if($message->student)
@@ -245,7 +245,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ri-user-line me-2 text-muted"></i>
+                                                    <i class="ri ri-user-line me-2 text-muted"></i>
                                                     <div>
                                                         <div class="fw-bold">{{ $message->user->name }}</div>
                                                         <small class="text-muted">{{ $message->user->email }}</small>
@@ -258,14 +258,14 @@
                                                         <button wire:click="retryMessage({{ $message->id }})" 
                                                                 class="btn btn-sm btn-outline-warning"
                                                                 title="Reintentar envío">
-                                                            <i class="ri-refresh-line"></i>
+                                                            <i class="ri ri-refresh-line"></i>
                                                         </button>
                                                     @endif
                                                     <button wire:click="deleteMessage({{ $message->id }})" 
                                                             class="btn btn-sm btn-outline-danger"
                                                             title="Eliminar mensaje"
                                                             onclick="confirm('¿Estás seguro de eliminar este mensaje?') || event.stopImmediatePropagation()">
-                                                        <i class="ri-delete-bin-line"></i>
+                                                        <i class="ri ri-delete-bin-line"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -273,7 +273,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="8" class="text-center py-4">
-                                                <i class="ri-message-3-line ri-3x text-muted mb-3"></i>
+                                                <i class="ri ri-message-3-line ri-3x text-muted mb-3"></i>
                                                 <h6 class="text-muted">No hay mensajes registrados</h6>
                                                 <p class="text-muted small">Los mensajes enviados aparecerán aquí</p>
                                             </td>
@@ -302,7 +302,7 @@
     @if(session()->has('success'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ri-check-line me-2"></i>
+            <i class="ri ri-check-line me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -312,7 +312,7 @@
     @if(session()->has('error'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="ri-error-warning-line me-2"></i>
+            <i class="ri ri-error-warning-line me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

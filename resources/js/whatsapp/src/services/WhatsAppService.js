@@ -15,13 +15,18 @@ const Message = require('../models/Message');
 const Session = require('../models/Session');
 
 class WhatsAppService {
-  constructor(io) {
+  constructor(io, company) {
     this.io = io;
+    this.company = company; // Empresa asociada
     this.sock = null;
     this.qrCode = null;
     this.isConnected = false;
     this.isConnecting = false;
-    this.sessionPath = path.join('storage', 'sessions', process.env.WHATSAPP_SESSION_NAME || 'default');
+    
+    // Ruta de sesión específica por empresa
+    const sessionName = company ? `company_${company.id}` : (process.env.WHATSAPP_SESSION_NAME || 'default');
+    this.sessionPath = path.join('storage', 'sessions', sessionName);
+    
     this.queueService = QueueService;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
@@ -200,6 +205,18 @@ class WhatsAppService {
         const QRTerminal = require('qrcode-terminal');
         QRTerminal.generate(qr, { small: true });
       }
+
+      // Persistir estado en DB
+      if (this.company) {
+        await Session.upsert({
+          id: `session_${this.company.id}`,
+          companyId: this.company.id,
+          status: 'qr_ready',
+          qrCode: qr,
+          lastSeen: new Date(),
+          updatedAt: new Date()
+        });
+      }
       
     } catch (error) {
       logger.error('Error generando código QR:', error);
@@ -216,16 +233,30 @@ class WhatsAppService {
     
     logger.whatsapp('✅ Conectado a WhatsApp exitosamente');
     
+    // Persistir conexión exitosa
+    if (this.company) {
+      await Session.upsert({
+        id: `session_${this.company.id}`,
+        companyId: this.company.id,
+        status: 'connected',
+        qrCode: null,
+        phoneNumber: this.sock?.user?.id?.split(':')[0],
+        deviceName: this.sock?.user?.name || 'WhatsApp Web',
+        lastSeen: new Date(),
+        sessionData: {
+          user: this.sock?.user,
+          platform: 'baileys'
+        },
+        updatedAt: new Date()
+      });
+    }
+
     // Emitir estado de conexión
     this.io.emit('connection-status', {
       status: 'connected',
       timestamp: new Date().toISOString(),
       user: this.sock.user
     });
-    
-
-    
-
   }
 
   async handleDisconnection(lastDisconnect) {
@@ -244,6 +275,17 @@ class WhatsAppService {
     
     this.connectionState = shouldReconnect ? 'reconnecting' : 'disconnected';
     
+    // Actualizar estado en DB
+    if (this.company) {
+      await Session.update({
+        status: this.connectionState,
+        lastSeen: new Date(),
+        qrCode: null
+      }, {
+        where: { companyId: this.company.id }
+      });
+    }
+
     // Emitir estado de desconexión
     this.io.emit('connection-status', {
       status: this.connectionState,
@@ -262,9 +304,18 @@ class WhatsAppService {
       }, delay);
     } else {
       this.connectionState = 'disconnected';
-      logger.whatsapp('Máximo de reintentos alcanzado o sesión cerrada');
       
+      // Marcar como desconectado permanentemente en DB
+      if (this.company) {
+        await Session.update({
+          status: 'disconnected',
+          lastSeen: new Date()
+        }, {
+          where: { companyId: this.company.id }
+        });
+      }
 
+      logger.whatsapp('Máximo de reintentos alcanzado o sesión cerrada');
     }
   }
 
@@ -325,15 +376,15 @@ class WhatsAppService {
         return;
       }
       
-      // Guardar en base de datos
-      await Message.create({
+      // Guardar en base de datos (evitar errores por duplicado usando upsert)
+      await Message.upsert({
         messageId: messageInfo.id,
         from: messageInfo.from,
         to: this.sock.user?.id || 'self',
         message: messageContent,
         type: 'text',
         status: 'delivered',
-        companyId: 1
+        companyId: this.company ? this.company.id : 1
       });
       
       // Emitir a clientes conectados
@@ -361,31 +412,75 @@ class WhatsAppService {
         messageContent = content;
       }
       
-      // Enviar mensaje
-      const result = await this.sock.sendMessage(jid, messageContent, options);
+      // Envío con reintentos y backoff exponencial
+      const maxRetries = parseInt(process.env.WHATSAPP_MAX_RETRIES) || 3;
+      const baseDelay = parseInt(process.env.WHATSAPP_RETRY_DELAY) || 2000; // ms
+      let attempt = 0;
+      let lastError = null;
+      let result = null;
       
-      logger.message('sent', {
-        to: jid,
-        messageId: result.key.id,
-        timestamp: new Date().toISOString()
-      });
+      while (attempt <= maxRetries) {
+        try {
+          result = await this.sock.sendMessage(jid, messageContent, options);
+          
+          logger.message('sent', {
+            to: jid,
+            messageId: result.key.id,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Persistir éxito
+          await Message.create({
+            messageId: result.key.id,
+            from: this.sock.user?.id || 'self',
+            to: jid,
+            message: typeof messageContent === 'string' ? messageContent : JSON.stringify(messageContent),
+            type: options.type || 'text',
+            status: 'sent',
+            companyId: options.companyId || (this.company ? this.company.id : 1)
+          });
+          
+          return {
+            success: true,
+            messageId: result.key.id,
+            timestamp: result.messageTimestamp
+          };
+        } catch (err) {
+          lastError = err;
+          attempt += 1;
+          
+          // Clasificar error (network/transient)
+          const isTransient = this.isTransientError(err);
+          
+          logger.error('Error enviando mensaje (intento ' + attempt + ')', {
+            error: err.message,
+            to: jid,
+            transient: isTransient
+          });
+          
+          if (!isTransient || attempt > maxRetries) {
+            break;
+          }
+          
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          await this.sleep(delay);
+        }
+      }
       
-      // Guardar en base de datos
+      // Registrar fallo final
       await Message.create({
-        messageId: result.key.id,
+        messageId: 'FAILED_' + Date.now().toString(),
         from: this.sock.user?.id || 'self',
         to: jid,
         message: typeof messageContent === 'string' ? messageContent : JSON.stringify(messageContent),
         type: options.type || 'text',
-        status: 'sent',
+        status: 'failed',
+        errorMessage: lastError?.message || 'Error desconocido',
+        retryCount: Math.min(maxRetries, attempt),
         companyId: options.companyId || 1
       });
       
-      return {
-        success: true,
-        messageId: result.key.id,
-        timestamp: result.messageTimestamp
-      };
+      throw lastError || new Error('Fallo desconocido enviando mensaje');
       
     } catch (error) {
       logger.error('Error enviando mensaje:', error);
@@ -393,17 +488,49 @@ class WhatsAppService {
     }
   }
 
-  formatPhoneNumber(phone) {
+  formatPhoneNumber(phone, opts = {}) {
     // Limpiar número
     let cleaned = phone.replace(/\D/g, '');
+    const countryCode = (opts.countryCode || process.env.DEFAULT_COUNTRY_CODE || '58').replace(/\D/g, '');
+    
+    // Si inicia con '+' eliminarlo
+    if (cleaned.startsWith('+')) cleaned = cleaned.slice(1);
     
     // Agregar código de país si no lo tiene
-    if (!cleaned.startsWith('58') && cleaned.length === 10) {
-      cleaned = '58' + cleaned;
+    if (!cleaned.startsWith(countryCode)) {
+      // Si empieza con 0 (ej: 0412...), quitar el 0 y agregar código
+      if (cleaned.startsWith('0')) {
+        cleaned = countryCode + cleaned.slice(1);
+      } else if (cleaned.length >= 10) {
+        cleaned = countryCode + cleaned;
+      }
+    } else {
+      // Si después del código viene un 0, quitarlo (caso +580412...)
+      const withoutCode = cleaned.slice(countryCode.length);
+      if (withoutCode.startsWith('0')) {
+        cleaned = countryCode + withoutCode.slice(1);
+      }
     }
     
     // Agregar sufijo de WhatsApp
     return cleaned + '@s.whatsapp.net';
+  }
+  
+  isTransientError(err) {
+    // Heurística simple: errores de red/transitorios
+    const msg = (err?.message || '').toLowerCase();
+    return (
+      msg.includes('timeout') ||
+      msg.includes('network') ||
+      msg.includes('socket') ||
+      msg.includes('econnreset') ||
+      msg.includes('temporary') ||
+      msg.includes('rate limit')
+    );
+  }
+  
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   getStatus() {

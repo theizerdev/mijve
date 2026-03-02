@@ -89,33 +89,33 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h5 class="mb-0"><i class="ri-graduation-cap-line me-2"></i> Portal Docente</h5>
+            <h5 class="mb-0"><i class="ri ri-graduation-cap-line me-2"></i> Portal Docente</h5>
             <small class="opacity-75">{{ Auth::user()->name ?? 'Profesor' }}</small>
         </div>
         <nav class="sidebar-nav">
             <a href="{{ route('teacher.dashboard') }}" class="{{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
-                <i class="ri-dashboard-line"></i> Dashboard
+                <i class="ri ri-dashboard-line"></i> Dashboard
             </a>
             <a href="{{ route('teacher.my-subjects') }}" class="{{ request()->routeIs('teacher.my-subjects') ? 'active' : '' }}">
-                <i class="ri-book-open-line"></i> Mis Materias
+                <i class="ri ri-book-open-line"></i> Mis Materias
             </a>
             <a href="{{ route('teacher.my-evaluations') }}" class="{{ request()->routeIs('teacher.my-evaluations') ? 'active' : '' }}">
-                <i class="ri-file-list-3-line"></i> Mis Evaluaciones
+                <i class="ri ri-file-list-3-line"></i> Mis Evaluaciones
             </a>
             <a href="{{ route('teacher.grade-entry') }}" class="{{ request()->routeIs('teacher.grade-entry') ? 'active' : '' }}">
-                <i class="ri-edit-box-line"></i> Registrar Notas
+                <i class="ri ri-edit-box-line"></i> Registrar Notas
             </a>
             <a href="{{ route('teacher.attendance-entry') }}" class="{{ request()->routeIs('teacher.attendance-entry') ? 'active' : '' }}">
-                <i class="ri-calendar-check-line"></i> Registrar Asistencia
+                <i class="ri ri-calendar-check-line"></i> Registrar Asistencia
             </a>
             <hr class="my-3 opacity-25">
             <a href="{{ route('admin.dashboard') }}">
-                <i class="ri-arrow-left-line"></i> Volver al Sistema
+                <i class="ri ri-arrow-left-line"></i> Volver al Sistema
             </a>
             <form method="POST" action="{{ route('logout') }}" class="d-inline">
                 @csrf
                 <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">
-                    <i class="ri-logout-box-line"></i> Cerrar Sesión
+                    <i class="ri ri-logout-box-line"></i> Cerrar Sesión
                 </a>
             </form>
         </nav>

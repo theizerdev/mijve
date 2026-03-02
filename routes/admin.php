@@ -42,6 +42,31 @@ Route::get('/sucursales/crear', SucursalesCreate::class)->name('sucursales.creat
 Route::get('/sucursales/{sucursal}/editar', SucursalesEdit::class)->name('sucursales.edit');
 Route::get('/sucursales/{sucursal}', SucursalesShow::class)->name('sucursales.show');
 
+// Actividades
+Route::get('/actividades', \App\Livewire\Admin\Actividades\Index::class)->name('actividades.index');
+Route::get('/actividades/crear', \App\Livewire\Admin\Actividades\Create::class)->name('actividades.create');
+Route::get('/actividades/{actividad}/editar', \App\Livewire\Admin\Actividades\Edit::class)->name('actividades.edit');
+
+// Participantes
+Route::get('/participantes', \App\Livewire\Admin\Participantes\Index::class)->name('participantes.index');
+Route::get('/participantes/crear', \App\Livewire\Admin\Participantes\Create::class)->name('participantes.create');
+Route::get('/participantes/{participante}/editar', \App\Livewire\Admin\Participantes\Edit::class)->name('participantes.edit');
+
+// Métodos de Pago
+Route::get('/metodos-pago', \App\Livewire\Admin\MetodosPago\Index::class)->name('metodos-pago.index');
+Route::get('/metodos-pago/crear', \App\Livewire\Admin\MetodosPago\Create::class)->name('metodos-pago.create');
+Route::get('/metodos-pago/{metodoPago}/editar', \App\Livewire\Admin\MetodosPago\Edit::class)->name('metodos-pago.edit');
+
+// Extensiones
+Route::get('/extensiones', \App\Livewire\Admin\Extensiones\Index::class)->name('extensiones.index');
+Route::get('/extensiones/crear', \App\Livewire\Admin\Extensiones\Create::class)->name('extensiones.create');
+Route::get('/extensiones/{extension}/editar', \App\Livewire\Admin\Extensiones\Edit::class)->name('extensiones.edit');
+
+// Pagos
+Route::get('/pagos', \App\Livewire\Admin\Pagos\Index::class)->name('pagos.index');
+Route::get('/pagos/crear', \App\Livewire\Admin\Pagos\Create::class)->name('pagos.create');
+Route::get('/pagos/{pago}', \App\Livewire\Admin\Pagos\Show::class)->name('pagos.show');
+
 // Usuarios
 Route::get('/usuarios', UsersIndex::class)->name('users.index');
 Route::get('/usuarios/crear', UsersCreate::class)->name('users.create');

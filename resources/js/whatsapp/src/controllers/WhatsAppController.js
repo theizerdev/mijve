@@ -6,19 +6,19 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const antiBlockProtection = require('../middleware/antiBlockProtection');
+const Consent = require('../models/Consent');
 
 class WhatsAppController {
   async getStatus(req, res) {
     try {
-      // Acceder a la instancia global del servicio WhatsApp
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      // Obtener o crear sesión para la empresa actual
+      let whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'WhatsApp service not initialized',
-          company: req.company.name
-        });
+        // Intentar crear la sesión si no existe
+        whatsappService = await sessionManager.createSession(req.company);
       }
       
       const status = whatsappService.getStatus();
@@ -31,13 +31,13 @@ class WhatsAppController {
 
   async connect(req, res) {
     try {
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      // Obtener o crear sesión para la empresa actual
+      let whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'WhatsApp service not initialized' 
-        });
+        whatsappService = await sessionManager.createSession(req.company);
       }
 
       await whatsappService.connect();
@@ -54,16 +54,19 @@ class WhatsAppController {
 
   async disconnect(req, res) {
     try {
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      // Obtener sesión
+      const whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
+        return res.status(404).json({ 
           success: false, 
-          error: 'WhatsApp service not initialized' 
+          error: 'No active session found for this company' 
         });
       }
 
-      await whatsappService.logout();
+      await sessionManager.removeSession(req.company.id);
       res.json({ success: true, message: 'Disconnected successfully' });
     } catch (error) {
       logger.error('Error disconnecting:', error);
@@ -73,15 +76,12 @@ class WhatsAppController {
 
   async getQRCode(req, res) {
     try {
-      // Acceder a la instancia global del servicio WhatsApp
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      let whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'WhatsApp service not initialized',
-          company: req.company.name
-        });
+        whatsappService = await sessionManager.createSession(req.company);
       }
       
       const status = whatsappService.getStatus();
@@ -111,18 +111,46 @@ class WhatsAppController {
   async sendMessage(req, res) {
     try {
       const { to, message, type = 'text', mediaUrl } = req.body;
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      // Obtener o crear sesión para la empresa actual
+      let whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'WhatsApp service not initialized' 
+        whatsappService = await sessionManager.createSession(req.company);
+      }
+      
+      const metrics = req.app.locals.metrics;
+      const countryCode = (req.headers['x-country-code'] || '').replace(/\D/g, '') || undefined;
+
+      // Opt-in/Opt-out
+      const phoneDigits = (to || '').replace(/\D/g, '');
+      try {
+        const consent = await Consent.findOne({
+          where: { companyId: req.company.company_id, phone: phoneDigits }
         });
+        if (consent && consent.optedIn === false) {
+          return res.status(403).json({
+            success: false,
+            error: 'Usuario con opt-out: no se permite enviar mensajes',
+            code: 'CONSENT_OPT_OUT',
+            company: req.company.name
+          });
+        }
+      } catch (err) {
+        logger.warn('Consent check failed', { error: err.message, companyId: req.company.company_id, phone: phoneDigits });
       }
 
       // 🔒 PROTECCIÓN ANTI-BLOQUEO CRÍTICA
       try {
-        await antiBlockProtection.protectMessage(req.company.id, to, message);
+        // Formatear a JID antes de validar anti-block (espera *@s.whatsapp.net)
+        const jidForValidation = whatsappService.formatPhoneNumber(to, { countryCode });
+        await antiBlockProtection.protectMessage(
+          req.company.id, 
+          jidForValidation, 
+          message,
+          req.company.dailyMessageLimit
+        );
       } catch (protectionError) {
         logger.warn(`Message blocked by anti-block protection: ${protectionError.message}`, {
           companyId: req.company.id,
@@ -130,6 +158,7 @@ class WhatsAppController {
           to,
           reason: protectionError.message
         });
+        try { metrics?.messagesFailed?.inc({ company_id: req.company.company_id, company_name: req.company.name }); } catch (_) {}
         
         return res.status(429).json({ 
           success: false, 
@@ -142,9 +171,12 @@ class WhatsAppController {
       const result = await whatsappService.sendMessage(to, message, {
         type,
         mediaUrl,
-        companyId: req.company.company_id
+        companyId: req.company.company_id,
+        countryCode,
+        metrics
       });
 
+      try { metrics?.messagesSent?.inc({ company_id: req.company.company_id, company_name: req.company.name }); } catch (_) {}
       res.json({ 
         success: true, 
         messageId: result.messageId, 
@@ -193,13 +225,12 @@ class WhatsAppController {
   async sendDocument(req, res) {
     try {
       const { to, message, caption = '' } = req.body;
-      const whatsappService = req.app.locals.whatsappService;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      let whatsappService = sessionManager.getSession(req.company.id);
       
       if (!whatsappService) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'WhatsApp service not initialized' 
-        });
+        whatsappService = await sessionManager.createSession(req.company);
       }
 
       if (!req.file) {
@@ -256,6 +287,45 @@ class WhatsAppController {
         });
       }
       
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  async sendInteractive(req, res) {
+    try {
+      const { to, body, buttons } = req.body;
+      const sessionManager = req.app.locals.sessionManager;
+      
+      let whatsappService = sessionManager.getSession(req.company.id);
+      
+      if (!whatsappService) {
+        whatsappService = await sessionManager.createSession(req.company);
+      }
+
+      // Construir mensaje interactivo (botones)
+      const buttonMessage = {
+          text: body,
+          footer: req.company.name,
+          buttons: buttons.map((btn, index) => ({
+            buttonId: btn.id || `btn_${index}`,
+            buttonText: { displayText: btn.text },
+            type: 1
+          })),
+          headerType: 1
+      };
+
+      const result = await whatsappService.sendMessage(to, buttonMessage, {
+        type: 'interactive',
+        companyId: req.company.id
+      });
+
+      res.json({ 
+        success: true, 
+        messageId: result.messageId, 
+        company: req.company.name
+      });
+    } catch (error) {
+      logger.error('Error sending interactive message:', error);
       res.status(500).json({ success: false, error: error.message });
     }
   }

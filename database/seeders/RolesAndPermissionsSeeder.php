@@ -36,6 +36,38 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit sucursales',
                 'delete sucursales',
             ],
+            'extensiones' => [
+                'access extensiones',
+                'create extensiones',
+                'edit extensiones',
+                'delete extensiones',
+            ],
+            'actividades' => [
+                'access actividades',
+                'create actividades',
+                'edit actividades',
+                'delete actividades',
+            ],
+            'participantes' => [
+                'access participantes',
+                'create participantes',
+                'edit participantes',
+                'delete participantes',
+            ],
+            'metodos_pago' => [
+                'access metodos_pago',
+                'create metodos_pago',
+                'edit metodos_pago',
+                'delete metodos_pago',
+            ],
+            'pagos' => [
+                'access pagos',
+                'create pagos',
+                'edit pagos',
+                'delete pagos',
+                'approve pagos',
+                'reject pagos',
+            ],
             'users' => [
                 'access users',
                 'create users',
@@ -56,40 +88,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'delete permissions',
                 'assign permissions',
             ],
-            'school_years' => [
-                'access school years',
-                'create school years',
-                'edit school years',
-                'delete school years',
-            ],
-            'school_periods' => [
-                'access school periods',
-                'create school periods',
-                'edit school periods',
-                'delete school periods',
-            ],
-            'educational_levels' => [
-                'access educational levels',
-                'create educational levels',
-                'edit educational levels',
-                'delete educational levels',
-            ],
-            'turnos' => [
-                'access turnos',
-                'create turnos',
-                'edit turnos',
-                'delete turnos',
-            ],
-            'students' => [
-                'access students',
-                'create students',
-                'edit students',
-                'delete students',
-                'access student control',
-                'export students',
-                'import students',
-                'view student historico',
-            ],
+    
             'active_sessions' => [
                 'view active sessions',
                 'delete active sessions',
@@ -133,22 +132,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'delete pagos',
                 'view pagos',
             ],
-            // Módulo de conceptos de pago
-            'conceptos_pago' => [
-                'access conceptos pago',
-                'create conceptos pago',
-                'edit conceptos pago',
-                'delete conceptos pago',
-                'view conceptos pago',
-            ],
-            // Módulo de programas
-            'programas' => [
-                'access programas',
-                'create programas',
-                'edit programas',
-                'delete programas',
-                'view programas',
-            ],
             // Módulo de reportes
             'reportes' => [
                 'access reportes',
@@ -176,27 +159,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'access database export',
                 'export database',
             ],
-            // Módulo de mensajería interna
-            'mensajeria' => [
-                'access mensajeria',
-                'create mensajeria',
-                'edit mensajeria',
-                'delete mensajeria',
-                'send mensajeria',
-                'receive mensajeria',
-                'manage mensajeria templates',
-            ],
-            // Módulo de biblioteca digital
-            'biblioteca' => [
-                'access biblioteca',
-                'create biblioteca',
-                'edit biblioteca',
-                'delete biblioteca',
-                'upload biblioteca',
-                'download biblioteca',
-                'share biblioteca',
-                'manage biblioteca categories',
-            ],
+
             // Módulo de series de documentos
             'series' => [
                 'access series',
@@ -219,21 +182,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit exchange-rates',
                 'manage exchange-rates',
             ],
-            // Módulo de reuniones
-            'reuniones' => [
-                'access reuniones',
-                'create reuniones',
-                'edit reuniones',
-                'delete reuniones',
-                'view reuniones',
-            ],
-            // Módulo de reglas de morosidad
-            'late_payment_rules' => [
-                'access late payment rules',
-                'create late payment rules',
-                'edit late payment rules',
-                'delete late payment rules',
-            ],
+
             // Módulo de WhatsApp
             'whatsapp' => [
                 'access whatsapp',
@@ -247,158 +196,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'retry failed whatsapp messages',
                 'view whatsapp retry statistics',
                 'manage whatsapp auto retry',
-            ],
-
-            // Materias (Subjects)
-            'subjects' => [
-                'access subjects',
-                'view subjects',
-                'create subjects',
-                'edit subjects',
-                'delete subjects',
-                'assign teachers',
-                'assign students',
-                'manage subject schedules',
-                'manage prerequisites',
-            ],
-            // Planes de Estudio (Study Plans)
-            'study_plans' => [
-                'access study_plans',
-                'view study_plans',
-                'create study_plans',
-                'edit study_plans',
-                'delete study_plans',
-                'export study_plans',
-            ],
-            // Profesores (Teachers)
-            'teachers' => [
-                'access teachers',
-                'view teachers',
-                'create teachers',
-                'edit teachers',
-                'delete teachers',
-                'export teachers',
-                'manage teacher assignments',
-                'view teacher schedules',
-                'manage teacher schedules',
-            ],
-            // Control de Estudios - Lapsos (Evaluation Periods)
-            'evaluation_periods' => [
-                'access evaluation periods',
-                'view evaluation periods',
-                'create evaluation periods',
-                'edit evaluation periods',
-                'delete evaluation periods',
-                'manage evaluation periods',
-            ],
-            // Control de Estudios - Tipos de Evaluación (Evaluation Types)
-            'evaluation_types' => [
-                'access evaluation types',
-                'view evaluation types',
-                'create evaluation types',
-                'edit evaluation types',
-                'delete evaluation types',
-                'manage evaluation types',
-            ],
-            // Control de Estudios - Evaluaciones (Evaluations)
-            'evaluations' => [
-                'access evaluations',
-                'view evaluations',
-                'create evaluations',
-                'edit evaluations',
-                'delete evaluations',
-                'manage evaluations',
-                'approve evaluations',
-                'publish evaluations',
-            ],
-            // Control de Estudios - Calificaciones (Grades)
-            'grades' => [
-                'access grades',
-                'view grades',
-                'create grades',
-                'edit grades',
-                'delete grades',
-                'manage grades',
-                'import grades',
-                'export grades',
-                'publish grades',
-                'approve grades',
-            ],
-            // Secciones y Horarios - Aulas (Classrooms)
-            'classrooms' => [
-                'access classrooms',
-                'view classrooms',
-                'create classrooms',
-                'edit classrooms',
-                'delete classrooms',
-                'manage classrooms',
-                'assign classrooms',
-            ],
-            // Secciones y Horarios - Secciones (Sections)
-            'sections' => [
-                'access sections',
-                'view sections',
-                'create sections',
-                'edit sections',
-                'delete sections',
-                'manage sections',
-                'assign sections',
-                'enroll students sections',
-                'manage section schedules',
-            ],
-            // Secciones y Horarios - Horarios (Schedules)
-            'schedules' => [
-                'access',
-                'view',
-                'create',
-                'edit',
-                'delete',
-                'manage',
-                'assign',
-                'conflict resolution',
-                'publish',
-            ],
-            // Seguimiento Académico - Historial Académico
-            'academic_records' => [
-                'access academic records',
-                'view academic records',
-                'create academic records',
-                'edit academic records',
-                'delete academic records',
-                'manage academic records',
-                'export academic records',
-                'view student academic history',
-                'manage student promotion',
-                'manage student retention',
-                'manage student withdrawal',
-                'view academic statistics',
-                'generate academic reports',
-            ],
-            // Seguimiento Académico - Períodos de Recuperación
-            'recovery_periods' => [
-                'access recovery periods',
-                'view recovery periods',
-                'create recovery periods',
-                'edit recovery periods',
-                'delete recovery periods',
-                'manage recovery periods',
-                'approve recovery periods',
-                'activate recovery periods',
-                'manage recovery registrations',
-                'view recovery statistics',
-                'export recovery reports',
-            ],
-            // Seguimiento Académico - Control de Promoción
-            'promotion_control' => [
-                'access promotion control',
-                'view promotion control',
-                'manage student promotion',
-                'manage student retention',
-                'approve promotions',
-                'generate promotion reports',
-                'view promotion statistics',
-                'manage grade repetition',
-                'manage academic warnings',
             ],
         ];
 
@@ -415,8 +212,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // Crear roles y asignar permisos
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Administrador']);
         $adminRole = Role::firstOrCreate(['name' => 'Administrador']);
-        $recepcionistaRole = Role::firstOrCreate(['name' => 'Recepcionista']);
-        $profesorRole = Role::firstOrCreate(['name' => 'Profesor']);
+        $liderRole = Role::firstOrCreate(['name' => 'Líder de Jóvenes']);
 
         // Asignar todos los permisos al Super Administrador
         $superAdminRole->syncPermissions(Permission::all());
@@ -428,133 +224,11 @@ class RolesAndPermissionsSeeder extends Seeder
         ])->get();
         $adminRole->syncPermissions($adminPermissions);
 
-        // Asignar permisos de Control de Estudios y Secciones y Horarios a Administradores y Super Administradores
-        $academicPermissions = Permission::whereIn('module', [
-            'evaluation_periods',
-            'evaluation_types', 
-            'evaluations',
-            'grades',
-            'classrooms',
-            'sections',
-            'schedules'
+        // Asignar permisos al Líder de Jóvenes (Solo Participantes y Pagos)
+        $liderPermissions = Permission::whereIn('module', [
+            'participantes',
+            'pagos'
         ])->get();
-        
-        $superAdminRole->givePermissionTo($academicPermissions);
-        $adminRole->givePermissionTo($academicPermissions);
-
-        // Asignar permisos de Planes de Estudio a Administradores y Super Administradores
-        $studyPlanPermissions = Permission::whereIn('module', [
-            'study_plans'
-        ])->get();
-        
-        $superAdminRole->givePermissionTo($studyPlanPermissions);
-        $adminRole->givePermissionTo($studyPlanPermissions);
-
-        // Asignar permisos de Reportes Académicos a Administradores y Super Administradores
-        $academicReportsPermissions = Permission::whereIn('name', [
-            'view estadisticas calificaciones materia',
-            'view rendimiento estudiantil periodo',
-            'view asistencia evaluaciones',
-            'view boletines calificaciones'
-        ])->get();
-        
-        $superAdminRole->givePermissionTo($academicReportsPermissions);
-        $adminRole->givePermissionTo($academicReportsPermissions);
-
-        // Asignar permisos de Seguimiento Académico a Administradores y Super Administradores
-        $academicTrackingPermissions = Permission::whereIn('module', [
-            'academic_records',
-            'recovery_periods',
-            'promotion_control'
-        ])->get();
-        
-        $superAdminRole->givePermissionTo($academicTrackingPermissions);
-        $adminRole->givePermissionTo($academicTrackingPermissions);
-
-        // Asignar permisos al Recepcionista (estudiantes, matrículas, pagos, profesores, dashboard básico y algunos de Control de Estudios)
-        $recepcionistaPermissions = Permission::whereIn('module', [
-            'students',
-            'matriculas',
-            'pagos',
-            'teachers',
-            'evaluation_periods', // Solo ver lapsos
-            'evaluation_types',   // Solo ver tipos de evaluación
-            'classrooms',         // Solo ver aulas
-            'sections',           // Solo ver secciones
-            'schedules'           // Solo ver horarios
-        ])->orWhereIn('name', [
-            'access dashboard',
-            'dashboard.alerts',
-            'dashboard.academic',
-            'dashboard.access',
-            'access evaluation periods',
-            'view evaluation periods',
-            'access evaluation types',
-            'view evaluation types',
-            'access classrooms',
-            'view classrooms',
-            'access sections',
-            'view sections',
-            'access schedules',
-            'view schedules'
-        ])->get();
-        $recepcionistaRole->syncPermissions($recepcionistaPermissions);
-
-        // Asignar permisos básicos al Profesor (profesores, dashboard básico y Control de Estudios limitado)
-        $profesorPermissions = Permission::whereIn('module', [
-            'teachers',
-            'evaluation_periods', // Solo ver lapsos
-            'evaluation_types',   // Solo ver tipos de evaluación
-            'evaluations',        // Ver y crear evaluaciones
-            'grades',             // Ver y gestionar calificaciones
-            'classrooms',         // Solo ver aulas
-            'sections',           // Solo ver secciones
-            'schedules'           // Solo ver horarios
-        ])->orWhereIn('name', [
-            'access dashboard',
-            'dashboard.academic',
-            'dashboard.access',
-            'access teachers',
-            'view teachers',
-            'edit teachers',
-            'access evaluation periods',
-            'view evaluation periods',
-            'access evaluation types',
-            'view evaluation types',
-            'access evaluations',
-            'view evaluations',
-            'create evaluations',
-            'access grades',
-            'view grades',
-            'create grades',
-            'edit grades',
-            'access classrooms',
-            'view classrooms',
-            'access sections',
-            'view sections',
-            'access schedules',
-            'view schedules',
-            // Reportes Académicos - Solo ver
-            'view estadisticas calificaciones materia',
-            'view rendimiento estudiantil periodo',
-            'view asistencia evaluaciones',
-            'view boletines calificaciones'
-        ])->get();
-        $profesorRole->syncPermissions($profesorPermissions);
-
-        // Asignar permisos de mensajería, biblioteca, series, cajas, reuniones, países, exportación de base de datos y WhatsApp a Administradores y Super Administradores
-        $mensajeriaBibliotecaSeriesCajasPaisesExportPermissions = Permission::whereIn('module', [
-            'mensajeria',
-            'biblioteca',
-            'series',
-            'cajas',
-            'reuniones',
-            'paises',
-            'database_export',
-            'whatsapp'
-        ])->get();
-
-        $superAdminRole->givePermissionTo($mensajeriaBibliotecaSeriesCajasPaisesExportPermissions);
-        $adminRole->givePermissionTo($mensajeriaBibliotecaSeriesCajasPaisesExportPermissions);
+        $liderRole->syncPermissions($liderPermissions);
     }
 }

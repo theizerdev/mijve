@@ -3,20 +3,23 @@
 namespace App\Livewire\Admin\Pagos;
 
 use App\Traits\HasDynamicLayout;
-use App\Traits\HasRegionalFormatting;
 use Livewire\Component;
 use App\Models\Pago;
+use Illuminate\Support\Facades\Auth;
 
 class Show extends Component
 {
-    use HasDynamicLayout, HasRegionalFormatting;
-
+    use HasDynamicLayout;
 
     public $pago;
 
     public function mount(Pago $pago)
     {
-        $this->pago = $pago->load(['matricula.student', 'matricula.programa', 'detalles.conceptoPago', 'serieModel']);
+        if (!Auth::user()->can('access pagos')) {
+            abort(403, 'No tienes permiso para ver pagos.');
+        }
+        
+        $this->pago = $pago->load(['participante', 'actividad', 'metodoPago', 'empresa', 'sucursal']);
     }
 
     public function render()

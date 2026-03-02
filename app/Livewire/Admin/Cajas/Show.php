@@ -33,7 +33,7 @@ class Show extends Component
 
     public function mount(Caja $caja)
     {
-        $this->caja = $caja->load(['usuario', 'sucursal', 'pagos.detalles.conceptoPago', 'pagos.matricula.student']);
+        $this->caja = $caja->load(['usuario', 'sucursal', 'pagos.actividad', 'pagos.participante', 'pagos.metodoPago']);
     }
 
     public function abrirModalCerrar()
@@ -99,36 +99,39 @@ class Show extends Component
     public function getResumenPorMetodoProperty()
     {
         return $this->caja->pagos()
-            ->where('estado', 'aprobado')
-            ->selectRaw('metodo_pago, COUNT(*) as cantidad, SUM(total) as total')
-            ->groupBy('metodo_pago')
-            ->get();
+            ->with('metodoPago')
+            ->where('status', 'Aprobado')
+            ->get()
+            ->groupBy(function($pago) {
+                return $pago->metodoPago->tipo_pago ?? 'Desconocido';
+            })
+            ->map(function ($items, $metodo) {
+                return [
+                    'metodo_pago' => $metodo,
+                    'cantidad' => $items->count(),
+                    'total' => $items->sum('monto_euro'), // Usando monto_euro como base
+                    'total_bs' => $items->sum('monto_bolivares')
+                ];
+            })->values();
     }
 
     public function getResumenPorConceptoProperty()
     {
         return $this->caja->pagos()
-            ->where('estado', 'aprobado')
-            ->with(['detalles.conceptoPago'])
+            ->where('status', 'Aprobado')
+            ->with(['actividad'])
             ->get()
-            ->flatMap(function ($pago) {
-                return $pago->detalles->map(function ($detalle) {
-                    return [
-                        'concepto' => $detalle->conceptoPago->nombre ?? 'Sin concepto',
-                        'cantidad' => $detalle->cantidad,
-                        'precio' => $detalle->precio_unitario,
-                        'subtotal' => $detalle->subtotal,
-                    ];
-                });
+            ->groupBy(function($pago) {
+                return $pago->actividad->nombre ?? 'Sin actividad';
             })
-            ->groupBy('concepto')
             ->map(function ($items, $concepto) {
                 return [
                     'concepto' => $concepto,
-                    'cantidad' => $items->sum('cantidad'),
-                    'total' => $items->sum('subtotal'),
+                    'cantidad' => $items->count(),
+                    'total' => $items->sum('monto_euro'),
+                    'total_bs' => $items->sum('monto_bolivares')
                 ];
-            });
+            })->values();
     }
 
     public function exportarExcel()
@@ -200,7 +203,7 @@ class Show extends Component
     private function generarExcelTemporal()
     {
         try {
-            $this->caja->load(['usuario', 'sucursal', 'pagos.detalles.conceptoPago', 'pagos.matricula.student']);
+            $this->caja->load(['usuario', 'sucursal', 'pagos.actividad', 'pagos.participante', 'pagos.metodoPago']);
             
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -260,41 +263,24 @@ class Show extends Component
             $sheet->getStyle('A' . $row)->getFont()->setBold(true);
             
             $row++;
-            $encabezados = ['Documento', 'Estudiante', 'Método', 'Monto USD', 'Monto Bs', 'Referencia', 'Hora'];
+            $encabezados = ['Documento', 'Participante', 'Método', 'Monto EUR', 'Monto Bs', 'Referencia', 'Hora'];
             foreach ($encabezados as $col => $encabezado) {
                 $sheet->setCellValueByColumnAndRow($col + 1, $row, $encabezado);
             }
             $sheet->getStyle('A' . $row . ':G' . $row)->getFont()->setBold(true);
             
             $row++;
-            foreach ($this->caja->pagos()->where('estado', 'aprobado')->get() as $pago) {
-                if ($pago->es_pago_mixto && $pago->detalles_pago_mixto) {
-                    foreach ($pago->detalles_pago_mixto as $detalle) {
-                        $montoBolivares = in_array($detalle['metodo'], ['transferencia', 'pago_movil', 'efectivo_bolivares']) && $pago->tasa_cambio 
-                            ? number_format($detalle['monto'] * $pago->tasa_cambio, 2) 
-                            : '-';
-                        
-                        $sheet->setCellValue('A' . $row, $pago->numero_completo);
-                        $sheet->setCellValue('B' . $row, $pago->matricula->student->nombres . ' ' . $pago->matricula->student->apellidos);
-                        $sheet->setCellValue('C' . $row, ucfirst(str_replace('_', ' ', $detalle['metodo'])));
-                        $sheet->setCellValue('D' . $row, number_format($detalle['monto'], 2));
-                        $sheet->setCellValue('E' . $row, $montoBolivares);
-                        $sheet->setCellValue('F' . $row, $detalle['referencia'] ?: '-');
-                        $sheet->setCellValue('G' . $row, $pago->created_at->format('H:i'));
-                        $row++;
-                    }
-                } else {
-                    $montoBolivares = $pago->total_bolivares ? number_format($pago->total_bolivares, 2) : '-';
-                    
-                    $sheet->setCellValue('A' . $row, $pago->numero_completo);
-                    $sheet->setCellValue('B' . $row, $pago->matricula->student->nombres . ' ' . $pago->matricula->student->apellidos);
-                    $sheet->setCellValue('C' . $row, $pago->metodo_pago);
-                    $sheet->setCellValue('D' . $row, number_format($pago->total, 2));
-                    $sheet->setCellValue('E' . $row, $montoBolivares);
-                    $sheet->setCellValue('F' . $row, $pago->referencia ?: '-');
-                    $sheet->setCellValue('G' . $row, $pago->created_at->format('H:i'));
-                    $row++;
-                }
+            foreach ($this->caja->pagos()->where('status', 'Aprobado')->get() as $pago) {
+                $montoBolivares = $pago->monto_bolivares ? number_format($pago->monto_bolivares, 2) : '-';
+                
+                $sheet->setCellValue('A' . $row, $pago->participante->cedula ?? '-');
+                $sheet->setCellValue('B' . $row, ($pago->participante->nombres ?? '') . ' ' . ($pago->participante->apellidos ?? ''));
+                $sheet->setCellValue('C' . $row, $pago->metodoPago->tipo_pago ?? 'N/A');
+                $sheet->setCellValue('D' . $row, number_format($pago->monto_euro, 2));
+                $sheet->setCellValue('E' . $row, $montoBolivares);
+                $sheet->setCellValue('F' . $row, $pago->referencia_bancaria ?: '-');
+                $sheet->setCellValue('G' . $row, $pago->created_at->format('H:i'));
+                $row++;
             }
             
             // Aplicar estilos

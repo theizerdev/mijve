@@ -10,11 +10,11 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button wire:click="$set('showCreateModal', true)" class="btn btn-primary">
-                            <i class="ri-add-line me-2"></i>
+                            <i class="ri ri-add-line me-2"></i>
                             Programar Mensaje
                         </button>
                         <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line me-2"></i>
+                            <i class="ri ri-arrow-left-line me-2"></i>
                             Volver al Dashboard
                         </a>
                     </div>
@@ -29,7 +29,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-primary">
-                                <i class="ri-calendar-line"></i>
+                                <i class="ri ri-calendar-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['total'] }}</h4>
@@ -42,7 +42,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-warning">
-                                <i class="ri-time-line"></i>
+                                <i class="ri ri-time-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['pending'] }}</h4>
@@ -55,7 +55,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-success">
-                                <i class="ri-send-plane-line"></i>
+                                <i class="ri ri-send-plane-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['sent'] }}</h4>
@@ -68,7 +68,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-danger">
-                                <i class="ri-error-warning-line"></i>
+                                <i class="ri ri-error-warning-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['failed'] }}</h4>
@@ -81,7 +81,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-secondary">
-                                <i class="ri-close-line"></i>
+                                <i class="ri ri-close-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['cancelled'] }}</h4>
@@ -94,7 +94,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-info">
-                                <i class="ri-calendar-todo-line"></i>
+                                <i class="ri ri-calendar-todo-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $statistics['today'] }}</h4>
@@ -133,7 +133,7 @@
                                     <button type="button" 
                                             wire:click="resetFilters" 
                                             class="btn btn-outline-secondary">
-                                        <i class="ri-refresh-line"></i>
+                                        <i class="ri ri-refresh-line"></i>
                                         Limpiar
                                     </button>
                                 </div>
@@ -187,7 +187,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ri-whatsapp-line me-2 text-success"></i>
+                                                    <i class="ri ri-whatsapp-line me-2 text-success"></i>
                                                     <div>
                                                         <div class="fw-bold">+58{{ $message->recipient }}</div>
                                                         @if($message->student)
@@ -225,7 +225,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ri-user-line me-2 text-muted"></i>
+                                                    <i class="ri ri-user-line me-2 text-muted"></i>
                                                     <div>
                                                         <div class="fw-bold">{{ $message->user->name }}</div>
                                                         <small class="text-muted">{{ $message->user->email }}</small>
@@ -238,13 +238,13 @@
                                                         <button wire:click="editMessage({{ $message->id }})" 
                                                                 class="btn btn-sm btn-outline-primary"
                                                                 title="Editar">
-                                                            <i class="ri-edit-line"></i>
+                                                            <i class="ri ri-edit-line"></i>
                                                         </button>
                                                         <button wire:click="cancelMessage({{ $message->id }})" 
                                                                 class="btn btn-sm btn-outline-warning"
                                                                 title="Cancelar"
                                                                 onclick="confirm('¿Estás seguro de cancelar este mensaje?') || event.stopImmediatePropagation()">
-                                                            <i class="ri-close-line"></i>
+                                                            <i class="ri ri-close-line"></i>
                                                         </button>
                                                     @endif
                                                     @if(in_array($message->status, ['pending', 'cancelled', 'failed']))
@@ -252,7 +252,7 @@
                                                                 class="btn btn-sm btn-outline-danger"
                                                                 title="Eliminar"
                                                                 onclick="confirm('¿Estás seguro de eliminar este mensaje?') || event.stopImmediatePropagation()">
-                                                            <i class="ri-delete-bin-line"></i>
+                                                            <i class="ri ri-delete-bin-line"></i>
                                                         </button>
                                                     @endif
                                                 </div>
@@ -261,7 +261,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="7" class="text-center py-4">
-                                                <i class="ri-calendar-todo-line ri-3x text-muted mb-3"></i>
+                                                <i class="ri ri-calendar-todo-line ri-3x text-muted mb-3"></i>
                                                 <h6 class="text-muted">No hay mensajes programados</h6>
                                                 <p class="text-muted small">Los mensajes programados aparecerán aquí</p>
                                             </td>
@@ -303,7 +303,7 @@
                 <div class="modal-body">
                     @if($error)
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="ri-error-warning-line me-2"></i>
+                            <i class="ri ri-error-warning-line me-2"></i>
                             {{ $error }}
                             <button type="button" class="btn-close" wire:click="$set('error', '')"></button>
                         </div>
@@ -438,7 +438,7 @@
                                     {{ $showEditModal ? 'Actualizar' : 'Programar' }}
                                 </span>
                                 <span wire:loading>
-                                    <i class="ri-loader-4-line ri-spin me-2"></i>
+                                    <i class="ri ri-loader-4-line ri-spin me-2"></i>
                                     Procesando...
                                 </span>
                             </button>
@@ -453,7 +453,7 @@
     @if(session()->has('success'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ri-check-line me-2"></i>
+            <i class="ri ri-check-line me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -463,7 +463,7 @@
     @if(session()->has('error'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="ri-error-warning-line me-2"></i>
+            <i class="ri ri-error-warning-line me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

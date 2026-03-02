@@ -29,7 +29,7 @@ const Message = sequelize.define('Message', {
     defaultValue: 'text'
   },
   status: {
-    type: DataTypes.ENUM('pending', 'sent', 'delivered', 'read', 'failed'),
+    type: DataTypes.ENUM('pending', 'sent', 'delivered', 'read', 'failed', 'received'),
     defaultValue: 'pending'
   },
   mediaUrl: {
@@ -54,7 +54,22 @@ const Message = sequelize.define('Message', {
   }
 }, {
   tableName: 'whatsapp_messages',
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    {
+      name: 'messages_company_created_idx',
+      fields: ['companyId', 'createdAt']
+    },
+    {
+      name: 'messages_company_status_idx',
+      fields: ['companyId', 'status']
+    },
+    {
+      name: 'messages_message_id_idx',
+      unique: true,
+      fields: ['messageId']
+    }
+  ]
 });
 
 module.exports = Message;

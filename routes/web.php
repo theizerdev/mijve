@@ -25,6 +25,9 @@ Route::get('/', function () {
 
 })->middleware('auth');
 
+// Registro público de participantes (sin autenticación)
+Route::get('/registro-participante', \App\Livewire\RegistroParticipante::class)->name('registro.participante');
+
 // Rutas de autenticación con Livewire
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Livewire\Auth\Login::class)->name('login');
@@ -64,7 +67,7 @@ Route::group(['prefix' => 'superadmin', 'as' => 'superadmin.', 'middleware' => [
 
 // Admin routes
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
-   Route::middleware(['auth', 'verified'])->group(function () {
+   Route::middleware(['auth', 'verified', 'scope-by-extension', 'audit-access'])->group(function () {
         Route::get('/dashboard', \App\Livewire\Admin\Dashboard::class)->name('dashboard');
         require __DIR__.'/admin.php';
    });

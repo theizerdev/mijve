@@ -5,7 +5,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Personalización de Plantilla</h5>
                     <button type="button" class="btn btn-outline-secondary" wire:click="resetToDefaults">
-                        <i class="ri-refresh-line me-1"></i>Restaurar Valores por Defecto
+                        <i class="ri ri-refresh-line me-1"></i>Restaurar Valores por Defecto
                     </button>
                 </div>
                 <div class="card-body">
@@ -155,7 +155,7 @@
 
                     <div class="text-end">
                         <button type="button" class="btn btn-primary" wire:click="save">
-                            <i class="ri-save-line me-1"></i>Guardar Configuración
+                            <i class="ri ri-save-line me-1"></i>Guardar Configuración
                         </button>
                     </div>
                 </div>

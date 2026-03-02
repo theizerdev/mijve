@@ -10,11 +10,11 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button wire:click="toggleBulkMode" class="btn btn-outline-info">
-                            <i class="ri-group-line me-2"></i>
+                            <i class="ri ri-group-line me-2"></i>
                             {{ $bulkMode ? 'Modo Individual' : 'Modo Masivo' }}
                         </button>
                         <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line me-2"></i>
+                            <i class="ri ri-arrow-left-line me-2"></i>
                             Volver
                         </a>
                     </div>
@@ -25,7 +25,7 @@
         <!-- Connection Status -->
         @if($status !== 'connected')
             <div class="alert alert-warning">
-                <i class="ri-alert-line me-2"></i>
+                <i class="ri ri-alert-line me-2"></i>
                 WhatsApp no está conectado. 
                 <a href="{{ route('admin.whatsapp.connection') }}" class="btn btn-warning btn-sm ms-2">
                     Conectar WhatsApp
@@ -44,13 +44,13 @@
                                 <li class="nav-item">
                                     <button class="nav-link {{ $activeTab === 'manual' ? 'active' : '' }}" 
                                             wire:click="$set('activeTab', 'manual')">
-                                        <i class="ri-edit-line me-2"></i>Mensaje Manual
+                                        <i class="ri ri-edit-line me-2"></i>Mensaje Manual
                                     </button>
                                 </li>
                                 <li class="nav-item">
                                     <button class="nav-link {{ $activeTab === 'template' ? 'active' : '' }}" 
                                             wire:click="$set('activeTab', 'template')">
-                                        <i class="ri-file-text-line me-2"></i>Plantilla
+                                        <i class="ri ri-file-text-line me-2"></i>Plantilla
                                     </button>
                                 </li>
                             </ul>
@@ -60,7 +60,7 @@
                                 <!-- Recipient -->
                                 <div class="mb-3">
                                     <label class="form-label">
-                                        <i class="ri-phone-line me-1"></i>Número de Teléfono
+                                        <i class="ri ri-phone-line me-1"></i>Número de Teléfono
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">+58</span>
@@ -75,7 +75,7 @@
                                 @if($activeTab === 'manual')
                                     <div class="mb-3">
                                         <label class="form-label">
-                                            <i class="ri-message-3-line me-1"></i>Mensaje
+                                            <i class="ri ri-message-3-line me-1"></i>Mensaje
                                         </label>
                                         <textarea class="form-control @error('message') is-invalid @enderror" 
                                                   wire:model="message" rows="4" 
@@ -136,14 +136,14 @@
                                 <div class="d-flex justify-content-between">
                                     <button type="button" wire:click="resetForm" class="btn btn-outline-secondary"
                                             {{ $status !== 'connected' ? 'disabled' : '' }}>
-                                        <i class="ri-refresh-line me-2"></i>Limpiar
+                                        <i class="ri ri-refresh-line me-2"></i>Limpiar
                                     </button>
                                     <button type="submit" class="btn btn-primary"
                                             {{ $status !== 'connected' || $isSending ? 'disabled' : '' }}>
                                         @if($isSending)
                                             <span class="spinner-border spinner-border-sm me-2"></span>Enviando...
                                         @else
-                                            <i class="ri-send-plane-line me-2"></i>Enviar Mensaje
+                                            <i class="ri ri-send-plane-line me-2"></i>Enviar Mensaje
                                         @endif
                                     </button>
                                 </div>
@@ -155,7 +155,7 @@
                     <div class="card shadow-sm">
                         <div class="card-header">
                             <h5 class="mb-0">
-                                <i class="ri-group-line me-2"></i>Envío Masivo
+                                <i class="ri ri-group-line me-2"></i>Envío Masivo
                             </h5>
                         </div>
                         <div class="card-body">
@@ -205,14 +205,14 @@
 
                                 <div class="d-flex justify-content-between">
                                     <button type="button" wire:click="resetForm" class="btn btn-outline-secondary">
-                                        <i class="ri-refresh-line me-2"></i>Limpiar
+                                        <i class="ri ri-refresh-line me-2"></i>Limpiar
                                     </button>
                                     <button type="submit" class="btn btn-primary"
                                             {{ $status !== 'connected' || $isSending || count($selectedStudents) === 0 ? 'disabled' : '' }}>
                                         @if($isSending)
                                             <span class="spinner-border spinner-border-sm me-2"></span>Enviando...
                                         @else
-                                            <i class="ri-send-plane-line me-2"></i>Enviar a {{ count($selectedStudents) }} estudiantes
+                                            <i class="ri ri-send-plane-line me-2"></i>Enviar a {{ count($selectedStudents) }} estudiantes
                                         @endif
                                     </button>
                                 </div>
@@ -228,7 +228,7 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header">
                         <h6 class="mb-0">
-                            <i class="ri-history-line me-2"></i>Contactos Recientes
+                            <i class="ri ri-history-line me-2"></i>Contactos Recientes
                         </h6>
                     </div>
                     <div class="card-body">
@@ -237,7 +237,7 @@
                                 <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2 text-start"
                                         wire:click="selectRecentContact('{{ $contact->recipient }}')"
                                         {{ $status !== 'connected' ? 'disabled' : '' }}>
-                                    <i class="ri-user-line me-2"></i>+58{{ $contact->recipient }}
+                                    <i class="ri ri-user-line me-2"></i>+58{{ $contact->recipient }}
                                     <small class="text-muted d-block">{{ \Carbon\Carbon::parse($contact->last_message)->diffForHumans() }}</small>
                                 </button>
                             @endforeach
@@ -252,7 +252,7 @@
                     <div class="card shadow-sm">
                         <div class="card-header">
                             <h6 class="mb-0">
-                                <i class="ri-chat-history-line me-2"></i>Historial Reciente
+                                <i class="ri ri-chat-history-line me-2"></i>Historial Reciente
                             </h6>
                         </div>
                         <div class="card-body">
@@ -279,7 +279,7 @@
     @if($sendSuccess)
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="ri-check-line me-2"></i>Mensaje enviado correctamente.
+                <i class="ri ri-check-line me-2"></i>Mensaje enviado correctamente.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" wire:click="clearMessages"></button>
             </div>
         </div>
@@ -288,7 +288,7 @@
     @if($sendError)
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
             <div class="alert alert-danger alert-dismissible fade show">
-                <i class="ri-error-warning-line me-2"></i>{{ $sendError }}
+                <i class="ri ri-error-warning-line me-2"></i>{{ $sendError }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" wire:click="clearMessages"></button>
             </div>
         </div>
@@ -298,7 +298,7 @@
     @if(session()->has('success'))
         <div class="position-fixed bottom-0 start-0 p-3" style="z-index: 1050">
             <div class="alert alert-success alert-dismissible fade show">
-                <i class="ri-check-line me-2"></i>{{ session('success') }}
+                <i class="ri ri-check-line me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
@@ -307,7 +307,7 @@
     @if(session()->has('error'))
         <div class="position-fixed bottom-0 start-0 p-3" style="z-index: 1050">
             <div class="alert alert-danger alert-dismissible fade show">
-                <i class="ri-error-warning-line me-2"></i>{{ session('error') }}
+                <i class="ri ri-error-warning-line me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>

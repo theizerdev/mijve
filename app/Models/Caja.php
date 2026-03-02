@@ -65,46 +65,36 @@ class Caja extends Model
 
     public function calcularTotales(): void
     {
-        $pagos = $this->pagos()->where('estado', 'aprobado')->get();
+        // Cargar pagos aprobados con su método de pago
+        $pagos = $this->pagos()->with('metodoPago')->where('status', 'Aprobado')->get();
 
         $totalEfectivo = 0;
         $totalTransferencias = 0;
         $totalTarjetas = 0;
 
         foreach ($pagos as $pago) {
-            if ($pago->es_pago_mixto && $pago->detalles_pago_mixto) {
-                // Procesar pago mixto
-                foreach ($pago->detalles_pago_mixto as $detalle) {
-                    switch ($detalle['metodo']) {
-                        case 'efectivo_dolares':
-                        case 'efectivo_bolivares':
-                            $totalEfectivo += $detalle['monto'];
-                            break;
-                        case 'transferencia':
-                        case 'pago_movil':
-                            $totalTransferencias += $detalle['monto'];
-                            break;
-                        case 'tarjeta':
-                            $totalTarjetas += $detalle['monto'];
-                            break;
-                    }
-                }
-            } else {
-                // Procesar pago tradicional
-                switch ($pago->metodo_pago) {
-                    case 'efectivo':
-                    case 'efectivo Bs.':
-                    case 'efectivo Divisas.':
-                        $totalEfectivo += $pago->total;
-                        break;
-                    case 'transferencia':
-                    case 'pago movil':
-                        $totalTransferencias += $pago->total;
-                        break;
-                    case 'tarjeta':
-                        $totalTarjetas += $pago->total;
-                        break;
-                }
+            $metodo = $pago->metodoPago ? $pago->metodoPago->tipo_pago : 'Desconocido';
+            
+            // Determinar el monto a sumar (priorizar bolívares si existe, sino euro)
+            // Nota: Esto asume que la caja maneja una moneda base mixta o que se mostrará separado en la vista
+            // Dado que Create.php pone monto_bolivares = 0 para Divisa, usamos monto_euro en ese caso.
+            
+            switch ($metodo) {
+                case 'Divisa':
+                case 'Efectivo':
+                    $totalEfectivo += ($pago->monto_bolivares > 0 ? $pago->monto_bolivares : $pago->monto_euro);
+                    break;
+                case 'Pago Móvil':
+                case 'Transferencia Bancaria':
+                case 'Transferencia':
+                    $totalTransferencias += $pago->monto_bolivares;
+                    break;
+                case 'Tarjeta':
+                case 'Punto de Venta':
+                    $totalTarjetas += $pago->monto_bolivares;
+                    break;
+                default:
+                    $totalTransferencias += $pago->monto_bolivares;
             }
         }
 

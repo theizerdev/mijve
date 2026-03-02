@@ -7,7 +7,7 @@ const Session = sequelize.define('Session', {
     primaryKey: true
   },
   status: {
-    type: DataTypes.ENUM('disconnected', 'connecting', 'connected', 'qr_ready'),
+    type: DataTypes.ENUM('disconnected', 'connecting', 'connected', 'qr_ready', 'reconnecting'),
     defaultValue: 'disconnected'
   },
   qrCode: {
@@ -26,6 +26,11 @@ const Session = sequelize.define('Session', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  sessionData: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    comment: 'Almacena metadatos de la sesión como versión, plataforma, etc.'
+  },
   companyId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -36,7 +41,17 @@ const Session = sequelize.define('Session', {
   }
 }, {
   tableName: 'whatsapp_sessions',
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['companyId']
+    },
+    {
+      name: 'sessions_status_idx',
+      fields: ['status']
+    }
+  ]
 });
 
 module.exports = Session;

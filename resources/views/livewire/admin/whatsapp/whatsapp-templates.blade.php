@@ -10,12 +10,12 @@
                     </div>
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-secondary">
-                            <i class="ri-arrow-left-line me-2"></i>
+                            <i class="ri ri-arrow-left-line me-2"></i>
                             Volver al Dashboard
                         </a>
                         @can('create whatsapp templates')
                         <button wire:click="createTemplate" class="btn btn-primary">
-                            <i class="ri-add-line me-2"></i>
+                            <i class="ri ri-add-line me-2"></i>
                             Nueva Plantilla
                         </button>
                         @endcan
@@ -31,7 +31,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-primary">
-                                <i class="ri-file-text-line"></i>
+                                <i class="ri ri-file-text-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ $templates->total() }}</h4>
@@ -44,7 +44,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-success">
-                                <i class="ri-checkbox-circle-line"></i>
+                                <i class="ri ri-checkbox-circle-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ \App\Models\WhatsAppTemplate::where('is_active', true)->count() }}</h4>
@@ -57,7 +57,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-warning">
-                                <i class="ri-notification-3-line"></i>
+                                <i class="ri ri-notification-3-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ \App\Models\WhatsAppTemplate::where('category', 'notification')->count() }}</h4>
@@ -70,7 +70,7 @@
                     <div class="card-body text-center">
                         <div class="avatar avatar-sm mx-auto mb-3">
                             <span class="avatar-initial rounded-circle bg-info">
-                                <i class="ri-marketing-line"></i>
+                                <i class="ri ri-marketing-line"></i>
                             </span>
                         </div>
                         <h4 class="mb-1">{{ \App\Models\WhatsAppTemplate::where('category', 'marketing')->count() }}</h4>
@@ -106,7 +106,7 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="ri-file-text-line me-2 text-primary"></i>
+                                                    <i class="ri ri-file-text-line me-2 text-primary"></i>
                                                     <div>
                                                         <div class="fw-bold">{{ $template->name }}</div>
                                                         <small class="text-muted">
@@ -157,14 +157,14 @@
                                                     <button wire:click="editTemplate({{ $template->id }})" 
                                                             class="btn btn-sm btn-outline-primary"
                                                             title="Editar">
-                                                        <i class="ri-edit-line"></i>
+                                                        <i class="ri ri-edit-line"></i>
                                                     </button>
                                                     @endcan
                                                     @can('delete whatsapp templates')
                                                     <button wire:click="confirmDelete({{ $template->id }})" 
                                                             class="btn btn-sm btn-outline-danger"
                                                             title="Eliminar">
-                                                        <i class="ri-delete-bin-line"></i>
+                                                        <i class="ri ri-delete-bin-line"></i>
                                                     </button>
                                                     @endcan
                                                 </div>
@@ -173,12 +173,12 @@
                                     @empty
                                         <tr>
                                             <td colspan="7" class="text-center py-4">
-                                                <i class="ri-file-text-line ri-3x text-muted mb-3"></i>
+                                                <i class="ri ri-file-text-line ri-3x text-muted mb-3"></i>
                                                 <h6 class="text-muted">No hay plantillas disponibles</h6>
                                                 <p class="text-muted small">Crea tu primera plantilla para comenzar</p>
                                                 @can('create whatsapp templates')
                                                 <button wire:click="createTemplate" class="btn btn-primary btn-sm">
-                                                    <i class="ri-add-line me-2"></i>
+                                                    <i class="ri ri-add-line me-2"></i>
                                                     Crear Plantilla
                                                 </button>
                                                 @endcan
@@ -335,7 +335,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" wire:click="resetForm">Cancelar</button>
                     <button type="button" class="btn btn-danger" wire:click="deleteTemplate">
-                        <i class="ri-delete-bin-line me-2"></i>
+                        <i class="ri ri-delete-bin-line me-2"></i>
                         Eliminar
                     </button>
                 </div>
@@ -348,7 +348,7 @@
     @if(session()->has('success'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="ri-check-line me-2"></i>
+            <i class="ri ri-check-line me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -358,7 +358,7 @@
     @if(session()->has('error'))
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="ri-error-warning-line me-2"></i>
+            <i class="ri ri-error-warning-line me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

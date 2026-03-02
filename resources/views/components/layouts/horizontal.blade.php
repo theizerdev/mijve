@@ -12,11 +12,11 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>{{ $title ?? config('app.name') }}</title>
+    <title>MIJVE</title>
     <meta name="description" content="{{ config('app.name') }} - {{ config('app.description') }}" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('materialize/assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="/logo/favicon.png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

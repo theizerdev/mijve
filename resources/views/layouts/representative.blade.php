@@ -89,30 +89,30 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h5 class="mb-0"><i class="ri-parent-line me-2"></i> Portal Representante</h5>
+            <h5 class="mb-0"><i class="ri ri-parent-line me-2"></i> Portal Representante</h5>
             <small class="opacity-75">{{ Auth::user()->name ?? 'Representante' }}</small>
         </div>
         <nav class="sidebar-nav">
             <a href="{{ route('representative.dashboard') }}" class="{{ request()->routeIs('representative.dashboard') ? 'active' : '' }}">
-                <i class="ri-dashboard-line"></i> Inicio
+                <i class="ri ri-dashboard-line"></i> Inicio
             </a>
             <a href="{{ route('representative.grades') }}" class="{{ request()->routeIs('representative.grades') ? 'active' : '' }}">
-                <i class="ri-file-list-3-line"></i> Calificaciones
+                <i class="ri ri-file-list-3-line"></i> Calificaciones
             </a>
             <a href="{{ route('representative.boletines') }}" class="{{ request()->routeIs('representative.boletines') ? 'active' : '' }}">
-                <i class="ri-file-text-line"></i> Boletines
+                <i class="ri ri-file-text-line"></i> Boletines
             </a>
             <a href="{{ route('representative.attendance') }}" class="{{ request()->routeIs('representative.attendance') ? 'active' : '' }}">
-                <i class="ri-calendar-check-line"></i> Asistencia
+                <i class="ri ri-calendar-check-line"></i> Asistencia
             </a>
             <a href="{{ route('representative.payments') }}" class="{{ request()->routeIs('representative.payments') ? 'active' : '' }}">
-                <i class="ri-money-dollar-circle-line"></i> Pagos
+                <i class="ri ri-money-dollar-circle-line"></i> Pagos
             </a>
             <hr class="my-3 opacity-25">
             <form method="POST" action="{{ route('logout') }}" class="d-inline">
                 @csrf
                 <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">
-                    <i class="ri-logout-box-line"></i> Cerrar Sesión
+                    <i class="ri ri-logout-box-line"></i> Cerrar Sesión
                 </a>
             </form>
         </nav>
