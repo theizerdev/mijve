@@ -587,9 +587,7 @@
               <span wire:loading.remove wire:target="save">
                 Confirmar Registro <i class="icon-base ri ri-check-line icon-16px ms-1_5"></i>
               </span>
-              <span wire:loading wire:target="save" class="d-flex align-items-center gap-2" style="display: none;">
-                <span class="spinner-border spinner-border-sm"></span> Registrando...
-              </span>
+             
             </button>
           </div>
         </div>
