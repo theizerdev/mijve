@@ -196,7 +196,7 @@
                 </div>
 
                 <div class="card-footer border-top">
-                    {{ $extensiones->links() }}
+                    {{ $extensiones->links('livewire.pagination') }}
                 </div>
             </div>
         </div>

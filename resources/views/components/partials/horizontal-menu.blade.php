@@ -14,6 +14,13 @@
       <div>Dashboard</div>
     </a>
   </li>
+  
+        <li class="menu-item {{ request()->routeIs('admin.extensiones.index') ? 'active' : '' }}">
+          <a href="{{ route('admin.extensiones.index') }}" class="menu-link">
+            <div>Extensiones</div>
+          </a>
+        </li>
+      
       @canany(['access conceptos pago', 'access cajas'])
     <!-- Pagos y Finanzas -->
     <li class="menu-item {{ request()->routeIs('admin.pagos.*') || request()->routeIs('admin.conceptos-pago.*') || request()->routeIs('admin.cajas.*') ? 'active open' : '' }}">
