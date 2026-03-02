@@ -49,12 +49,12 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">€ {{ number_format($totalEur, 2) }}</h4>
-                            <p class="mb-0">Total Recaudado (EUR)</p>
+                            <h4 class="mb-1">$ {{ number_format($totalEur, 2) }}</h4>
+                            <p class="mb-0">Total Recaudado (USD)</p>
                         </div>
                         <div class="avatar">
                             <span class="avatar-initial rounded bg-label-success">
-                                <i class="ri ri-money-euro-circle-line ri-24px"></i>
+                                <i class="ri ri-money-dollar-circle-line ri-24px"></i>
                             </span>
                         </div>
                     </div>
@@ -177,9 +177,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-column">
-                                        <span>€ {{ number_format($pago->monto_euro, 2) }}</span>
-                                        <small class="text-muted">Bs {{ number_format($pago->monto_bolivares, 2) }}</small>
-                                        <small class="text-muted" style="font-size: 0.7rem">Tasa: {{ $pago->tasa_cambio }}</small>
+                                        <span class="fw-semibold">$ {{ number_format($pago->monto_euro, 2) }}</span>
                                     </div>
                                 </td>
                                 <td>

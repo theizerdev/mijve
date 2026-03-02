@@ -114,9 +114,9 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Monto (Divisa)</label>
+                                        <label class="form-label">Monto (USD)</label>
                                         <div class="input-group input-group-merge">
-                                            <span class="input-group-text">€</span>
+                                            <span class="input-group-text">$</span>
                                             <input type="number" class="form-control @error('monto_euro') is-invalid @enderror" 
                                                    wire:model="monto_euro" step="0.01" min="0">
                                         </div>
