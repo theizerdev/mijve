@@ -90,19 +90,19 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Generar un código de verificación de 8 caracteres (alfanumérico)
+     * Generar un código de verificación de 6 dígitos numéricos
      */
     public function generateVerificationCode()
     {
-        // Generar código alfanumérico de 8 caracteres
-        $code = strtoupper(Str::random(6));
+        // Generar código numérico de 6 dígitos
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // Almacenar el código cifrado
         $this->verification_code = Hash::make($code);
         $this->verification_code_sent_at = Carbon::now();
         $this->save();
 
-        // Devolver el código sin cifrar para enviar por correo
+        // Devolver el código sin cifrar para enviar por WhatsApp
         return $code;
     }
 

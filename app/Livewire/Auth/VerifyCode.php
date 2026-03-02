@@ -102,7 +102,9 @@ class VerifyCode extends Component
     {
         unset($this->errors['code']);
 
-        $this->codeInputs[$index] = strtoupper($value);
+        // Solo permitir números
+        $value = preg_replace('/[^0-9]/', '', $value);
+        $this->codeInputs[$index] = $value;
         $this->code = implode('', $this->codeInputs);
 
         if (strlen($this->code) == 6 && !in_array('', $this->codeInputs)) {
@@ -227,7 +229,18 @@ class VerifyCode extends Component
 
     public function getError($field)
     {
-        return $this->hasError($field) ? $this->errors[$field][0] ?? $this->errors[$field] : '';
+        if (!$this->hasError($field)) {
+            return '';
+        }
+        
+        $error = $this->errors[$field];
+        
+        // Si es un array, devolver el primer elemento
+        if (is_array($error)) {
+            return $error[0] ?? '';
+        }
+        
+        return $error;
     }
 
     public function render()

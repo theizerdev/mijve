@@ -38,12 +38,14 @@
                     type="text"
                     class="form-control text-center @if($hasError('code')) is-invalid @endif"
                     maxlength="1"
-                    wire:model="codeInputs.{{ $i }}"
+                    wire:model.live="codeInputs.{{ $i }}"
                     wire:key="code-input-{{ $i }}"
-                    inputmode="text"
+                    inputmode="numeric"
+                    pattern="[0-9]"
                     autocomplete="one-time-code"
-                    style="flex: 1; min-width: 40px; max-width: 50px; height: 3rem; font-size: 1.5rem; text-transform: uppercase;"
+                    style="flex: 1; min-width: 40px; max-width: 50px; height: 3rem; font-size: 1.5rem; font-weight: 600;"
                     x-data
+                    x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '')"
                     x-on:keydown.backspace="
                       if ($el.value === '' && {{ $i }} > 0) {
                         $el.previousElementSibling && $el.previousElementSibling.focus();
@@ -51,7 +53,7 @@
                     "
                     x-init="
                       $watch('$wire.codeInputs.{{ $i }}', value => {
-                        if (value.length === 1 && {{ $i }} < 5) {
+                        if (value && value.length === 1 && {{ $i }} < 5) {
                           $nextTick(() => {
                             $el.nextElementSibling && $el.nextElementSibling.focus();
                           });
@@ -62,15 +64,16 @@
                 @endfor
               </div>
               @if($hasError('code'))
-                <div class="invalid-feedback d-block mt-2">
-                  <i class="ri ri-error-warning-line me-1"></i>{{ $getError('code') }}
+                <div class="alert alert-danger d-flex align-items-start mt-3" role="alert">
+                  <i class="ri ri-error-warning-line me-2 mt-1"></i>
+                  <div class="small">{{ $getError('code') }}</div>
                 </div>
               @endif
             </div>
 
             <div class="mb-4">
               <button class="btn btn-primary d-grid w-100" type="submit">
-                <i class="ri ri-shield-check-line me-1"></i> Verificar Código
+                Verificar Código
               </button>
             </div>
           </form>
@@ -79,7 +82,7 @@
             <div class="mb-4">
               @if($canResend)
                 <button class="btn btn-outline-success d-grid w-100" type="submit">
-                  <i class="ri ri-whatsapp-line me-1"></i> Enviar código por WhatsApp
+                  Enviar código por WhatsApp
                 </button>
               @else
                 <button class="btn btn-outline-secondary d-grid w-100" type="button" disabled>
