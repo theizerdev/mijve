@@ -11,6 +11,7 @@ use App\Models\Actividad;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Models\WhatsAppMessage;
 
 class RegistroParticipante extends Component
 {
@@ -290,6 +291,7 @@ class RegistroParticipante extends Component
         ]);
 
         $this->notifyExtensionLeader($participante);
+        $this->notifyParticipant($participante);
 
         $this->participanteCreado = $participante;
         $this->registroExitoso = true;
@@ -310,6 +312,7 @@ class RegistroParticipante extends Component
 
     private function notifyExtensionLeader($participante)
     {
+        
         try {
             if (!$participante->extension_id) return;
 
@@ -351,6 +354,53 @@ class RegistroParticipante extends Component
 
         } catch (\Exception $e) {
             Log::error('Error notificando líder desde registro público: ' . $e->getMessage());
+        }
+     }
+
+
+    private function notifyParticipant($participante): void
+    {
+        try {
+            $extension = Extension::with('lider', 'empresa.pais')->find($participante->extension_id);
+            if (!$extension) return;
+
+            $telefonoRaw = $participante->telefono_principal ?: $participante->telefono_alternativo;
+            if (empty($telefonoRaw)) {
+                Log::warning('Participante sin teléfono, no se envía WhatsApp', ['participante_id' => $participante->id]);
+                return;
+            }
+
+            $telefono = preg_replace('/[^0-9]/', '', $telefonoRaw);
+            $codigoPais = '58';
+            if ($extension->empresa && $extension->empresa->pais) {
+                $codigoPais = preg_replace('/[^0-9]/', '', $extension->empresa->pais->codigo_telefonico ?? '58');
+            }
+            if (str_starts_with($telefono, '0')) {
+                $telefono = $codigoPais . substr($telefono, 1);
+            } elseif (!str_starts_with($telefono, $codigoPais)) {
+                $telefono = $codigoPais . $telefono;
+            }
+
+           
+
+            $nombreParticipante = trim($participante->nombres . ' ' . $participante->apellidos);
+            $nombreLider = $extension->lider?->name ?: 'tu líder';
+            $actividadNombre = $participante->actividad->nombre ?? 'la actividad';
+
+            $mensaje = "✅ Confirmación de Registro\n\n";
+            $mensaje .= "Hola {$nombreParticipante}, hemos recibido tu registro para la actividad {$actividadNombre}.\n\n";
+            $mensaje .= "Para completar tu inscripción, por favor comunícate con tu Líder {$nombreLider}.\n";
+            $mensaje .= "El aporte de la actividad es de 20 USD en efectivo.\n";
+            $mensaje .= "Podemos coordinar la forma de pago si lo necesitas. 🙌";
+
+            $empresaId = $participante->empresa_id ?: ($extension->empresa?->id ?? null);
+            $whatsapp = new WhatsAppService($empresaId);
+            $whatsapp->sendMessage($telefono, $mensaje);
+            
+        } catch (\Throwable $e) {
+            Log::error('Error notificando participante desde registro público: ' . $e->getMessage(), [
+                'participante_id' => $participante->id ?? null
+            ]);
         }
     }
 

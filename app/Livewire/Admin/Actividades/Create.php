@@ -17,6 +17,9 @@ class Create extends Component
     public $sucursal_id = '';
     public $nombre = '';
     public $fecha_inicio = '';
+    public $longitud = '';
+    public $latitud = '';
+    public $direccion = '';
     public $fecha_fin = '';
     public $descripcion = '';
     public $status = 'Pendiente';
