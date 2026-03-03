@@ -96,11 +96,19 @@ class Index extends Component
         $query = Pago::forUser()
             ->with(['participante', 'actividad', 'metodoPago', 'empresa']);
 
-        // Líder de Jóvenes: solo ve pagos de participantes de su extensión
-        if (Auth::user()->hasRole('Líder de Jóvenes')) {
-            $extensionIds = \App\Models\Extension::where('user_id', Auth::id())->pluck('id');
-            $participanteIds = Participante::whereIn('extension_id', $extensionIds)->pluck('id');
-            $query->whereIn('participante_id', $participanteIds);
+        // Filtrado por extensión para líderes (o usuarios ligados a extensiones), excluyendo admins
+        $user = Auth::user();
+        $isSuper = $user->hasRole('Super Administrador');
+        $isAdmin = $user->hasRole('Administrador');
+        $isLeaderRole = $user->hasRole('Líder de Jóvenes') || $user->hasRole('Lider de Jovenes');
+        $extensionIds = \App\Models\Extension::where('user_id', $user->id)->pluck('id');
+        if (($isLeaderRole || $extensionIds->isNotEmpty()) && !($isSuper || $isAdmin)) {
+            if ($extensionIds->count() > 0) {
+                $participanteIds = Participante::whereIn('extension_id', $extensionIds)->pluck('id');
+                $query->whereIn('participante_id', $participanteIds);
+            } else {
+                $query->whereRaw('1=0');
+            }
         }
 
         return $query
@@ -228,12 +236,28 @@ class Index extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // Estadísticas
-        $totalPagos = Pago::forUser()->count();
-        $pagosAprobados = Pago::forUser()->where('status', 'Aprobado')->count();
-        $pagosPendientes = Pago::forUser()->where('status', 'Pendiente')->count();
-        $totalBs = Pago::forUser()->where('status', 'Aprobado')->sum('monto_bolivares');
-        $totalEur = Pago::forUser()->where('status', 'Aprobado')->sum('monto_euro');
+        // Estadísticas (cards) con el mismo criterio del listado
+        $user = Auth::user();
+        $isSuper = $user->hasRole('Super Administrador');
+        $isAdmin = $user->hasRole('Administrador');
+        $isLeaderRole = $user->hasRole('Líder de Jóvenes') || $user->hasRole('Lider de Jovenes');
+        $extensionIds = \App\Models\Extension::where('user_id', $user->id)->pluck('id');
+
+        $baseQuery = $isSuper ? Pago::query() : Pago::forUser();
+        if (($isLeaderRole || $extensionIds->isNotEmpty()) && !($isSuper || $isAdmin)) {
+            if ($extensionIds->count() > 0) {
+                $participanteIds = Participante::whereIn('extension_id', $extensionIds)->pluck('id');
+                $baseQuery = $baseQuery->whereIn('participante_id', $participanteIds);
+            } else {
+                $baseQuery = $baseQuery->whereRaw('1=0');
+            }
+        }
+
+        $totalPagos = (clone $baseQuery)->count();
+        $pagosAprobados = (clone $baseQuery)->where('status', 'Aprobado')->count();
+        $pagosPendientes = (clone $baseQuery)->where('status', 'Pendiente')->count();
+        $totalBs = (clone $baseQuery)->where('status', 'Aprobado')->sum('monto_bolivares');
+        $totalEur = (clone $baseQuery)->where('status', 'Aprobado')->sum('monto_euro');
 
         return view('livewire.admin.pagos.index', [
             'pagos' => $pagos,

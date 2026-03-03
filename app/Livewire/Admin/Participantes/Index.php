@@ -92,15 +92,20 @@ class Index extends Component
     {
         $query = Participante::with(['empresa', 'actividad', 'extension']);
 
-        // Aplicar scope solo si no es Super Administrador
         if (!Auth::user()->hasRole('Super Administrador')) {
             $query->forUser();
         }
 
-        // Líder de Jóvenes: solo ve participantes de su extensión
-        if (Auth::user()->hasRole('Líder de Jóvenes')) {
-            $extensionIds = \App\Models\Extension::where('user_id', Auth::id())->pluck('id');
-            $query->whereIn('extension_id', $extensionIds);
+        $user = Auth::user();
+        $extensionIds = \App\Models\Extension::where('user_id', $user->id)->pluck('id');
+        $isLeaderRole = $user->hasRole('Líder de Jóvenes') || $user->hasRole('Lider de Jovenes');
+        $isAdminRole = $user->hasRole(['Super Administrador', 'Administrador']);
+        if (($isLeaderRole || $extensionIds->isNotEmpty()) && !$isAdminRole) {
+            if ($extensionIds->count() > 0) {
+                $query->whereIn('extension_id', $extensionIds);
+            } else {
+                $query->whereRaw('1=0');
+            }
         }
 
         return $query
@@ -125,16 +130,27 @@ class Index extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
 
-        // Calcular estadísticas
-        $totalParticipantes = Auth::user()->hasRole('Super Administrador') 
-            ? Participante::count() 
-            : Participante::forUser()->count();
-        $participantesActivos = Auth::user()->hasRole('Super Administrador')
-            ? Participante::where('status', true)->count()
-            : Participante::forUser()->where('status', true)->count();
-        $participantesInactivos = Auth::user()->hasRole('Super Administrador')
-            ? Participante::where('status', false)->count()
-            : Participante::forUser()->where('status', false)->count();
+        $user = Auth::user();
+        $isSuper = $user->hasRole('Super Administrador');
+        $isLeaderRole = $user->hasRole('Líder de Jóvenes') || $user->hasRole('Lider de Jovenes');
+        $isAdminRole = $user->hasRole('Administrador');
+        $extensionIds = \App\Models\Extension::where('user_id', $user->id)->pluck('id');
+
+        $baseQuery = $isSuper
+            ? Participante::query()
+            : Participante::forUser();
+
+        if (($isLeaderRole || $extensionIds->isNotEmpty()) && !($isSuper || $isAdminRole)) {
+            if ($extensionIds->count() > 0) {
+                $baseQuery = $baseQuery->whereIn('extension_id', $extensionIds);
+            } else {
+                $baseQuery = $baseQuery->whereRaw('1=0');
+            }
+        }
+
+        $totalParticipantes = (clone $baseQuery)->count();
+        $participantesActivos = (clone $baseQuery)->where('status', true)->count();
+        $participantesInactivos = (clone $baseQuery)->where('status', false)->count();
 
         return view('livewire.admin.participantes.index', [
             'participantes' => $participantes,
