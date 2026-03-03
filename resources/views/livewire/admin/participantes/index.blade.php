@@ -146,6 +146,7 @@
                                         <i class="ri ri-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }}-line"></i>
                                     @endif
                                 </th>
+                                <th>Extensión</th>
                                 <th>Género</th>
                                 <th>Teléfono</th>
                                 <th>Empresa</th>
@@ -176,6 +177,13 @@
                                     @endif
                                 </td>
                                 <td>{{ $participante->edad }} años</td>
+                                <td>
+                                    @if($participante->extension)
+                                        <span class="badge bg-label-info">{{ $participante->extension->nombre }}</span>
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
                                 <td>{{ $participante->genero ?? 'N/A' }}</td>
                                 <td>{{ $participante->telefono_principal ?? 'N/A' }}</td>
                                 <td>{{ $participante->empresa->razon_social ?? 'N/A' }}</td>
@@ -207,7 +215,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="text-center">No se encontraron participantes que coincidan con los filtros</td>
+                                <td colspan="10" class="text-center">No se encontraron participantes que coincidan con los filtros</td>
                             </tr>
                             @endforelse
                         </tbody>
