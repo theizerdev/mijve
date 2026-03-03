@@ -119,7 +119,7 @@
         @else
         {{-- ===== WIZARD ===== --}}
 
-        {{-- Stepper header mobile (visible solo en < lg) --}}
+        {{-- Stepper header mobile (visible solo en < lg) --}} <br><br>
         <div class="d-lg-none mb-4 ">
           <div class="d-flex align-items-center justify-content-between px-1">
             <span class="text-muted small">Paso {{ $currentStep }} de {{ $totalSteps }}</span>
@@ -151,8 +151,8 @@
                 <div class="d-flex align-items-start mb-3">
                   <span class="avatar avatar-xs me-3 mt-1 flex-shrink-0"><span class="avatar-initial rounded bg-label-success"><i class="ri ri-money-dollar-circle-line ri-14px"></i></span></span>
                   <div>
-                    <h6 class="mb-1">Pago Completo</h6>
-                    <p class="mb-0 text-muted">Para formalizar la inscripción, el participante debe haber realizado el pago completo del monto establecido como valor del evento.</p>
+                    <h6 class="mb-1">Condiciones de pago</h6>
+                    <p class="mb-0 text-muted">Para formalizar la inscripción, el participante debe coordinar el pago correspondiente con su Líder de Jóvenes.</p>
                   </div>
                 </div>
                 <hr>

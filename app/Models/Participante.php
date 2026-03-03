@@ -36,21 +36,6 @@ class Participante extends Model
         'edad' => 'integer',
     ];
 
-    protected static function booted()
-    {
-        static::created(function ($participante) {
-            if ($participante->actividad_id) {
-                $participante->actividad->actualizarCuposOcupados();
-            }
-        });
-
-        static::deleted(function ($participante) {
-            if ($participante->actividad_id) {
-                $participante->actividad->actualizarCuposOcupados();
-            }
-        });
-    }
-
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);

@@ -19,9 +19,6 @@ class Create extends Component
     public $fecha_inicio = '';
     public $fecha_fin = '';
     public $descripcion = '';
-    public $direccion = '';
-    public $latitud = null;
-    public $longitud = null;
     public $status = 'Pendiente';
     public $edad_desde = 0;
     public $edad_hasta = 0;
@@ -38,9 +35,6 @@ class Create extends Component
         'fecha_inicio' => 'required|date|after_or_equal:today',
         'fecha_fin' => 'required|date|after:fecha_inicio',
         'descripcion' => 'nullable|string|max:500',
-        'direccion' => 'nullable|string|max:255',
-        'latitud' => 'nullable|numeric|between:-90,90',
-        'longitud' => 'nullable|numeric|between:-180,180',
         'status' => 'required|in:Activo,Inactivo,Pendiente',
         'edad_desde' => 'required|integer|min:0|max:100',
         'edad_hasta' => 'required|integer|gte:edad_desde|max:100',
@@ -87,9 +81,6 @@ class Create extends Component
             'fecha_inicio' => $this->fecha_inicio,
             'fecha_fin' => $this->fecha_fin,
             'descripcion' => $this->descripcion,
-            'direccion' => $this->direccion,
-            'latitud' => $this->latitud,
-            'longitud' => $this->longitud,
             'status' => $this->status,
             'edad_desde' => $this->edad_desde,
             'edad_hasta' => $this->edad_hasta,

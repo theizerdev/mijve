@@ -20,9 +20,6 @@ class Actividad extends Model
         'fecha_inicio',
         'fecha_fin',
         'descripcion',
-        'direccion',
-        'latitud',
-        'longitud',
         'costo',
         'capacidad',
         'cupos_ocupados',
@@ -30,25 +27,6 @@ class Actividad extends Model
         'edad_desde',
         'edad_hasta',
     ];
-
-    protected static function booted()
-    {
-        // Actualizar cupos ocupados al crear un participante
-        static::created(function ($actividad) {
-            $actividad->actualizarCuposOcupados();
-        });
-    }
-
-    public function actualizarCuposOcupados()
-    {
-        $this->cupos_ocupados = Participante::where('actividad_id', $this->id)->count();
-        $this->saveQuietly();
-    }
-
-    public function participantes()
-    {
-        return $this->hasMany(Participante::class);
-    }
 
     protected $casts = [
         'fecha_inicio' => 'date',
@@ -58,8 +36,6 @@ class Actividad extends Model
         'capacidad' => 'integer',
         'cupos_ocupados' => 'integer',
         'costo' => 'decimal:2',
-        'latitud' => 'decimal:8',
-        'longitud' => 'decimal:8',
     ];
 
     public function empresa()
@@ -105,7 +81,7 @@ class Actividad extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nombre', 'fecha_inicio', 'fecha_fin', 'status', 'edad_desde', 'edad_hasta', 'costo', 'direccion', 'latitud', 'longitud'])
+            ->logOnly(['nombre', 'fecha_inicio', 'fecha_fin', 'status', 'edad_desde', 'edad_hasta', 'costo'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
