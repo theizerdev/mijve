@@ -209,6 +209,13 @@
                                                 <i class="ri ri-pencil-line me-1"></i> Editar
                                             </a>
                                             @endcan
+                                            @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->hasRole('Administrador'))
+                                            <button class="dropdown-item text-danger"
+                                                    wire:click="delete({{ $participante->id }})"
+                                                    wire:confirm="¿Estás seguro de eliminar este participante? Esta acción no se puede deshacer.">
+                                                <i class="ri ri-delete-bin-line me-1"></i> Eliminar
+                                            </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

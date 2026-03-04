@@ -48,7 +48,7 @@ class Create extends Component
             'actividad_id' => 'required|exists:actividads,id',
             'nombres' => 'required|string|min:3|max:100',
             'apellidos' => 'required|string|min:3|max:100',
-            'cedula' => 'nullable|string|max:20',
+            'cedula' => 'nullable|string|max:20|unique:participantes,cedula',
             'telefono_principal' => 'nullable|string|max:20',
             'telefono_alternativo' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:500',
@@ -69,8 +69,6 @@ class Create extends Component
         $this->empresas = Empresa::where('status', true)->get();
         $this->actividades = Actividad::where('status', 'Activo')->get();
 
-        
-        
         if (Auth::user()->empresa_id) {
             $this->empresa_id = Auth::user()->empresa_id;
             $this->updatedEmpresaId($this->empresa_id);
@@ -78,6 +76,10 @@ class Create extends Component
         
         if (Auth::user()->sucursal_id) {
             $this->sucursal_id = Auth::user()->sucursal_id;
+        }
+
+        if (empty($this->sucursal_id)) {
+            $this->sucursal_id = 1;
         }
     }
 
@@ -90,10 +92,26 @@ class Create extends Component
             $this->sucursales = [];
             $this->extensiones = [];
         }
-        $this->sucursal_id = '';
+        $this->sucursal_id = $this->sucursal_id ?: 1;
         $this->extension_id = '';
         $this->zona = '';
         $this->distrito = '';
+    }
+
+    public function updatedCedula($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            $this->resetErrorBag('cedula');
+            return;
+        }
+
+        $exists = Participante::where('cedula', $value)->exists();
+        if ($exists) {
+            $this->addError('cedula', 'Ya existe un participante registrado con esta cédula.');
+        } else {
+            $this->resetErrorBag('cedula');
+        }
     }
 
     public function updatedExtensionId($value)
@@ -174,7 +192,7 @@ class Create extends Component
 
         $participante = Participante::create([
             'empresa_id' => $this->empresa_id ?: null,
-            'sucursal_id' => $this->sucursal_id ?: null,
+            'sucursal_id' => $this->sucursal_id ?: 1,
             'extension_id' => $this->extension_id,
             'actividad_id' => $this->actividad_id,
             'nombres' => $this->nombres,

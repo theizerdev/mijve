@@ -174,4 +174,23 @@ class Index extends Component
 
         session()->flash('message', 'Estado de participante actualizado correctamente.');
     }
+
+    public function delete($id)
+    {
+        $user = Auth::user();
+        if (!($user->hasRole('Super Administrador') || $user->hasRole('Administrador'))) {
+            session()->flash('error', 'No tienes permiso para eliminar participantes.');
+            return;
+        }
+
+        $participante = Participante::find($id);
+        if (!$participante) {
+            session()->flash('error', 'Participante no encontrado.');
+            return;
+        }
+
+        $participante->delete();
+        session()->flash('message', 'Participante eliminado correctamente.');
+        $this->resetPage();
+    }
 }

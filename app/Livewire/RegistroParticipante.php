@@ -65,6 +65,10 @@ class RegistroParticipante extends Component
             $this->empresa_id = $this->empresas->first()->id;
             $this->loadDependencies($this->empresa_id);
         }
+
+        if (empty($this->sucursal_id)) {
+            $this->sucursal_id = 1;
+        }
     }
 
     private function loadDependencies($empresaId)
@@ -161,7 +165,7 @@ class RegistroParticipante extends Component
             3 => [
                 'nombres'          => 'required|string|min:3|max:100',
                 'apellidos'        => 'required|string|min:3|max:100',
-                'cedula'           => 'nullable|string|max:20',
+                'cedula'           => 'nullable|string|max:20|unique:participantes,cedula',
                 'fecha_nacimiento' => 'required|date|before:today',
                 'edad'             => 'required|integer|min:0',
                 'genero'           => 'required|in:Masculino,Femenino',
@@ -272,7 +276,7 @@ class RegistroParticipante extends Component
 
         $participante = Participante::create([
             'empresa_id'          => $this->empresa_id ?: null,
-            'sucursal_id'         => $this->sucursal_id ?: null,
+            'sucursal_id'         => $this->sucursal_id ?: 1,
             'extension_id'        => $this->extension_id,
             'actividad_id'        => $this->actividad_id,
             'nombres'             => $this->nombres,
@@ -314,7 +318,6 @@ class RegistroParticipante extends Component
     {
         
         try {
-            if (!$participante->extension_id) return;
 
             $extension = Extension::with('lider.empresa.pais')->find($participante->extension_id);
 
@@ -401,6 +404,22 @@ class RegistroParticipante extends Component
             Log::error('Error notificando participante desde registro público: ' . $e->getMessage(), [
                 'participante_id' => $participante->id ?? null
             ]);
+        }
+    }
+
+    public function updatedCedula($value)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            $this->resetErrorBag('cedula');
+            return;
+        }
+
+        $exists = Participante::where('cedula', $value)->exists();
+        if ($exists) {
+            $this->addError('cedula', 'Ya existe un participante registrado con esta cédula.');
+        } else {
+            $this->resetErrorBag('cedula');
         }
     }
 
