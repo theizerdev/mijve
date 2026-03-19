@@ -162,7 +162,7 @@ class Create extends Component
         if ($this->actividad_id && $this->edad !== '') {
             $actividad = Actividad::find($this->actividad_id);
             if ($actividad) {
-                if ($this->edad > 40) {
+                if ($this->edad > 35) {
                     $this->resetErrorBag('edad');
                 } elseif ($this->edad < $actividad->edad_desde || $this->edad > $actividad->edad_hasta) {
                     $this->addError('edad', "La edad debe estar entre {$actividad->edad_desde} y {$actividad->edad_hasta} años para esta actividad.");
