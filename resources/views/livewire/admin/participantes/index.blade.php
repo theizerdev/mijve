@@ -210,6 +210,13 @@
                                             </a>
                                             @endcan
                                             @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->hasRole('Administrador'))
+                                            <button class="dropdown-item"
+                                                    wire:click="sendWelcomeMessage({{ $participante->id }})"
+                                                    wire:confirm="¿Enviar mensaje de bienvenida a este participante?">
+                                                <i class="ri ri-message-2-line me-1"></i> Mensaje de bienvenida
+                                            </button>
+                                            @endif
+                                            @if(auth()->user()->hasRole('Super Administrador') || auth()->user()->hasRole('Administrador'))
                                             <button class="dropdown-item text-danger"
                                                     wire:click="delete({{ $participante->id }})"
                                                     wire:confirm="¿Estás seguro de eliminar este participante? Esta acción no se puede deshacer.">

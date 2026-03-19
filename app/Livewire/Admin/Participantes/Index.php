@@ -8,8 +8,10 @@ use Livewire\WithPagination;
 use App\Models\Participante;
 use App\Models\Empresa;
 use App\Models\Actividad;
+use App\Models\Extension;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\Exportable;
+use App\Services\WhatsAppService;
 
 class Index extends Component
 {
@@ -192,5 +194,63 @@ class Index extends Component
         $participante->delete();
         session()->flash('message', 'Participante eliminado correctamente.');
         $this->resetPage();
+    }
+
+    public function sendWelcomeMessage($id)
+    {
+        $user = Auth::user();
+        if (!($user->hasRole('Super Administrador') || $user->hasRole('Administrador'))) {
+            session()->flash('error', 'No tienes permiso para enviar mensajes.');
+            return;
+        }
+
+        $participante = Participante::with(['actividad', 'extension'])->find($id);
+        if (!$participante) {
+            session()->flash('error', 'Participante no encontrado.');
+            return;
+        }
+
+        $telefonoRaw = $participante->telefono_principal ?: $participante->telefono_alternativo;
+        if (empty($telefonoRaw)) {
+            session()->flash('error', 'El participante no tiene teléfono registrado.');
+            return;
+        }
+
+        $extension = Extension::with('lider', 'empresa.pais')->find($participante->extension_id);
+        if (!$extension) {
+            session()->flash('error', 'No se encontró la extensión del participante.');
+            return;
+        }
+
+        $telefono = preg_replace('/[^0-9]/', '', (string) $telefonoRaw);
+        $codigoPais = '58';
+        if ($extension->empresa && $extension->empresa->pais) {
+            $codigoPais = preg_replace('/[^0-9]/', '', $extension->empresa->pais->codigo_telefonico ?? '58');
+        }
+        if (str_starts_with($telefono, '0')) {
+            $telefono = $codigoPais . substr($telefono, 1);
+        } elseif (!str_starts_with($telefono, $codigoPais)) {
+            $telefono = $codigoPais . $telefono;
+        }
+
+        $nombreParticipante = trim($participante->nombres . ' ' . $participante->apellidos);
+        $nombreLider = $extension->lider?->name ?: 'tu líder';
+        $actividadNombre = $participante->actividad->nombre ?? 'la actividad';
+
+        $mensaje = "✅ Confirmación de Registro\n\n";
+        $mensaje .= "Hola {$nombreParticipante}, hemos recibido tu registro para la actividad {$actividadNombre}.\n\n";
+        $mensaje .= "Para completar tu inscripción, por favor comunícate con tu Líder {$nombreLider}.\n";
+        $mensaje .= "El aporte de la actividad es de 20 USD en efectivo.\n";
+        $mensaje .= "Podemos coordinar la forma de pago si lo necesitas. 🙌";
+
+        $empresaId = $participante->empresa_id ?: ($extension->empresa?->id ?? null);
+        $whatsapp = new WhatsAppService($empresaId);
+        $result = $whatsapp->sendMessage($telefono, $mensaje);
+
+        if ($result) {
+            session()->flash('message', 'Mensaje de bienvenida enviado correctamente.');
+        } else {
+            session()->flash('error', 'No se pudo enviar el mensaje de bienvenida.');
+        }
     }
 }
