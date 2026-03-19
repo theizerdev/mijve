@@ -142,10 +142,14 @@ class RegistroParticipante extends Component
     {
         if ($this->actividad_id && $this->edad !== '') {
             $actividad = Actividad::find($this->actividad_id);
-            if ($actividad && ($this->edad < $actividad->edad_desde || $this->edad > $actividad->edad_hasta)) {
-                $this->addError('edad', "La edad debe estar entre {$actividad->edad_desde} y {$actividad->edad_hasta} años para esta actividad.");
-            } else {
-                $this->resetErrorBag('edad');
+            if ($actividad) {
+                if ($this->edad > 40) {
+                    $this->resetErrorBag('edad');
+                } elseif ($this->edad < $actividad->edad_desde || $this->edad > $actividad->edad_hasta) {
+                    $this->addError('edad', "La edad debe estar entre {$actividad->edad_desde} y {$actividad->edad_hasta} años para esta actividad.");
+                } else {
+                    $this->resetErrorBag('edad');
+                }
             }
         }
     }
