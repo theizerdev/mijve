@@ -62,7 +62,7 @@ class RegistroParticipante extends Component
     {
         // Check if registration is closed based on Venezuela time
         $venezuelaTime = Carbon::now('America/Caracas');
-        $deadline = $venezuelaTime->clone()->setTime(13, 30); // 1:30 PM
+        $deadline = $venezuelaTime->clone()->setTime(13, 05); // 1:30 PM
 
         if ($venezuelaTime->gt($deadline)) {
             $this->registrationClosed = true;

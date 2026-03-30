@@ -84,7 +84,7 @@
             </div>
             <h2 class="mb-2">Proceso de Inscripciones Finalizado</h2>
             <p class="text-muted mb-5">
-              La hora límite para realizar inscripciones fue a la <strong>1:30 PM</strong> hora de Venezuela.
+              La hora límite para realizar inscripciones fue a la <strong>1:00 PM</strong> hora de Venezuela.
             </p>
 
             {{-- Información adicional --}}
@@ -104,7 +104,7 @@
                             <span class="text-muted">Hora de cierre</span>
                           </div>
                         </td>
-                        <td class="py-3 pe-4 text-end fw-medium">1:30 PM (Venezuela)</td>
+                        <td class="py-3 pe-4 text-end fw-medium">1:00 PM (Venezuela)</td>
                       </tr>
                       <tr>
                         <td class="py-3 ps-4">
@@ -303,7 +303,7 @@
                 <span class="align-middle d-sm-inline-block d-none me-sm-1_5 me-0">Acepto, Continuar</span>
                 <i class="icon-base ri ri-arrow-right-line icon-16px"></i>
               </span>
-             
+
             </button>
           </div>
         </div>
@@ -486,7 +486,7 @@
                   <span class="align-middle d-sm-inline-block d-none me-sm-1_5 me-0">Siguiente</span>
                   <i class="icon-base ri ri-arrow-right-line icon-16px"></i>
                 </span>
-                
+
               </button>
             </div>
           </div>
@@ -542,7 +542,7 @@
                   <span class="align-middle d-sm-inline-block d-none me-sm-1_5 me-0">Siguiente</span>
                   <i class="icon-base ri ri-arrow-right-line icon-16px"></i>
                 </span>
-               
+
               </button>
             </div>
           </div>
@@ -673,7 +673,7 @@
               <span wire:loading.remove wire:target="save">
                 Confirmar Registro <i class="icon-base ri ri-check-line icon-16px ms-1_5"></i>
               </span>
-             
+
             </button>
           </div>
         </div>
