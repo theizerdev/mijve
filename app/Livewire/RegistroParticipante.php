@@ -55,8 +55,19 @@ class RegistroParticipante extends Component
     public bool $registroExitoso = false;
     public $participanteCreado = null;
 
+    // Registration status
+    public $registrationClosed = false;
+
     public function mount()
     {
+        // Check if registration is closed based on Venezuela time
+        $venezuelaTime = Carbon::now('America/Caracas');
+        $deadline = $venezuelaTime->clone()->setTime(13, 30); // 1:30 PM
+
+        if ($venezuelaTime->gt($deadline)) {
+            $this->registrationClosed = true;
+        }
+
         $this->empresas = Empresa::where('status', true)->get();
         $this->actividades = Actividad::where('status', 'Activo')->get();
 
@@ -205,6 +216,10 @@ class RegistroParticipante extends Component
 
     public function nextStep()
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         $this->validate(
             $this->rulesForStep($this->currentStep),
             $this->messagesForStep()
@@ -234,6 +249,10 @@ class RegistroParticipante extends Component
 
     public function prevStep()
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         if ($this->currentStep > 1) {
             $this->currentStep--;
             $this->dispatch('stepChanged', step: $this->currentStep);
@@ -242,6 +261,10 @@ class RegistroParticipante extends Component
 
     public function goToStep(int $step)
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         // Solo permitir ir a steps ya visitados (hacia atrás)
         if ($step < $this->currentStep && $step >= 1) {
             $this->currentStep = $step;
@@ -251,6 +274,10 @@ class RegistroParticipante extends Component
 
     public function save()
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         // Validar todos los steps
         $allRules = array_merge(
             $this->rulesForStep(1),
@@ -271,7 +298,7 @@ class RegistroParticipante extends Component
         // Validación final de capacidad antes de guardar
         $actividad = Actividad::find($this->actividad_id);
         $cuposOcupados = Participante::where('actividad_id', $this->actividad_id)->count();
-        
+
         if ($cuposOcupados >= $actividad->capacidad) {
             session()->flash('error', 'Lo sentimos, la actividad ha alcanzado su capacidad máxima mientras completabas el registro.');
             $this->currentStep = 2;
@@ -307,6 +334,10 @@ class RegistroParticipante extends Component
 
     public function nuevoRegistro()
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         $this->reset([
             'currentStep', 'acepta_terminos', 'extension_id', 'sucursal_id', 'actividad_id',
             'zona', 'distrito', 'nombres', 'apellidos', 'cedula',
@@ -320,7 +351,7 @@ class RegistroParticipante extends Component
 
     private function notifyExtensionLeader($participante)
     {
-        
+
         try {
 
             $extension = Extension::with('lider.empresa.pais')->find($participante->extension_id);
@@ -388,7 +419,7 @@ class RegistroParticipante extends Component
                 $telefono = $codigoPais . $telefono;
             }
 
-           
+
 
             $nombreParticipante = trim($participante->nombres . ' ' . $participante->apellidos);
             $nombreLider = $extension->lider?->name ?: 'tu líder';
@@ -403,7 +434,7 @@ class RegistroParticipante extends Component
             $empresaId = $participante->empresa_id ?: ($extension->empresa?->id ?? null);
             $whatsapp = new WhatsAppService($empresaId);
             $whatsapp->sendMessage($telefono, $mensaje);
-            
+
         } catch (\Throwable $e) {
             Log::error('Error notificando participante desde registro público: ' . $e->getMessage(), [
                 'participante_id' => $participante->id ?? null
@@ -413,6 +444,10 @@ class RegistroParticipante extends Component
 
     public function updatedCedula($value)
     {
+        if ($this->registrationClosed) {
+            return;
+        }
+
         $value = trim((string) $value);
         if ($value === '') {
             $this->resetErrorBag('cedula');
