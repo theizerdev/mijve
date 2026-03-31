@@ -11,6 +11,8 @@ use App\Models\Actividad;
 use App\Models\Extension;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\Exportable;
+use App\Exports\ParticipantesMultiSheetExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Services\WhatsAppService;
 
 class Index extends Component
@@ -66,6 +68,14 @@ class Index extends Component
         $this->sortBy = $field;
     }
 
+    public function export()
+    {
+        $participantes = $this->getBaseQuery()->get();
+        $filename = 'participantes_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new ParticipantesMultiSheetExport($participantes), $filename);
+    }
+
     protected function getExportQuery()
     {
         return $this->getBaseQuery();
@@ -73,21 +83,12 @@ class Index extends Component
 
     protected function getExportHeaders(): array
     {
-        return ['ID', 'Empresa', 'Nombres', 'Apellidos', 'Cédula', 'Actividad', 'Edad', 'Teléfono'];
+        return [];
     }
 
-    protected function formatExportRow($participante): array
+    protected function formatExportRow($row): array
     {
-        return [
-            $participante->id,
-            $participante->empresa->razon_social ?? 'N/A',
-            $participante->nombres,
-            $participante->apellidos,
-            $participante->cedula,
-            $participante->actividad->nombre ?? 'N/A',
-            $participante->edad,
-            $participante->telefono_principal
-        ];
+        return [];
     }
 
     private function getBaseQuery()

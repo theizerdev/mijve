@@ -72,13 +72,16 @@
                             <h5 class="card-title mb-1">Lista de Participantes</h5>
                             <p class="mb-0">Administra los participantes registrados en el sistema</p>
                         </div>
-                        @can('create participantes')
-                        <div>
+                        <div class="d-flex gap-2">
+                            <button wire:click="export" class="btn btn-success">
+                                <i class="ri ri-file-excel-2-line me-1"></i> Exportar Excel
+                            </button>
+                            @can('create participantes')
                             <a href="{{ route('admin.participantes.create') }}" class="btn btn-primary">
                                 <i class="ri ri-add-line"></i> Nuevo Participante
                             </a>
+                            @endcan
                         </div>
-                        @endcan
                     </div>
                 </div>
 
